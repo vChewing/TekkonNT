@@ -23,7 +23,9 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 namespace Tekkon {
-/// 定義注音符號的種類
+/// <summary>
+/// 定義注音符號的種類。
+/// </summary>
 public enum PhoneType {
   Null = 0,       // 假
   Consonant = 1,  // 聲
@@ -32,7 +34,9 @@ public enum PhoneType {
   Intonation = 4  // 調
 }
 
-/// 定義注音排列的類型
+/// <summary>
+/// 定義注音排列的類型。
+/// </summary>
 public enum MandarinParser {
   OfDachen = 0,
   OfDachen26 = 1,
