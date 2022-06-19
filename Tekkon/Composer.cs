@@ -26,34 +26,44 @@ using System;
 using System.Linq;
 
 namespace Tekkon {
-/// 注音並擊處理的對外介面以注拼槽（Syllable Composer）的形式存在。
-/// 使用時需要單獨初期化為一個副本變數（因為是 Struct 所以必須得是變數）。
-/// 注拼槽只有四格：聲、介、韻、調。
-///
-/// 因為是 String Literal，所以初期化時可以藉由 @input
-/// 參數指定初期已經傳入的按鍵訊號。 還可以在初期化時藉由 @arrange
-/// 參數來指定注音排列（預設為「.ofDachen」大千佈局）。
+/// <summary>
+/// 注音並擊處理的對外介面以注拼槽（Syllable Composer）的形式存在。<br />
+/// 使用時需要單獨初期化為一個副本變數（因為是 Struct 所以必須得是變數）。<br />
+/// 注拼槽只有四格：聲、介、韻、調。<br /><br />
+/// 初期化時可以藉由 @input 參數指定初期已經傳入的按鍵訊號，<br />
+/// 還可以在初期化時藉由
+/// @arrange參數來指定注音排列（預設為「.ofDachen」大千佈局）。
+/// </summary>
 public struct Composer {
   /// 聲介韻調。
   public Phonabet Consonant = new(), Semivowel = new(), Vowel = new(),
                   Intonation = new();
 
+  /// <summary>
   /// 為拉丁字母專用的組音區。
+  /// </summary>
   public string RomajiBuffer = "";
 
+  /// <summary>
   /// 注音排列種類。預設情況下是大千排列（Windows / macOS 預設注音排列）。
+  /// </summary>
   public MandarinParser Parser = MandarinParser.OfDachen;
 
+  /// <summary>
   /// 內容值，會直接按照正確的順序拼裝自己的聲介韻調內容、再回傳。
   /// 注意：直接取這個參數的內容的話，陰平聲調會成為一個空格。
   /// 如果是要取不帶空格的注音的話，請使用「.getComposition()」而非「.Value」。
+  /// </summary>
   public string Value => $"{Consonant}{Semivowel}{Vowel}{Intonation}";
 
-  /// 與 value 類似，這個函數就是用來決定輸入法組字區內顯示的注音/拼音內容，
+  /// <summary>
+  /// 與 value 類似，這個函式就是用來決定輸入法組字區內顯示的注音/拼音內容，
   /// 但可以指定是否輸出教科書格式（拼音的調號在字母上方、注音的輕聲寫在左側）。
-  /// - Parameters:
-  ///   - isHanyuPinyin: 是否將輸出結果轉成漢語拼音。
-  ///   - isTextBookStyle: 是否將輸出的注音/拼音結果轉成教科書排版格式。
+  /// </summary>
+  /// <param name="IsHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
+  /// <param
+  /// name="IsTextBookStyle">是否將輸出的注音/拼音結果轉成教科書排版格式。</param>
+  /// <returns>拼音/注音讀音字串，依照指定的格式。</returns>
   public string GetComposition(bool IsHanyuPinyin = false,
                                bool IsTextBookStyle = false) {
     switch (IsHanyuPinyin) {
@@ -73,9 +83,11 @@ public struct Composer {
     }
   }
 
-  // 該函數僅用來獲取給 macOS InputMethod Kit 的內文組字區使用的顯示字串。
-  /// - Parameters:
-  ///   - isHanyuPinyin: 是否將輸出結果轉成漢語拼音。
+  /// <summary>
+  /// 該函式僅用來獲取給 macOS InputMethod Kit 的內文組字區使用的顯示字串。
+  /// </summary>
+  /// <param name="IsHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
+  /// <returns>拼音/注音讀音字串，依照適合在輸入法組字區內顯示出來的格式。</returns>
   public string GetInlineCompositionForIMK(bool IsHanyuPinyin = false) {
     switch (Parser) {
       case MandarinParser.OfHanyuPinyin:
@@ -94,7 +106,9 @@ public struct Composer {
     }
   }
 
+  /// <summary>
   /// 注拼槽內容是否為空。
+  /// </summary>
   public bool IsEmpty {
     get {
       switch (Parser) {
@@ -111,26 +125,31 @@ public struct Composer {
     }
   }
 
+  /// <summary>
   /// 注拼槽內容是否可唸。
+  /// </summary>
   public bool IsPronouncable =>
       !Vowel.IsEmpty || !Semivowel.IsEmpty || !Consonant.IsEmpty;
 
-  // MARK: 注拼槽對外處理函數.
+  // MARK: 注拼槽對外處理函式.
 
+  /// <summary>
   /// 初期化一個新的注拼槽。可以藉由 @input 參數指定初期已經傳入的按鍵訊號。
   /// 還可以在初期化時藉由 @arrange
   /// 參數來指定注音排列（預設為「.ofDachen」大千佈局）。
-  /// - Parameters:
-  ///   - input: 傳入的 String 內容，用以處理單個字符。
-  ///   - arrange: 要使用的注音排列。
+  /// </summary>
+  /// <param name="Input">傳入的 String 內容，用以處理單個字符。</param>
+  /// <param name="Arrange">要使用的注音排列。</param>
   public Composer(string Input = "", MandarinParser Arrange = 0) {
     EnsureParser(Arrange);
     ReceiveKey(Input);
   }
 
+  /// <summary>
   /// 清除自身的內容，就是將聲介韻調全部清空。
   /// 嚴格而言，「注音排列」這個屬性沒有需要清空的概念，只能用 ensureParser
   /// 參數變更之。
+  /// </summary>
   public void Clear() {
     Consonant = new();
     Semivowel = new();
@@ -141,11 +160,13 @@ public struct Composer {
 
   // MARK: - Public Functions
 
-  /// 用於檢測「某個輸入字符訊號的合規性」的函數。
-  ///
+  /// <summary>
+  /// 用於檢測「某個輸入字符訊號的合規性」的函式。<br />
+  /// <br />
   /// 注意：回傳結果會受到當前注音排列 parser 屬性的影響。
-  /// - Parameters:
-  ///   - InputCharCode: 傳入的 UniChar 內容。
+  /// </summary>
+  /// <param name="InputCharCode">傳入的 UniChar 內容。</param>
+  /// <returns>傳入的字符是否合規。</returns>
   public bool InputValidityCheck(int InputCharCode) {
     char InputKey = (char)Math.Abs(InputCharCode);
     if (InputKey >= 128) return false;
@@ -180,12 +201,13 @@ public struct Composer {
     return false;
   }
 
-  /// 接受傳入的按鍵訊號時的處理，處理對象為 String。
-  /// 另有同名函數可處理 UniChar 訊號。
-  ///
+  /// <summary>
+  /// 接受傳入的按鍵訊號時的處理，處理對象為 String。<br />
+  /// 另有同名函式可處理 UniChar 訊號。<br />
+  /// <br />
   /// 如果是諸如複合型注音排列的話，翻譯結果有可能為空，但翻譯過程已經處理好聲介韻調分配了。
-  /// - Parameters:
-  ///   - fromString: 傳入的 String 內容。
+  /// </summary>
+  /// <param name="Input">傳入的 String 內容。</param>
   public void ReceiveKey(string Input) {
     switch (Parser) {
       case MandarinParser.OfHanyuPinyin:
@@ -213,19 +235,21 @@ public struct Composer {
     }
   }
 
-  /// 接受傳入的按鍵訊號時的處理，處理對象為 UniChar。
-  /// 其實也就是先將 UniChar 轉為 String 再交給某個同名異參的函數來處理而已。
-  ///
+  /// <summary>
+  /// 接受傳入的按鍵訊號時的處理，處理對象為 UniChar。<br />
+  /// 其實也就是先將 char(int) 轉為 String
+  /// 再交給某個同名異參的函式來處理而已。<br /> <br />
   /// 如果是諸如複合型注音排列的話，翻譯結果有可能為空，但翻譯過程已經處理好聲介韻調分配了。
-  /// - Parameters:
-  ///   - fromCharCode: 傳入的 UniChar 內容。
+  /// </summary>
+  /// <param name="InputChar">傳入的 char 內容，格式為 int。</param>
   public void ReceiveKey(int InputChar) =>
       ReceiveKey(((char)Math.Abs(InputChar)).ToString());
 
+  /// <summary>
   /// 接受傳入的按鍵訊號時的處理，處理對象為單個注音符號。
   /// 主要就是將注音符號拆分辨識且分配到正確的貯存位置而已。
-  /// - Parameters:
-  ///   - fromPhonabet: 傳入的單個注音符號字串。
+  /// </summary>
+  /// <param name="Phonabet">傳入的單個注音符號字串。</param>
   public void ReceiveKeyFromPhonabet(string Phonabet = "") {
     Phonabet ThePhone = new(Phonabet);
     switch (ThePhone.Type) {
@@ -246,11 +270,13 @@ public struct Composer {
     }
   }
 
+  /// <summary>
   /// 處理一連串的按鍵輸入。
-  /// - Parameters:
-  ///   - givenSequence: 傳入的 String 內容，用以處理一整串擊鍵輸入。
-  ///   - isRomaji:
-  ///   如果輸入的字串是諸如漢語拼音這樣的西文字母拼音的話，請啟用此選項。
+  /// </summary>
+  /// <param name="GivenSequence">傳入的 String
+  /// 內容，用以處理一整串擊鍵輸入。</param>
+  /// <param
+  /// name="IsRomaji">如果輸入的字串是諸如漢語拼音這樣的西文字母拼音的話，請啟用此選項。</param>
   public void ReceiveSequence(string GivenSequence = "",
                               bool IsRomaji = false) {
     Clear();
@@ -316,18 +342,23 @@ public struct Composer {
     }
   }
 
+  /// <summary>
   /// 處理一連串的按鍵輸入、且返回被處理之後的注音（陰平為空格）。
-  /// - Parameters:
-  ///   - givenSequence: 傳入的 String 內容，用以處理一整串擊鍵輸入。
+  /// </summary>
+  /// <param name="GivenSequence">傳入的 String
+  /// 內容，用以處理一整串擊鍵輸入。</param>
+  /// <returns>在處理該輸入順序後，注拼槽根據目前狀態生成的拼音/注音字串。</returns>
   public string CnvSequence(string GivenSequence = "") {
     ReceiveSequence(GivenSequence);
     return Value;
   }
 
-  /// 專門用來響應使用者摁下 BackSpace 按鍵時的行為。
-  /// 刪除順序：調、韻、介、聲。
-  ///
+  /// <summary>
+  /// 專門用來響應使用者摁下 BackSpace 按鍵時的行為。<br />
+  /// 刪除順序：調、韻、介、聲。<br />
+  /// <br />
   /// 基本上就是按順序從游標前方開始往後刪。
+  /// </summary>
   public void DoBackSpace() {
     if (Shared.ArrPinyinParsers.Contains(Parser) && RomajiBuffer.Length != 0) {
       if (!Intonation.IsEmpty) {
@@ -346,28 +377,33 @@ public struct Composer {
     }
   }
 
-  /// 用來檢測是否有調號的函數，預設情況下不判定聲調以外的內容的存無。
-  /// - Parameters:
-  ///   - withNothingElse: 追加判定「槽內是否僅有調號」。
+  /// <summary>
+  /// 用來檢測是否有調號的函式，預設情況下不判定聲調以外的內容的存無。
+  /// </summary>
+  /// <param name="WithNothingElse">追加判定「槽內是否僅有調號」。</param>
+  /// <returns>有則真，無則假。</returns>
   public bool HasToneMarker(bool WithNothingElse = false) =>
       WithNothingElse ? (!Intonation.IsEmpty && Vowel.IsEmpty &&
                          Semivowel.IsEmpty && Consonant.IsEmpty)
                       : !Intonation.IsEmpty;
 
-  // 設定該 Composer 處於何種鍵盤排列分析模式。
-  /// - Parameters:
-  ///   - arrange: 給該注拼槽指定注音排列。
+  /// <summary>
+  /// 設定該 Composer 處於何種鍵盤排列分析模式。
+  /// </summary>
+  /// <param name="Arrange">給該注拼槽指定注音排列。</param>
   public void EnsureParser(MandarinParser Arrange = 0) { Parser = Arrange; }
 
   // MARK: - Parser Processings
 
-  // 注拼槽對內處理用函數都在這一小節。
+  // 注拼槽對內處理用函式都在這一小節。
 
-  /// 根據目前的注音排列設定來翻譯傳入的 String 訊號。
-  ///
-  /// 倚天或許氏鍵盤的處理函數會將分配過程代為處理過，此時回傳結果為空字串。
-  /// - Parameters:
-  ///   - key: 傳入的 String 訊號。
+  /// <summary>
+  /// 根據目前的注音排列設定來翻譯傳入的 String 訊號。<br />
+  /// <br />
+  /// 倚天/許氏鍵盤/酷音大千二十六鍵的處理函式會代為處理分配過程，此時回傳結果可能為空字串。
+  /// </summary>
+  /// <param name="Key">傳入的 String 訊號。</param>
+  /// <returns></returns>
   string Translate(string Key) {
     switch (Parser) {
       case MandarinParser.OfDachen:
@@ -409,11 +445,13 @@ public struct Composer {
     return "";
   }
 
-  /// 倚天忘形注音排列比較麻煩，需要單獨處理。
-  ///
-  /// 回傳結果是空字串的話，不要緊，因為該函數內部已經處理過分配過程了。
-  /// - Parameters:
-  ///   - Key: 傳入的 string 訊號。
+  /// <summary>
+  /// 倚天忘形注音排列比較麻煩，需要單獨處理。<br />
+  /// <br />
+  /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
+  /// </summary>
+  /// <param name="Key">傳入的 string 訊號。</param>
+  /// <returns>尚無追加處理而直接傳回的結果，或者是空字串。</returns>
   string HandleETen26(string Key = "") {
     string StrReturn = (Shared.MapETen26StaticKeys.Keys.Contains(Key))
                            ? Shared.MapETen26StaticKeys[Key]
@@ -576,11 +614,13 @@ public struct Composer {
     return StrReturn;
   }
 
-  /// 許氏鍵盤與倚天忘形一樣同樣也比較麻煩，需要單獨處理。
-  ///
-  /// 回傳結果是空的話，不要緊，因為該函數內部已經處理過分配過程了。
-  /// - Parameters:
-  ///   - Key: 傳入的 string 訊號。
+  /// <summary>
+  /// 許氏鍵盤與倚天忘形一樣同樣也比較麻煩，需要單獨處理。<br />
+  /// <br />
+  /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
+  /// </summary>
+  /// <param name="Key">傳入的 string 訊號。</param>
+  /// <returns>尚無追加處理而直接傳回的結果，或者是空字串。</returns>
   string HandleHsu(string Key = "") {
     string StrReturn = (Shared.MapHsuStaticKeys.Keys.Contains(Key))
                            ? Shared.MapHsuStaticKeys[Key]
@@ -818,11 +858,13 @@ public struct Composer {
     return StrReturn;
   }
 
-  /// 大千忘形一樣同樣也比較麻煩，需要單獨處理。
-  ///
-  /// 回傳結果是空的話，不要緊，因為該函數內部已經處理過分配過程了。
-  /// - Parameters:
-  ///   - Key: 傳入的 string 訊號。
+  /// <summary>
+  /// 酷音大千二十六鍵一樣同樣也比較麻煩，需要單獨處理。<br />
+  /// <br />
+  /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
+  /// </summary>
+  /// <param name="Key">傳入的 string 訊號。</param>
+  /// <returns>尚無追加處理而直接傳回的結果，或者是空字串。</returns>
   string HandleDachen26(string Key = "") {
     string StrReturn = (Shared.MapDachenCP26StaticKeys.Keys.Contains(Key))
                            ? Shared.MapDachenCP26StaticKeys[Key]

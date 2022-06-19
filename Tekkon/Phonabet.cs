@@ -26,30 +26,42 @@ using System;
 using System.Linq;
 
 namespace Tekkon {
+/// <summary>
 /// 注音符號型別。本身與字串差不多，但卻只能被設定成一個注音符號字符。
 /// 然後會根據自身的 value 的內容值自動計算自身的 PhoneType 類型（聲介韻調假）。
 /// 如果遇到被設為多個字符、或者字符不對的情況的話，value 會被清空、PhoneType
 /// 會變成 null。 賦值時最好直接重新 init 且一直用 let 來初期化 Phonabet。 其實
 /// value 對外只讀，對內的話另有 valueStorage 代為存儲內容。這樣比較安全一些。
+/// </summary>
 public struct Phonabet {
   // =======================
   // MARK: Basic Static Constants.
   // -----------------------
 
+  /// <summary>
   /// 引擎僅接受這些記號作為聲母
+  /// </summary>
   public static string AllowedConsonants =>
       "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙ";
 
+  /// <summary>
   /// 引擎僅接受這些記號作為介母
+  /// </summary>
   public static string AllowedSemivowels => "ㄧㄨㄩ";
 
+  /// <summary>
   /// 引擎僅接受這些記號作為韻母
+  /// </summary>
   public static string AllowedVowels => "ㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ";
 
+  /// <summary>
   /// 引擎僅接受這些記號作為聲調
+  /// </summary>
   public static string AllowedIntonations => " ˊˇˋ˙";
 
+  /// <summary>
   /// 引擎僅接受這些記號作為注音（聲介韻調四個集合加起來）
+  /// </summary>
   public static string AllowedPhonabets => AllowedConsonants +
                                            AllowedSemivowels + AllowedVowels +
                                            AllowedIntonations;
@@ -62,7 +74,10 @@ public struct Phonabet {
   public string Value => ValueStorage;
   public bool IsEmpty => (ValueStorage == null) || (ValueStorage.Length == 0);
 
+  /// <summary>
   /// 初期化，會根據傳入的 input 字串參數來自動判定自身的 PhoneType 類型屬性值。
+  /// </summary>
+  /// <param name="Input">傳入的字串參數</param>
   public Phonabet(string Input = "") {
     if (Input.Length > 0) {
       if (AllowedPhonabets.Contains(Input.LastOrDefault())) {
@@ -72,22 +87,27 @@ public struct Phonabet {
     }
   }
 
+  /// <summary>
   /// 自我清空內容。
+  /// </summary>
   public void Clear() {
     ValueStorage = "";
     Type = PhoneType.Null;
   }
 
+  /// <summary>
   /// 自我變換資料值。
-  /// - Parameters:
-  ///   - strOf: 要取代的內容。
-  ///   - strWith: 要取代成的內容。
+  /// </summary>
+  /// <param name="StrOf">要取代的內容。</param>
+  /// <param name="StrWith">要取代成的內容。</param>
   public void SelfReplace(string StrOf, string StrWith) {
     ValueStorage = ValueStorage.Replace(StrOf, StrWith);
     EnsureType();
   }
 
-  /// 用來自動更新自身的屬性值的函數。
+  /// <summary>
+  /// 用來自動更新自身的屬性值的函式。
+  /// </summary>
   public void EnsureType() {
     if (AllowedConsonants.Contains(Value)) {
       Type = PhoneType.Consonant;
