@@ -44,7 +44,7 @@ public enum MandarinParser {
   OfETen26 = 3,
   OfHsu = 4,
   OfIBM = 5,
-  OfMiTAC = 6,
+  OfMiTac = 6,
   OfSeigyou = 7,
   OfFakeSeigyou = 8,
   OfHanyuPinyin = 100,

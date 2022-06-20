@@ -22,43 +22,38 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Tekkon {
-public class Shared {
+public struct Shared {
   // MARK: - Phonabet to Hanyu-Pinyin Conversion Processing
 
   /// <summary>
   /// 注音轉拼音，要求陰平必須是空格。
   /// </summary>
-  /// <param name="Target">傳入的 String 對象物件。</param>
+  /// <param name="target">傳入的 String 對象物件。</param>
   /// <returns>漢語拼音字串。</returns>
-  public static string CnvPhonaToHanyuPinyin(string Target) {
-    foreach ((string, string)Key in ArrPhonaToHanyuPinyin) {
-      Target = Target.Replace(Key.Item1, Key.Item2);
-    }
-    return Target;
+  public static string CnvPhonaToHanyuPinyin(string target) {
+    return ArrPhonaToHanyuPinyin.Aggregate(
+        target, (current, key) => current.Replace(key.Item1, key.Item2));
   }
 
   /// <summary>
   /// 漢語拼音數字標調式轉漢語拼音教科書格式，要求陰平必須是數字 1。
   /// </summary>
-  /// <param name="Target">傳入的 String 對象物件。</param>
+  /// <param name="target">傳入的 String 對象物件。</param>
   /// <returns>符合教科書排版規範的漢語拼音字串。</returns>
-  public static string CnvHanyuPinyinToTextbookStyle(string Target) {
-    foreach ((string,
-              string)Key in ArrHanyuPinyinTextbookStyleConversionTable) {
-      Target = Target.Replace(Key.Item1, Key.Item2);
-    }
-    return Target;
+  public static string CnvHanyuPinyinToTextbookStyle(string target) {
+    return ArrHanyuPinyinTextbookStyleConversionTable.Aggregate(
+        target, (current, key) => current.Replace(key.Item1, key.Item2));
   }
 
   /// <summary>
   /// 原始轉換對照表資料貯存專用佇列（數字標調格式）。<br />
   /// 排序很重要。先處理最長的，再處理短的。不然會出亂子。
   /// </summary>
-  public static readonly(string, string)[] ArrPhonaToHanyuPinyin = {
+  public readonly static (string, string)[] ArrPhonaToHanyuPinyin = {
     (" ", "1"),           ("ˊ", "2"),           ("ˇ", "3"),
     ("ˋ", "4"),           ("˙", "5"),           ("ㄅㄧㄝ", "bie"),
     ("ㄅㄧㄠ", "biao"),   ("ㄅㄧㄢ", "bian"),   ("ㄅㄧㄣ", "bin"),
@@ -214,7 +209,7 @@ public class Shared {
   /// 漢語拼音韻母轉換對照表資料貯存專用佇列。<br />
   /// 排序很重要。先處理最長的，再處理短的。不然會出亂子。
   /// </summary>
-  public static readonly(
+  public readonly static (
       string, string)[] ArrHanyuPinyinTextbookStyleConversionTable = {
     ("iang1", "iāng"), ("iang2", "iáng"), ("iang3", "iǎng"), ("iang4", "iàng"),
     ("iong1", "iōng"), ("iong2", "ióng"), ("iong3", "iǒng"), ("iong4", "iòng"),
@@ -263,20 +258,19 @@ public class Shared {
   /// 任何形式的拼音排列都會用到的陣列，用 Strings 反而省事一些。<br />
   /// 這裡同時兼容大千注音的調號數字，所以也將 6、7 號數字鍵放在允許範圍內。
   /// </summary>
-  public static readonly string MapArayuruPinyin =
-      "abcdefghijklmnopqrstuvwxyz1234567 ";
+  public const string MapArayuruPinyin = "abcdefghijklmnopqrstuvwxyz1234567 ";
 
   /// <summary>
   /// 任何拼音都會用到的聲調鍵陣列
   /// </summary>
-  public static readonly Dictionary<string, string> MapArayuruPinyinIntonation =
+  public readonly static Dictionary<string, string> MapArayuruPinyinIntonation =
       new() { ["1"] = " ", ["2"] = "ˊ", ["3"] = "ˇ", ["4"] = "ˋ",
               ["5"] = "˙", ["6"] = "ˊ", ["7"] = "˙", [" "] = " " };
 
   /// <summary>
   /// 漢語拼音排列專用處理陣列
   /// </summary>
-  public static readonly Dictionary<string, string> MapHanyuPinyin = new() {
+  public readonly static Dictionary<string, string> MapHanyuPinyin = new() {
     ["chuang"] = "ㄔㄨㄤ", ["shuang"] = "ㄕㄨㄤ", ["zhuang"] = "ㄓㄨㄤ",
     ["chang"] = "ㄔㄤ",    ["cheng"] = "ㄔㄥ",    ["chong"] = "ㄔㄨㄥ",
     ["chuai"] = "ㄔㄨㄞ",  ["chuan"] = "ㄔㄨㄢ",  ["guang"] = "ㄍㄨㄤ",
@@ -425,7 +419,7 @@ public class Shared {
   /// <summary>
   /// 國音二式排列專用處理陣列
   /// </summary>
-  public static readonly Dictionary<string, string> MapSecondaryPinyin = new() {
+  public readonly static Dictionary<string, string> MapSecondaryPinyin = new() {
     ["chuang"] = "ㄔㄨㄤ", ["shuang"] = "ㄕㄨㄤ", ["chiang"] = "ㄑㄧㄤ",
     ["chiung"] = "ㄑㄩㄥ", ["chiuan"] = "ㄑㄩㄢ", ["shiang"] = "ㄒㄧㄤ",
     ["shiung"] = "ㄒㄩㄥ", ["shiuan"] = "ㄒㄩㄢ", ["biang"] = "ㄅㄧㄤ",
@@ -572,7 +566,7 @@ public class Shared {
   /// <summary>
   /// 耶魯拼音排列專用處理陣列
   /// </summary>
-  public static readonly Dictionary<string, string> MapYalePinyin = new() {
+  public readonly static Dictionary<string, string> MapYalePinyin = new() {
     ["chwang"] = "ㄔㄨㄤ", ["shwang"] = "ㄕㄨㄤ", ["chyang"] = "ㄑㄧㄤ",
     ["chyung"] = "ㄑㄩㄥ", ["chywan"] = "ㄑㄩㄢ", ["byang"] = "ㄅㄧㄤ",
     ["dwang"] = "ㄉㄨㄤ",  ["jwang"] = "ㄓㄨㄤ",  ["syang"] = "ㄒㄧㄤ",
@@ -719,7 +713,7 @@ public class Shared {
   /// <summary>
   /// 華羅拼音排列專用處理陣列
   /// </summary>
-  public static readonly Dictionary<string, string> MapHualuoPinyin = new() {
+  public readonly static Dictionary<string, string> MapHualuoPinyin = new() {
     ["shuang"] = "ㄕㄨㄤ", ["jhuang"] = "ㄓㄨㄤ", ["chyueh"] = "ㄑㄩㄝ",
     ["chyuan"] = "ㄑㄩㄢ", ["chyong"] = "ㄑㄩㄥ", ["chiang"] = "ㄑㄧㄤ",
     ["chuang"] = "ㄔㄨㄤ", ["biang"] = "ㄅㄧㄤ",  ["duang"] = "ㄉㄨㄤ",
@@ -866,7 +860,7 @@ public class Shared {
   /// <summary>
   /// 通用拼音排列專用處理陣列
   /// </summary>
-  public static readonly Dictionary<string, string> MapUniversalPinyin = new() {
+  public readonly static Dictionary<string, string> MapUniversalPinyin = new() {
     ["shuang"] = "ㄕㄨㄤ", ["jhuang"] = "ㄓㄨㄤ", ["chuang"] = "ㄔㄨㄤ",
     ["biang"] = "ㄅㄧㄤ",  ["duang"] = "ㄉㄨㄤ",  ["cyuan"] = "ㄑㄩㄢ",
     ["cyong"] = "ㄑㄩㄥ",  ["ciang"] = "ㄑㄧㄤ",  ["kyang"] = "ㄎㄧㄤ",
@@ -1018,7 +1012,7 @@ public class Shared {
   /// 佈局來完成對諸如倚天傳統等其它注音鍵盤排列的支援。
   /// 如果要將鐵恨模組拿給別的平台的輸入法使用的話，恐怕需要針對這些注音鍵盤排列各自新增專用陣列才可以。
   /// </summary>
-  public static readonly Dictionary<string, string> MapQwertyDachen =
+  public readonly static Dictionary<string, string> MapQwertyDachen =
       new() { ["0"] = "ㄢ", ["1"] = "ㄅ", ["2"] = "ㄉ", ["3"] = "ˇ",
               ["4"] = "ˋ",  ["5"] = "ㄓ", ["6"] = "ˊ",  ["7"] = "˙",
               ["8"] = "ㄚ", ["9"] = "ㄞ", ["-"] = "ㄦ", [","] = "ㄝ",
@@ -1036,7 +1030,7 @@ public class Shared {
   /// 在這裡將二十六個字母寫全，也只是為了方便做 validity check。<br />
   /// 這裡提前對複音按鍵做處理，然後再用程式判斷介母類型、據此判斷是否需要做複音切換。
   /// </summary>
-  public static readonly Dictionary<string, string> MapDachenCP26StaticKeys =
+  public readonly static Dictionary<string, string> MapDachenCp26StaticKeys =
       new() { ["a"] = "ㄇ", ["b"] = "ㄖ", ["c"] = "ㄏ", ["d"] = "ㄎ",
               ["e"] = "ㄍ", ["f"] = "ㄑ", ["g"] = "ㄕ", ["h"] = "ㄘ",
               ["i"] = "ㄛ", ["j"] = "ㄨ", ["k"] = "ㄜ", [""] = "ㄠ",
@@ -1050,7 +1044,7 @@ public class Shared {
   /// 在這裡將二十六個字母寫全，也只是為了方便做 validity check。<br />
   /// 這裡提前對複音按鍵做處理，然後再用程式判斷介母類型、據此判斷是否需要做複音切換。
   /// </summary>
-  public static readonly Dictionary<string, string> MapHsuStaticKeys =
+  public readonly static Dictionary<string, string> MapHsuStaticKeys =
       new() { ["a"] = "ㄘ", ["b"] = "ㄅ", ["c"] = "ㄒ", ["d"] = "ㄉ",
               ["e"] = "ㄧ", ["f"] = "ㄈ", ["g"] = "ㄍ", ["h"] = "ㄏ",
               ["i"] = "ㄞ", ["j"] = "ㄐ", ["k"] = "ㄎ", [""] = "ㄌ",
@@ -1064,7 +1058,7 @@ public class Shared {
   /// 在這裡將二十六個字母寫全，也只是為了方便做 validity check。<br />
   /// 這裡提前對複音按鍵做處理，然後再用程式判斷介母類型、據此判斷是否需要做複音切換。
   /// </summary>
-  public static readonly Dictionary<string, string> MapETen26StaticKeys =
+  public readonly static Dictionary<string, string> MapETen26StaticKeys =
       new() { ["a"] = "ㄚ", ["b"] = "ㄅ", ["c"] = "ㄕ", ["d"] = "ㄉ",
               ["e"] = "ㄧ", ["f"] = "ㄈ", ["g"] = "ㄓ", ["h"] = "ㄏ",
               ["i"] = "ㄞ", ["j"] = "ㄖ", ["k"] = "ㄎ", [""] = "ㄌ",
@@ -1076,7 +1070,7 @@ public class Shared {
   /// <summary>
   /// 倚天傳統排列專用處理陣列。
   /// </summary>
-  public static readonly Dictionary<string, string> MapQwertyETenTraditional =
+  public readonly static Dictionary<string, string> MapQwertyETenTraditional =
       new() { ["'"] = "ㄘ", [","] = "ㄓ", ["-"] = "ㄥ", ["."] = "ㄔ",
               ["/"] = "ㄕ", ["0"] = "ㄤ", ["1"] = "˙",  ["2"] = "ˊ",
               ["3"] = "ˇ",  ["4"] = "ˋ",  ["7"] = "ㄑ", ["8"] = "ㄢ",
@@ -1092,7 +1086,7 @@ public class Shared {
   /// <summary>
   /// IBM排列專用處理陣列。
   /// </summary>
-  public static readonly Dictionary<string, string> MapQwertyIBM =
+  public readonly static Dictionary<string, string> MapQwertyIBM =
       new() { [","] = "ˇ",  ["-"] = "ㄏ", ["."] = "ˋ",  ["/"] = "˙",
               ["0"] = "ㄎ", ["1"] = "ㄅ", ["2"] = "ㄆ", ["3"] = "ㄇ",
               ["4"] = "ㄈ", ["5"] = "ㄉ", ["6"] = "ㄊ", ["7"] = "ㄋ",
@@ -1108,7 +1102,7 @@ public class Shared {
   /// <summary>
   /// 精業排列專用處理陣列。
   /// </summary>
-  public static readonly Dictionary<string, string> MapSeigyou =
+  public readonly static Dictionary<string, string> MapSeigyou =
       new() { ["a"] = "ˇ",  ["b"] = "ㄒ", ["c"] = "ㄌ", ["d"] = "ㄋ",
               ["e"] = "ㄊ", ["f"] = "ㄎ", ["g"] = "ㄑ", ["h"] = "ㄕ",
               ["i"] = "ㄛ", ["j"] = "ㄘ", ["k"] = "ㄜ", [""] = "ㄠ",
@@ -1124,7 +1118,7 @@ public class Shared {
   /// <summary>
   /// 偽精業排列專用處理陣列。
   /// </summary>
-  public static readonly Dictionary<string, string> MapFakeSeigyou =
+  public readonly static Dictionary<string, string> MapFakeSeigyou =
       new() { ["a"] = "ˇ",  ["b"] = "ㄒ", ["c"] = "ㄌ", ["d"] = "ㄋ",
               ["e"] = "ㄊ", ["f"] = "ㄎ", ["g"] = "ㄑ", ["h"] = "ㄕ",
               ["i"] = "ㄛ", ["j"] = "ㄘ", ["k"] = "ㄜ", [""] = "ㄠ",
@@ -1140,7 +1134,7 @@ public class Shared {
   /// <summary>
   /// 神通排列專用處理陣列。
   /// </summary>
-  public static readonly Dictionary<string, string> MapQwertyMiTAC =
+  public readonly static Dictionary<string, string> MapQwertyMiTac =
       new() { [","] = "ㄓ", ["-"] = "ㄦ", ["."] = "ㄔ", ["/"] = "ㄕ",
               ["0"] = "ㄥ", ["1"] = "˙",  ["2"] = "ˊ",  ["3"] = "ˇ",
               ["4"] = "ˋ",  ["5"] = "ㄞ", ["6"] = "ㄠ", ["7"] = "ㄢ",
@@ -1156,7 +1150,7 @@ public class Shared {
   /// <summary>
   /// 用以判定「是否是拼音鍵盤佈局」的集合。
   /// </summary>
-  public static MandarinParser[] ArrPinyinParsers = {
+  public readonly static MandarinParser[] ArrPinyinParsers = {
     MandarinParser.OfHanyuPinyin, MandarinParser.OfSecondaryPinyin,
     MandarinParser.OfYalePinyin, MandarinParser.OfHualuoPinyin,
     MandarinParser.OfUniversalPinyin

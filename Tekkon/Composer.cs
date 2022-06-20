@@ -60,49 +60,59 @@ public struct Composer {
   /// 與 value 類似，這個函式就是用來決定輸入法組字區內顯示的注音/拼音內容，
   /// 但可以指定是否輸出教科書格式（拼音的調號在字母上方、注音的輕聲寫在左側）。
   /// </summary>
-  /// <param name="IsHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
+  /// <param name="isHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
   /// <param
-  /// name="IsTextBookStyle">是否將輸出的注音/拼音結果轉成教科書排版格式。</param>
+  /// name="isTextBookStyle">是否將輸出的注音/拼音結果轉成教科書排版格式。</param>
   /// <returns>拼音/注音讀音字串，依照指定的格式。</returns>
-  public string GetComposition(bool IsHanyuPinyin = false,
-                               bool IsTextBookStyle = false) {
-    switch (IsHanyuPinyin) {
+  public string GetComposition(bool isHanyuPinyin = false,
+                               bool isTextBookStyle = false) {
+    switch (isHanyuPinyin) {
       case false:  // 注音輸出的場合
-        string ValReturnZhuyin = Value.Replace(" ", "");
-        if (IsTextBookStyle && ValReturnZhuyin.Contains("˙")) {
-          ValReturnZhuyin = ValReturnZhuyin.Remove(ValReturnZhuyin.Length - 1);
-          ValReturnZhuyin = "˙" + ValReturnZhuyin;
-        }
-        return ValReturnZhuyin;
+        string valReturnZhuyin = Value.Replace(" ", "");
+        if (!isTextBookStyle || !valReturnZhuyin.Contains('˙'))
+          return valReturnZhuyin;
+        valReturnZhuyin = valReturnZhuyin.Remove(valReturnZhuyin.Length - 1);
+        valReturnZhuyin = "˙" + valReturnZhuyin;
+        return valReturnZhuyin;
       case true:  // 拼音輸出的場合
-        string ValReturnPinyin = Shared.CnvPhonaToHanyuPinyin(Value);
-        if (IsTextBookStyle)
-          ValReturnPinyin =
-              Shared.CnvHanyuPinyinToTextbookStyle(ValReturnPinyin);
-        return ValReturnPinyin;
+        string valReturnPinyin = Shared.CnvPhonaToHanyuPinyin(Value);
+        if (isTextBookStyle)
+          valReturnPinyin =
+              Shared.CnvHanyuPinyinToTextbookStyle(valReturnPinyin);
+        return valReturnPinyin;
     }
   }
 
   /// <summary>
   /// 該函式僅用來獲取給 macOS InputMethod Kit 的內文組字區使用的顯示字串。
   /// </summary>
-  /// <param name="IsHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
+  /// <param name="isHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
   /// <returns>拼音/注音讀音字串，依照適合在輸入法組字區內顯示出來的格式。</returns>
-  public string GetInlineCompositionForIMK(bool IsHanyuPinyin = false) {
+  public string GetInlineCompositionForImk(bool isHanyuPinyin = false) {
     switch (Parser) {
       case MandarinParser.OfHanyuPinyin:
       case MandarinParser.OfSecondaryPinyin:
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
-        var ToneReturned = "";
-        ToneReturned =
-            Intonation.Value switch { " " => "1", "ˊ" => "2", "ˇ" => "3",
-                                      "ˋ" => "4", "˙" => "5",
-                                      _ => "" };
-        return RomajiBuffer + ToneReturned;
+        string toneReturned = "";
+        toneReturned =
+            Intonation.Value switch
+            { " " => "1", "ˊ" => "2", "ˇ" => "3",
+              "ˋ" => "4", "˙" => "5",
+              _ => "" };
+        return RomajiBuffer + toneReturned;
+      case MandarinParser.OfDachen:
+      case MandarinParser.OfDachen26:
+      case MandarinParser.OfETen:
+      case MandarinParser.OfETen26:
+      case MandarinParser.OfHsu:
+      case MandarinParser.OfIBM:
+      case MandarinParser.OfMiTac:
+      case MandarinParser.OfSeigyou:
+      case MandarinParser.OfFakeSeigyou:
       default:
-        return GetComposition(IsHanyuPinyin);
+        return GetComposition(isHanyuPinyin);
     }
   }
 
@@ -117,10 +127,19 @@ public struct Composer {
         case MandarinParser.OfYalePinyin:
         case MandarinParser.OfHualuoPinyin:
         case MandarinParser.OfUniversalPinyin:
-          return (Intonation.IsEmpty) && (RomajiBuffer == "");
+          return Intonation.IsEmpty && RomajiBuffer == "";
+        case MandarinParser.OfDachen:
+        case MandarinParser.OfDachen26:
+        case MandarinParser.OfETen:
+        case MandarinParser.OfETen26:
+        case MandarinParser.OfHsu:
+        case MandarinParser.OfIBM:
+        case MandarinParser.OfMiTac:
+        case MandarinParser.OfSeigyou:
+        case MandarinParser.OfFakeSeigyou:
         default:
-          return (Consonant.Value == "") && (Semivowel.Value == "") &&
-                 (Vowel.Value == "") && (Intonation.Value == "");
+          return Consonant.Value == "" && Semivowel.Value == "" &&
+                 Vowel.Value == "" && Intonation.Value == "";
       }
     }
   }
@@ -138,11 +157,11 @@ public struct Composer {
   /// 還可以在初期化時藉由 @arrange
   /// 參數來指定注音排列（預設為「.ofDachen」大千佈局）。
   /// </summary>
-  /// <param name="Input">傳入的 String 內容，用以處理單個字符。</param>
-  /// <param name="Arrange">要使用的注音排列。</param>
-  public Composer(string Input = "", MandarinParser Arrange = 0) {
-    EnsureParser(Arrange);
-    ReceiveKey(Input);
+  /// <param name="input">傳入的 String 內容，用以處理單個字符。</param>
+  /// <param name="arrange">要使用的注音排列。</param>
+  public Composer(string input = "", MandarinParser arrange = 0) {
+    EnsureParser(arrange);
+    ReceiveKey(input);
   }
 
   /// <summary>
@@ -165,40 +184,41 @@ public struct Composer {
   /// <br />
   /// 注意：回傳結果會受到當前注音排列 parser 屬性的影響。
   /// </summary>
-  /// <param name="InputCharCode">傳入的 UniChar 內容。</param>
+  /// <param name="inputCharCode">傳入的 UniChar 內容。</param>
   /// <returns>傳入的字符是否合規。</returns>
-  public bool InputValidityCheck(int InputCharCode) {
-    char InputKey = (char)Math.Abs(InputCharCode);
-    if (InputKey >= 128) return false;
+  public bool InputValidityCheck(int inputCharCode) {
+    char inputKey = (char)Math.Abs(inputCharCode);
+    if (inputKey >= 128) return false;
     switch (Parser) {
       case MandarinParser.OfDachen:
-        return Shared.MapQwertyDachen.Keys.Contains(InputKey.ToString());
+        return Shared.MapQwertyDachen.ContainsKey(inputKey.ToString());
       case MandarinParser.OfDachen26:
-        return Shared.MapDachenCP26StaticKeys.Keys.Contains(
-            InputKey.ToString());
+        return Shared.MapDachenCp26StaticKeys.ContainsKey(
+            inputKey.ToString());
       case MandarinParser.OfETen:
-        return Shared.MapQwertyETenTraditional.Keys.Contains(
-            InputKey.ToString());
+        return Shared.MapQwertyETenTraditional.ContainsKey(
+            inputKey.ToString());
       case MandarinParser.OfHsu:
-        return Shared.MapHsuStaticKeys.Keys.Contains(InputKey.ToString());
+        return Shared.MapHsuStaticKeys.ContainsKey(inputKey.ToString());
       case MandarinParser.OfETen26:
-        return Shared.MapETen26StaticKeys.Keys.Contains(InputKey.ToString());
+        return Shared.MapETen26StaticKeys.ContainsKey(inputKey.ToString());
       case MandarinParser.OfIBM:
-        return Shared.MapQwertyIBM.Keys.Contains(InputKey.ToString());
-      case MandarinParser.OfMiTAC:
-        return Shared.MapQwertyMiTAC.Keys.Contains(InputKey.ToString());
+        return Shared.MapQwertyIBM.ContainsKey(inputKey.ToString());
+      case MandarinParser.OfMiTac:
+        return Shared.MapQwertyMiTac.ContainsKey(inputKey.ToString());
       case MandarinParser.OfSeigyou:
-        return Shared.MapSeigyou.Keys.Contains(InputKey.ToString());
+        return Shared.MapSeigyou.ContainsKey(inputKey.ToString());
       case MandarinParser.OfFakeSeigyou:
-        return Shared.MapFakeSeigyou.Keys.Contains(InputKey.ToString());
+        return Shared.MapFakeSeigyou.ContainsKey(inputKey.ToString());
       case MandarinParser.OfHanyuPinyin:
       case MandarinParser.OfSecondaryPinyin:
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
-        return Shared.MapArayuruPinyin.Contains(InputKey);
+        return Shared.MapArayuruPinyin.Contains(inputKey);
+      default:
+        return false;
     }
-    return false;
   }
 
   /// <summary>
@@ -207,30 +227,39 @@ public struct Composer {
   /// <br />
   /// 如果是諸如複合型注音排列的話，翻譯結果有可能為空，但翻譯過程已經處理好聲介韻調分配了。
   /// </summary>
-  /// <param name="Input">傳入的 String 內容。</param>
-  public void ReceiveKey(string Input) {
+  /// <param name="input">傳入的 String 內容。</param>
+  public void ReceiveKey(string input) {
     switch (Parser) {
       case MandarinParser.OfHanyuPinyin:
       case MandarinParser.OfSecondaryPinyin:
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
-        if (Shared.MapArayuruPinyinIntonation.Keys.Contains(Input)) {
-          string TheTone = Shared.MapArayuruPinyinIntonation[Input];
-          Intonation = new(TheTone);
+        if (Shared.MapArayuruPinyinIntonation.ContainsKey(input)) {
+          string theTone = Shared.MapArayuruPinyinIntonation[input];
+          Intonation = new(theTone);
         } else {
           // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
           // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
           if (RomajiBuffer.Length > 5) {
             RomajiBuffer = RomajiBuffer.Skip(1).ToString();
           }
-          string RomajiBufferBackup = RomajiBuffer + Input;
-          ReceiveSequence(RomajiBufferBackup, true);
-          RomajiBuffer = RomajiBufferBackup;
+          string romajiBufferBackup = RomajiBuffer + input;
+          ReceiveSequence(romajiBufferBackup, true);
+          RomajiBuffer = romajiBufferBackup;
         }
         break;
+      case MandarinParser.OfDachen:
+      case MandarinParser.OfDachen26:
+      case MandarinParser.OfETen:
+      case MandarinParser.OfETen26:
+      case MandarinParser.OfHsu:
+      case MandarinParser.OfIBM:
+      case MandarinParser.OfMiTac:
+      case MandarinParser.OfSeigyou:
+      case MandarinParser.OfFakeSeigyou:
       default:
-        ReceiveKeyFromPhonabet(Translate(Input));
+        ReceiveKeyFromPhonabet(Translate(input));
         break;
     }
   }
@@ -241,30 +270,31 @@ public struct Composer {
   /// 再交給某個同名異參的函式來處理而已。<br /> <br />
   /// 如果是諸如複合型注音排列的話，翻譯結果有可能為空，但翻譯過程已經處理好聲介韻調分配了。
   /// </summary>
-  /// <param name="InputChar">傳入的 char 內容，格式為 int。</param>
-  public void ReceiveKey(int InputChar) =>
-      ReceiveKey(((char)Math.Abs(InputChar)).ToString());
+  /// <param name="inputChar">傳入的 char 內容，格式為 int。</param>
+  public void ReceiveKey(int inputChar) =>
+      ReceiveKey(((char)Math.Abs(inputChar)).ToString());
 
   /// <summary>
   /// 接受傳入的按鍵訊號時的處理，處理對象為單個注音符號。
   /// 主要就是將注音符號拆分辨識且分配到正確的貯存位置而已。
   /// </summary>
-  /// <param name="Phonabet">傳入的單個注音符號字串。</param>
-  public void ReceiveKeyFromPhonabet(string Phonabet = "") {
-    Phonabet ThePhone = new(Phonabet);
-    switch (ThePhone.Type) {
+  /// <param name="phonabet">傳入的單個注音符號字串。</param>
+  public void ReceiveKeyFromPhonabet(string phonabet = "") {
+    Phonabet thePhone = new(phonabet);
+    switch (thePhone.Type) {
       case PhoneType.Consonant:
-        Consonant = ThePhone;
+        Consonant = thePhone;
         break;
       case PhoneType.Semivowel:
-        Semivowel = ThePhone;
+        Semivowel = thePhone;
         break;
       case PhoneType.Vowel:
-        Vowel = ThePhone;
+        Vowel = thePhone;
         break;
       case PhoneType.Intonation:
-        Intonation = ThePhone;
+        Intonation = thePhone;
         break;
+      case PhoneType.Null:
       default:
         break;
     }
@@ -273,70 +303,79 @@ public struct Composer {
   /// <summary>
   /// 處理一連串的按鍵輸入。
   /// </summary>
-  /// <param name="GivenSequence">傳入的 String
+  /// <param name="givenSequence">傳入的 String
   /// 內容，用以處理一整串擊鍵輸入。</param>
   /// <param
-  /// name="IsRomaji">如果輸入的字串是諸如漢語拼音這樣的西文字母拼音的話，請啟用此選項。</param>
-  public void ReceiveSequence(string GivenSequence = "",
-                              bool IsRomaji = false) {
+  /// name="isRomaji">如果輸入的字串是諸如漢語拼音這樣的西文字母拼音的話，請啟用此選項。</param>
+  public void ReceiveSequence(string givenSequence = "",
+                              bool isRomaji = false) {
     Clear();
-    if (!IsRomaji) {
-      foreach (char Key in GivenSequence) {
-        ReceiveKey(Key);
+    if (!isRomaji) {
+      foreach (char key in givenSequence) {
+        ReceiveKey(key);
       }
     } else {
       switch (Parser) {
         case MandarinParser.OfHanyuPinyin:
-          string DictResult1 = "";
-          if (Shared.MapHanyuPinyin.Keys.Contains(GivenSequence))
-            DictResult1 = Shared.MapHanyuPinyin[GivenSequence];
-          if (DictResult1 != "") {
-            foreach (char Phonabet in DictResult1) {
-              ReceiveKeyFromPhonabet(Phonabet.ToString());
+          string dictResult1 = "";
+          if (Shared.MapHanyuPinyin.ContainsKey(givenSequence))
+            dictResult1 = Shared.MapHanyuPinyin[givenSequence];
+          if (dictResult1 != "") {
+            foreach (char phonabet in dictResult1) {
+              ReceiveKeyFromPhonabet(phonabet.ToString());
             }
           }
           break;
         case MandarinParser.OfSecondaryPinyin:
-          string DictResult2 = "";
-          if (Shared.MapSecondaryPinyin.Keys.Contains(GivenSequence))
-            DictResult2 = Shared.MapSecondaryPinyin[GivenSequence];
-          if (DictResult2 != "") {
-            foreach (char Phonabet in DictResult2) {
-              ReceiveKeyFromPhonabet(Phonabet.ToString());
+          string dictResult2 = "";
+          if (Shared.MapSecondaryPinyin.ContainsKey(givenSequence))
+            dictResult2 = Shared.MapSecondaryPinyin[givenSequence];
+          if (dictResult2 != "") {
+            foreach (char phonabet in dictResult2) {
+              ReceiveKeyFromPhonabet(phonabet.ToString());
             }
           }
           break;
         case MandarinParser.OfYalePinyin:
-          string DictResult3 = "";
-          if (Shared.MapYalePinyin.Keys.Contains(GivenSequence))
-            DictResult3 = Shared.MapYalePinyin[GivenSequence];
-          if (DictResult3 != "") {
-            foreach (char Phonabet in DictResult3) {
-              ReceiveKeyFromPhonabet(Phonabet.ToString());
+          string dictResult3 = "";
+          if (Shared.MapYalePinyin.ContainsKey(givenSequence))
+            dictResult3 = Shared.MapYalePinyin[givenSequence];
+          if (dictResult3 != "") {
+            foreach (char phonabet in dictResult3) {
+              ReceiveKeyFromPhonabet(phonabet.ToString());
             }
           }
           break;
         case MandarinParser.OfHualuoPinyin:
-          string DictResult4 = "";
-          if (Shared.MapHualuoPinyin.Keys.Contains(GivenSequence))
-            DictResult4 = Shared.MapHualuoPinyin[GivenSequence];
-          if (DictResult4 != "") {
-            foreach (char Phonabet in DictResult4) {
-              ReceiveKeyFromPhonabet(Phonabet.ToString());
+          string dictResult4 = "";
+          if (Shared.MapHualuoPinyin.ContainsKey(givenSequence))
+            dictResult4 = Shared.MapHualuoPinyin[givenSequence];
+          if (dictResult4 != "") {
+            foreach (char phonabet in dictResult4) {
+              ReceiveKeyFromPhonabet(phonabet.ToString());
             }
           }
           break;
         case MandarinParser.OfUniversalPinyin:
-          string DictResult5 = "";
-          if (Shared.MapUniversalPinyin.Keys.Contains(GivenSequence))
-            DictResult5 = Shared.MapUniversalPinyin[GivenSequence];
-          if (DictResult5 != "") {
-            foreach (char Phonabet in DictResult5) {
-              ReceiveKeyFromPhonabet(Phonabet.ToString());
+          string dictResult5 = "";
+          if (Shared.MapUniversalPinyin.ContainsKey(givenSequence))
+            dictResult5 = Shared.MapUniversalPinyin[givenSequence];
+          if (dictResult5 != "") {
+            foreach (char phonabet in dictResult5) {
+              ReceiveKeyFromPhonabet(phonabet.ToString());
             }
           }
           break;
-        default:
+        case MandarinParser.OfDachen:
+        case MandarinParser.OfDachen26:
+        case MandarinParser.OfETen:
+        case MandarinParser.OfETen26:
+        case MandarinParser.OfHsu:
+        case MandarinParser.OfIBM:
+        case MandarinParser.OfMiTac:
+        case MandarinParser.OfSeigyou:
+        case MandarinParser.OfFakeSeigyou:
+        default:          
           break;
       }
     }
@@ -345,11 +384,11 @@ public struct Composer {
   /// <summary>
   /// 處理一連串的按鍵輸入、且返回被處理之後的注音（陰平為空格）。
   /// </summary>
-  /// <param name="GivenSequence">傳入的 String
+  /// <param name="givenSequence">傳入的 String
   /// 內容，用以處理一整串擊鍵輸入。</param>
   /// <returns>在處理該輸入順序後，注拼槽根據目前狀態生成的拼音/注音字串。</returns>
-  public string CnvSequence(string GivenSequence = "") {
-    ReceiveSequence(GivenSequence);
+  public string CnvSequence(string givenSequence = "") {
+    ReceiveSequence(givenSequence);
     return Value;
   }
 
@@ -380,18 +419,18 @@ public struct Composer {
   /// <summary>
   /// 用來檢測是否有調號的函式，預設情況下不判定聲調以外的內容的存無。
   /// </summary>
-  /// <param name="WithNothingElse">追加判定「槽內是否僅有調號」。</param>
+  /// <param name="withNothingElse">追加判定「槽內是否僅有調號」。</param>
   /// <returns>有則真，無則假。</returns>
-  public bool HasToneMarker(bool WithNothingElse = false) =>
-      WithNothingElse ? (!Intonation.IsEmpty && Vowel.IsEmpty &&
-                         Semivowel.IsEmpty && Consonant.IsEmpty)
+  public bool HasToneMarker(bool withNothingElse = false) =>
+      withNothingElse ? !Intonation.IsEmpty && Vowel.IsEmpty
+                            && Semivowel.IsEmpty && Consonant.IsEmpty
                       : !Intonation.IsEmpty;
 
   /// <summary>
   /// 設定該 Composer 處於何種鍵盤排列分析模式。
   /// </summary>
-  /// <param name="Arrange">給該注拼槽指定注音排列。</param>
-  public void EnsureParser(MandarinParser Arrange = 0) { Parser = Arrange; }
+  /// <param name="arrange">給該注拼槽指定注音排列。</param>
+  public void EnsureParser(MandarinParser arrange = 0) { Parser = arrange; }
 
   // MARK: - Parser Processings
 
@@ -402,44 +441,44 @@ public struct Composer {
   /// <br />
   /// 倚天/許氏鍵盤/酷音大千二十六鍵的處理函式會代為處理分配過程，此時回傳結果可能為空字串。
   /// </summary>
-  /// <param name="Key">傳入的 String 訊號。</param>
+  /// <param name="key">傳入的 String 訊號。</param>
   /// <returns></returns>
-  string Translate(string Key) {
+  private string Translate(string key) {
     switch (Parser) {
       case MandarinParser.OfDachen:
-        return (Shared.MapQwertyDachen.Keys.Contains(Key))
-                   ? Shared.MapQwertyDachen[Key]
+        return Shared.MapQwertyDachen.ContainsKey(key)
+                   ? Shared.MapQwertyDachen[key]
                    : "";
       case MandarinParser.OfDachen26:
-        return HandleDachen26(Key);
+        return HandleDachen26(key);
       case MandarinParser.OfETen:
-        return (Shared.MapQwertyETenTraditional.Keys.Contains(Key))
-                   ? Shared.MapQwertyETenTraditional[Key]
+        return Shared.MapQwertyETenTraditional.ContainsKey(key)
+                   ? Shared.MapQwertyETenTraditional[key]
                    : "";
       case MandarinParser.OfHsu:
-        return HandleHsu(Key);
+        return HandleHsu(key);
       case MandarinParser.OfETen26:
-        return HandleETen26(Key);
+        return HandleETen26(key);
       case MandarinParser.OfIBM:
-        return (Shared.MapQwertyIBM.Keys.Contains(Key))
-                   ? Shared.MapQwertyIBM[Key]
-                   : "";
-      case MandarinParser.OfMiTAC:
-        return (Shared.MapQwertyMiTAC.Keys.Contains(Key))
-                   ? Shared.MapQwertyMiTAC[Key]
+        return Shared.MapQwertyIBM.ContainsKey(key) ? Shared.MapQwertyIBM[key]
+                                                      : "";
+      case MandarinParser.OfMiTac:
+        return Shared.MapQwertyMiTac.ContainsKey(key)
+                   ? Shared.MapQwertyMiTac[key]
                    : "";
       case MandarinParser.OfSeigyou:
-        return (Shared.MapSeigyou.Keys.Contains(Key)) ? Shared.MapSeigyou[Key]
-                                                      : "";
+        return Shared.MapSeigyou.ContainsKey(key) ? Shared.MapSeigyou[key]
+                                                    : "";
       case MandarinParser.OfFakeSeigyou:
-        return (Shared.MapFakeSeigyou.Keys.Contains(Key))
-                   ? Shared.MapFakeSeigyou[Key]
+        return Shared.MapFakeSeigyou.ContainsKey(key)
+                   ? Shared.MapFakeSeigyou[key]
                    : "";
       case MandarinParser.OfHanyuPinyin:
       case MandarinParser.OfSecondaryPinyin:
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
+      default:
         break;
     }
     return "";
@@ -450,15 +489,15 @@ public struct Composer {
   /// <br />
   /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
   /// </summary>
-  /// <param name="Key">傳入的 string 訊號。</param>
+  /// <param name="key">傳入的 string 訊號。</param>
   /// <returns>尚無追加處理而直接傳回的結果，或者是空字串。</returns>
-  string HandleETen26(string Key = "") {
-    string StrReturn = (Shared.MapETen26StaticKeys.Keys.Contains(Key))
-                           ? Shared.MapETen26StaticKeys[Key]
+  private string HandleETen26(string key = "") {
+    string strReturn = Shared.MapETen26StaticKeys.ContainsKey(key)
+                           ? Shared.MapETen26StaticKeys[key]
                            : "";
-    Phonabet IncomingPhonabet = new(StrReturn);
+    Phonabet incomingPhonabet = new(strReturn);
 
-    switch (Key) {
+    switch (key) {
       case "d":
         if (!IsPronouncable)
           Consonant = new("ㄉ");
@@ -528,73 +567,45 @@ public struct Composer {
           Vowel = new("ㄝ");
         break;
       case "p":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄆ");
-        else if (Consonant.IsEmpty && Semivowel.Value == "ㄧ")
-          Vowel = new("ㄡ");
-        else if (Consonant.IsEmpty)
-          Vowel = new("ㄆ");
-        else
-          Vowel = new("ㄡ");
+        switch (Consonant.IsEmpty) {
+          case true when Semivowel.IsEmpty:
+            Consonant = new("ㄆ");
+            break;
+          case true when Semivowel.Value == "ㄧ":
+            Vowel = new("ㄡ");
+            break;
+          case true:
+            Vowel = new("ㄆ");
+            break;
+          default:
+            Vowel = new("ㄡ");
+            break;
+        }
         break;
-      default:
-        break;
-    };
+    }
 
     // 處理「一個按鍵對應兩個聲母」的情形。
-    if (!Consonant.IsEmpty && IncomingPhonabet.Type == PhoneType.Semivowel) {
-      switch (Consonant.Value) {
-        case "ㄍ":
-          switch (IncomingPhonabet.Value) {
-            case "ㄧ":
-              Consonant = new("ㄑ");
-              break;  // ㄑㄧ
-            case "ㄨ":
-              Consonant = new("ㄍ");
-              break;  // ㄍㄨ
-            case "ㄩ":
-              Consonant = new("ㄑ");
-              break;  // ㄑㄩ
-            default:
-              break;
-          };
-          break;
-        case "ㄓ":
-          switch (IncomingPhonabet.Value) {
-            case "ㄧ":
-              Consonant = new("ㄐ");
-              break;  // ㄐㄧ
-            case "ㄨ":
-              Consonant = new("ㄓ");
-              break;  // ㄓㄨ
-            case "ㄩ":
-              Consonant = new("ㄐ");
-              break;  // ㄐㄩ
-            default:
-              break;
-          };
-          break;
-        case "ㄕ":
-          switch (IncomingPhonabet.Value) {
-            case "ㄧ":
-              Consonant = new("ㄒ");
-              break;  // ㄒㄧ
-            case "ㄨ":
-              Consonant = new("ㄕ");
-              break;  // ㄕㄨ
-            case "ㄩ":
-              Consonant = new("ㄒ");
-              break;  // ㄒㄩ
-            default:
-              break;
-          };
-          break;
-        default:
-          break;
-      };
-    };
+    if (!Consonant.IsEmpty && incomingPhonabet.Type == PhoneType.Semivowel) {
+      Consonant = Consonant.Value switch
+      { "ㄍ" => incomingPhonabet.Value switch
+        { "ㄧ" => new("ㄑ"),
+          "ㄨ" => new("ㄍ"),
+          "ㄩ" => new("ㄑ"),
+          _ => Consonant },
+        "ㄓ" => incomingPhonabet.Value switch
+        { "ㄧ" => new("ㄐ"),
+          "ㄨ" => new("ㄓ"),
+          "ㄩ" => new("ㄐ"),
+          _ => Consonant },
+        "ㄕ" => incomingPhonabet.Value switch
+        { "ㄧ" => new("ㄒ"),
+          "ㄨ" => new("ㄕ"),
+          "ㄩ" => new("ㄒ"),
+          _ => Consonant },
+        _ => Consonant };
+    }
 
-    if ("dfjk ".Contains(Key) && !Consonant.IsEmpty && Semivowel.IsEmpty &&
+    if ("dfjk ".Contains(key) && !Consonant.IsEmpty && Semivowel.IsEmpty &&
         Vowel.IsEmpty) {
       Consonant.SelfReplace("ㄆ", "ㄡ");
       Consonant.SelfReplace("ㄇ", "ㄢ");
@@ -602,16 +613,16 @@ public struct Composer {
       Consonant.SelfReplace("ㄋ", "ㄣ");
       Consonant.SelfReplace("ㄌ", "ㄥ");
       Consonant.SelfReplace("ㄏ", "ㄦ");
-    };
+    }
 
     // 後置修正
     if (Value == "ㄍ˙") Consonant = new("ㄑ");
 
     // 這些按鍵在上文處理過了，就不要再回傳了。
-    if ("dfhjklmnpqtw".Contains(Key)) StrReturn = "";
+    if ("dfhjklmnpqtw".Contains(key)) strReturn = "";
 
     // 回傳結果是空字串的話，不要緊，因為上文已經代處理過分配過程了。
-    return StrReturn;
+    return strReturn;
   }
 
   /// <summary>
@@ -619,20 +630,20 @@ public struct Composer {
   /// <br />
   /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
   /// </summary>
-  /// <param name="Key">傳入的 string 訊號。</param>
+  /// <param name="key">傳入的 string 訊號。</param>
   /// <returns>尚無追加處理而直接傳回的結果，或者是空字串。</returns>
-  string HandleHsu(string Key = "") {
-    string StrReturn = (Shared.MapHsuStaticKeys.Keys.Contains(Key))
-                           ? Shared.MapHsuStaticKeys[Key]
+  private string HandleHsu(string key = "") {
+    string strReturn = Shared.MapHsuStaticKeys.ContainsKey(key)
+                           ? Shared.MapHsuStaticKeys[key]
                            : "";
-    Phonabet IncomingPhonabet = new(StrReturn);
+    Phonabet incomingPhonabet = new(strReturn);
 
-    if (Key == " " && Value == "ㄋ") {
+    if (key == " " && Value == "ㄋ") {
       Consonant.Clear();
       Vowel = new("ㄣ");
-    };
+    }
 
-    switch (Key) {
+    switch (key) {
       case "d":
         if (IsPronouncable) {
           Intonation = new("ˊ");
@@ -732,79 +743,43 @@ public struct Composer {
         else
           Vowel = new("ㄥ");
         break;
-      default:
-        break;
-    };
+    }
 
     // 處理特殊情形。
-    switch (IncomingPhonabet.Type) {
+    switch (incomingPhonabet.Type) {
       case PhoneType.Semivowel:
         switch (Consonant.Value) {
           case "ㄍ":  // 許氏鍵盤應該也需要這個自動糾正
-            switch (IncomingPhonabet.Value) {
-              case "ㄧ":
-                Consonant = new("ㄑ");
-                break;  // ㄑㄧ
-              case "ㄨ":
-                Consonant = new("ㄍ");
-                break;  // ㄍㄨ
-              case "ㄩ":
-                Consonant = new("ㄑ");
-                break;  // ㄑㄩ
-              default:
-                break;
-            };
+            Consonant = incomingPhonabet.Value switch
+            { "ㄧ" => new("ㄑ"),
+              "ㄨ" => new("ㄍ"),
+              "ㄩ" => new("ㄑ"),
+              _ => Consonant };
             break;
           case "ㄓ":
             if (Intonation.IsEmpty) {
-              switch (IncomingPhonabet.Value) {
-                case "ㄧ":
-                  Consonant = new("ㄐ");
-                  break;  // ㄐㄧ
-                case "ㄨ":
-                  Consonant = new("ㄓ");
-                  break;  // ㄓㄨ
-                case "ㄩ":
-                  Consonant = new("ㄐ");
-                  break;  // ㄐㄩ
-                default:
-                  break;
-              };
-            };
+              Consonant = incomingPhonabet.Value switch
+              { "ㄧ" => new("ㄐ"),
+                "ㄨ" => new("ㄓ"),
+                "ㄩ" => new("ㄐ"),
+                _ => Consonant };
+            }
             break;
           case "ㄔ":
             if (Intonation.IsEmpty) {
-              switch (IncomingPhonabet.Value) {
-                case "ㄧ":
-                  Consonant = new("ㄑ");
-                  break;  // ㄐㄧ
-                case "ㄨ":
-                  Consonant = new("ㄔ");
-                  break;  // ㄓㄨ
-                case "ㄩ":
-                  Consonant = new("ㄑ");
-                  break;  // ㄐㄩ
-                default:
-                  break;
-              };
-            };
+              Consonant = incomingPhonabet.Value switch
+              { "ㄧ" => new("ㄑ"),
+                "ㄨ" => new("ㄔ"),
+                "ㄩ" => new("ㄑ"),
+                _ => Consonant };
+            }
             break;
           case "ㄕ":
-            switch (IncomingPhonabet.Value) {
-              case "ㄧ":
-                Consonant = new("ㄒ");
-                break;  // ㄒㄧ
-              case "ㄨ":
-                Consonant = new("ㄕ");
-                break;  // ㄕㄨ
-              case "ㄩ":
-                Consonant = new("ㄒ");
-                break;  // ㄒㄩ
-              default:
-                break;
-            };
-            break;
-          default:
+            Consonant = incomingPhonabet.Value switch
+            { "ㄧ" => new("ㄒ"),
+              "ㄨ" => new("ㄕ"),
+              "ㄩ" => new("ㄒ"),
+              _ => Consonant };
             break;
         }
         break;
@@ -813,49 +788,52 @@ public struct Composer {
           Consonant.SelfReplace("ㄐ", "ㄓ");
           Consonant.SelfReplace("ㄑ", "ㄔ");
           Consonant.SelfReplace("ㄒ", "ㄕ");
-        };
+        }
         break;
+      case PhoneType.Null:
+      case PhoneType.Consonant:
+      case PhoneType.Intonation:
       default:
         break;
-    };
+    }
 
-    if ("dfjs ".Contains(Key)) {
+    if ("dfjs ".Contains(key)) {
       if (!Consonant.IsEmpty && Semivowel.IsEmpty && Vowel.IsEmpty) {
         Consonant.SelfReplace("ㄍ", "ㄜ");
         Consonant.SelfReplace("ㄋ", "ㄣ");
         Consonant.SelfReplace("ㄌ", "ㄦ");
         Consonant.SelfReplace("ㄎ", "ㄤ");
         Consonant.SelfReplace("ㄇ", "ㄢ");
-      };
+      }
       if (!Consonant.IsEmpty && Vowel.IsEmpty) {
         Consonant.SelfReplace("ㄧ", "ㄝ");
-      };
+      }
       if (!Vowel.IsEmpty && "ㄢㄣㄤㄥ".Contains(Vowel.Value) &&
           Semivowel.IsEmpty) {
         Consonant.SelfReplace("ㄐ", "ㄓ");
         Consonant.SelfReplace("ㄑ", "ㄔ");
         Consonant.SelfReplace("ㄒ", "ㄕ");
-      };
+      }
       if (!Consonant.IsEmpty && "ㄐㄑㄒ".Contains(Consonant.Value) &&
           Semivowel.IsEmpty) {
         Consonant.SelfReplace("ㄐ", "ㄓ");
         Consonant.SelfReplace("ㄑ", "ㄔ");
         Consonant.SelfReplace("ㄒ", "ㄕ");
-      };
+      }
       if (Consonant.Value == "ㄏ" && Semivowel.IsEmpty && Vowel.IsEmpty) {
         Consonant.Clear();
         Vowel = new("ㄛ");
-      };
-    };
+      }
+    }
 
     // 後置修正
     if (Value == "ㄔ˙") Consonant = new("ㄑ");
 
     // 這些按鍵在上文處理過了，就不要再回傳了。;
-    if ("acdefghjklmns".Contains(Key)) StrReturn = "";
+    if ("acdefghjklmns".Contains(key)) strReturn = "";
 
     // 回傳結果是空的話，不要緊，因為上文已經代處理過分配過程了。
-    return StrReturn;
+    return strReturn;
   }
 
   /// <summary>
@@ -863,14 +841,14 @@ public struct Composer {
   /// <br />
   /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
   /// </summary>
-  /// <param name="Key">傳入的 string 訊號。</param>
+  /// <param name="key">傳入的 string 訊號。</param>
   /// <returns>尚無追加處理而直接傳回的結果，或者是空字串。</returns>
-  string HandleDachen26(string Key = "") {
-    string StrReturn = (Shared.MapDachenCP26StaticKeys.Keys.Contains(Key))
-                           ? Shared.MapDachenCP26StaticKeys[Key]
+  private string HandleDachen26(string key = "") {
+    string strReturn = Shared.MapDachenCp26StaticKeys.ContainsKey(key)
+                           ? Shared.MapDachenCp26StaticKeys[key]
                            : "";
 
-    switch (Key) {
+    switch (key) {
       case "e":
         if (IsPronouncable)
           Intonation = new("ˊ");
@@ -960,7 +938,6 @@ public struct Composer {
           Vowel = new("ㄡ");
         else
           Semivowel = new("ㄩ");
-        ;
         break;
       case "u":
         if (Semivowel.Value == "ㄧ" && Vowel.Value != "ㄚ") {
@@ -976,15 +953,13 @@ public struct Composer {
         else
           Semivowel = new("ㄧ");
         break;
-      default:
-        break;
-    };
+    }
 
     // 這些按鍵在上文處理過了，就不要再回傳了。
-    if ("qwtilopnbmuerdy".Contains(Key)) StrReturn = "";
+    if ("qwtilopnbmuerdy".Contains(key)) strReturn = "";
 
     // 回傳結果是空的話，不要緊，因為上文已經代處理過分配過程了。
-    return StrReturn;
+    return strReturn;
   }
 }
 }

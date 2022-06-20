@@ -70,38 +70,35 @@ public struct Phonabet {
   // MARK: Phonabet Structure.
   // -----------------------
   public PhoneType Type = PhoneType.Null;
-  private string ValueStorage = "";
-  public string Value => ValueStorage;
-  public bool IsEmpty => (ValueStorage == null) || (ValueStorage.Length == 0);
+  public string Value { get; private set; } = "";
+  public bool IsEmpty => string.IsNullOrEmpty(Value);
 
   /// <summary>
   /// 初期化，會根據傳入的 input 字串參數來自動判定自身的 PhoneType 類型屬性值。
   /// </summary>
-  /// <param name="Input">傳入的字串參數</param>
-  public Phonabet(string Input = "") {
-    if (Input.Length > 0) {
-      if (AllowedPhonabets.Contains(Input.LastOrDefault())) {
-        ValueStorage = Input.LastOrDefault().ToString();
-        EnsureType();
-      }
-    }
+  /// <param name="input">傳入的字串參數</param>
+  public Phonabet(string input = "") {
+    if (string.IsNullOrEmpty(input)) return;
+    if (!AllowedPhonabets.Contains(input.LastOrDefault())) return;
+    Value = input.LastOrDefault().ToString();
+    EnsureType();
   }
 
   /// <summary>
   /// 自我清空內容。
   /// </summary>
   public void Clear() {
-    ValueStorage = "";
+    Value = "";
     Type = PhoneType.Null;
   }
 
   /// <summary>
   /// 自我變換資料值。
   /// </summary>
-  /// <param name="StrOf">要取代的內容。</param>
-  /// <param name="StrWith">要取代成的內容。</param>
-  public void SelfReplace(string StrOf, string StrWith) {
-    ValueStorage = ValueStorage.Replace(StrOf, StrWith);
+  /// <param name="strOf">要取代的內容。</param>
+  /// <param name="strWith">要取代成的內容。</param>
+  public void SelfReplace(string strOf, string strWith) {
+    Value = Value.Replace(strOf, strWith);
     EnsureType();
   }
 
@@ -119,7 +116,7 @@ public struct Phonabet {
       Type = PhoneType.Intonation;
     } else {
       Type = PhoneType.Null;
-      ValueStorage = "";
+      Value = "";
     }
   }
 

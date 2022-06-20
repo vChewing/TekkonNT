@@ -24,337 +24,331 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using NUnit.Framework;
 
-namespace Tekkon.Tests;
-
-public class TekkonTests_Intermediate {
+namespace Tekkon.Tests {
+public class TekkonTestsIntermediate {
   [Test]
   public void TestPhonabetKeyReceivingAndCompositions_Intermediate() {
-    Composer Composer = new(Arrange: MandarinParser.OfDachen);
-    bool ToneMarkerIndicator = true;
+    Composer composer = new(arrange: MandarinParser.OfDachen);
 
     // Test Key Receiving;
-    Composer.ReceiveKey(0x0032);  // 2, ㄉ
-    Composer.ReceiveKey("j");     // ㄨ
-    Composer.ReceiveKey("u");     // ㄧ
-    Composer.ReceiveKey("l");     // ㄠ
+    composer.ReceiveKey(0x0032);  // 2, ㄉ
+    composer.ReceiveKey("j");     // ㄨ
+    composer.ReceiveKey("u");     // ㄧ
+    composer.ReceiveKey("l");     // ㄠ
 
     // Testing missing tone markers;
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(!ToneMarkerIndicator);
+    bool toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(!toneMarkerIndicator);
 
-    Composer.ReceiveKey("3");  // 上聲
-    Assert.AreEqual(actual: Composer.Value, expected: "ㄉㄧㄠˇ");
-    Composer.DoBackSpace();
-    Composer.ReceiveKey(" ");  // 陰平
-    Assert.AreEqual(actual: Composer.Value,
+    composer.ReceiveKey("3");  // 上聲
+    Assert.AreEqual(actual: composer.Value, expected: "ㄉㄧㄠˇ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
                     expected: "ㄉㄧㄠ ");  // 這裡回傳的結果的陰平是空格
 
     // Test Getting Displayed Composition
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄉㄧㄠ");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true),
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true),
                     expected: "diao1");  // 中階測試項目
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true,
-                                                    IsTextBookStyle: true),
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true,
+                                                    isTextBookStyle: true),
                     expected: "diāo");  // 中階測試項目
     Assert.AreEqual(
-        actual: Composer.GetInlineCompositionForIMK(IsHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
         expected: "diao1");  // 中階測試項目
 
     // Test Tone 5
-    Composer.ReceiveKey("7");  // 輕聲
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄉㄧㄠ˙");
-    Assert.AreEqual(actual: Composer.GetComposition(IsTextBookStyle: true),
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ˙");
+    Assert.AreEqual(actual: composer.GetComposition(isTextBookStyle: true),
                     expected: "˙ㄉㄧㄠ");  // 中階測試項目
 
     // Testing having tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
-    Composer.Clear();
-    Composer.ReceiveKey("3");  // 上聲
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(ToneMarkerIndicator);
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
   }
 
   [Test]
-  public void TestHanyuinyinKeyReceivingAndCompositions_Full() {
-    Composer Composer = new(Arrange: MandarinParser.OfHanyuPinyin);
-    bool ToneMarkerIndicator = true;
+  public void TestHanyuPinyinKeyReceivingAndCompositions_Full() {
+    Composer composer = new(arrange: MandarinParser.OfHanyuPinyin);
 
     // Test Key Receiving
-    Composer.ReceiveKey(100);  // d
-    Composer.ReceiveKey("i");
-    Composer.ReceiveKey("a");
-    Composer.ReceiveKey("o");
+    composer.ReceiveKey(100);  // d
+    composer.ReceiveKey("i");
+    composer.ReceiveKey("a");
+    composer.ReceiveKey("o");
 
     // Testing missing tone markers;
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(!ToneMarkerIndicator);
+    bool toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(!toneMarkerIndicator);
 
-    Composer.ReceiveKey("3");  // 上聲
-    Assert.AreEqual(actual: Composer.Value, expected: "ㄉㄧㄠˇ");
-    Composer.DoBackSpace();
-    Composer.ReceiveKey(" ");  // 陰平
-    Assert.AreEqual(actual: Composer.Value,
+    composer.ReceiveKey("3");  // 上聲
+    Assert.AreEqual(actual: composer.Value, expected: "ㄉㄧㄠˇ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
                     expected: "ㄉㄧㄠ ");  // 這裡回傳的結果的陰平是空格
 
     // Test Getting Displayed Composition;
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄉㄧㄠ");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true),
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true),
                     expected: "diao1");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true,
-                                                    IsTextBookStyle: true),
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true,
+                                                    isTextBookStyle: true),
                     expected: "diāo");
     Assert.AreEqual(
-        actual: Composer.GetInlineCompositionForIMK(IsHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
         expected: "diao1");
 
     // Test Tone 5
-    Composer.ReceiveKey("7");  // 輕聲
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄉㄧㄠ˙");
-    Assert.AreEqual(actual: Composer.GetComposition(IsTextBookStyle: true),
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ˙");
+    Assert.AreEqual(actual: composer.GetComposition(isTextBookStyle: true),
                     expected: "˙ㄉㄧㄠ");
 
     // Testing having tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
-    Composer.Clear();
-    Composer.ReceiveKey("3");  // 上聲
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(ToneMarkerIndicator);
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
   }
 
   [Test]
   public void TestSecondaryPinyinKeyReceivingAndCompositions() {
-    Composer Composer = new(Arrange: MandarinParser.OfSecondaryPinyin);
-    bool ToneMarkerIndicator = true;
+    Composer composer = new(arrange: MandarinParser.OfSecondaryPinyin);
 
     // Test Key Receiving
-    Composer.ReceiveKey(99);  // c
-    Composer.ReceiveKey("h");
-    Composer.ReceiveKey("i");
-    Composer.ReceiveKey("u");
-    Composer.ReceiveKey("n");
-    Composer.ReceiveKey("g");
+    composer.ReceiveKey(99);  // c
+    composer.ReceiveKey("h");
+    composer.ReceiveKey("i");
+    composer.ReceiveKey("u");
+    composer.ReceiveKey("n");
+    composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(!ToneMarkerIndicator);
+    bool toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(!toneMarkerIndicator);
 
-    Composer.ReceiveKey("2");  // 陽平
-    Assert.AreEqual(actual: Composer.Value, expected: "ㄑㄩㄥˊ");
-    Composer.DoBackSpace();
-    Composer.ReceiveKey(" ");  // 陰平
-    Assert.AreEqual(actual: Composer.Value,
+    composer.ReceiveKey("2");  // 陽平
+    Assert.AreEqual(actual: composer.Value, expected: "ㄑㄩㄥˊ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
                     expected: "ㄑㄩㄥ ");  // 這裡回傳的結果的陰平是空格
 
     // Test Getting Displayed Composition;
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true),
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true),
                     expected: "qiong1");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true,
-                                                    IsTextBookStyle: true),
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true,
+                                                    isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: Composer.GetInlineCompositionForIMK(IsHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
         expected: "chiung1");
 
     // Test Tone 5
-    Composer.ReceiveKey("7");  // 輕聲
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ˙");
-    Assert.AreEqual(actual: Composer.GetComposition(IsTextBookStyle: true),
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ˙");
+    Assert.AreEqual(actual: composer.GetComposition(isTextBookStyle: true),
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
-    Composer.Clear();
-    Composer.ReceiveKey("3");  // 上聲
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(ToneMarkerIndicator);
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
   }
 
   [Test]
   public void TestYalePinyinKeyReceivingAndCompositions() {
-    Composer Composer = new(Arrange: MandarinParser.OfYalePinyin);
-    bool ToneMarkerIndicator = true;
+    Composer composer = new(arrange: MandarinParser.OfYalePinyin);
 
     // Test Key Receiving
-    Composer.ReceiveKey(99);  // c
-    Composer.ReceiveKey("h");
-    Composer.ReceiveKey("y");
-    Composer.ReceiveKey("u");
-    Composer.ReceiveKey("n");
-    Composer.ReceiveKey("g");
+    composer.ReceiveKey(99);  // c
+    composer.ReceiveKey("h");
+    composer.ReceiveKey("y");
+    composer.ReceiveKey("u");
+    composer.ReceiveKey("n");
+    composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(!ToneMarkerIndicator);
+    bool toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(!toneMarkerIndicator);
 
-    Composer.ReceiveKey("2");  // 陽平
-    Assert.AreEqual(actual: Composer.Value, expected: "ㄑㄩㄥˊ");
-    Composer.DoBackSpace();
-    Composer.ReceiveKey(" ");  // 陰平
-    Assert.AreEqual(actual: Composer.Value,
+    composer.ReceiveKey("2");  // 陽平
+    Assert.AreEqual(actual: composer.Value, expected: "ㄑㄩㄥˊ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
                     expected: "ㄑㄩㄥ ");  // 這裡回傳的結果的陰平是空格
 
     // Test Getting Displayed Composition;
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true),
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true),
                     expected: "qiong1");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true,
-                                                    IsTextBookStyle: true),
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true,
+                                                    isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: Composer.GetInlineCompositionForIMK(IsHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
         expected: "chyung1");
 
     // Test Tone 5
-    Composer.ReceiveKey("7");  // 輕聲
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ˙");
-    Assert.AreEqual(actual: Composer.GetComposition(IsTextBookStyle: true),
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ˙");
+    Assert.AreEqual(actual: composer.GetComposition(isTextBookStyle: true),
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
-    Composer.Clear();
-    Composer.ReceiveKey("3");  // 上聲
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(ToneMarkerIndicator);
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
   }
 
   [Test]
   public void TestHualuoPinyinKeyReceivingAndCompositions() {
-    Composer Composer = new(Arrange: MandarinParser.OfHualuoPinyin);
-    bool ToneMarkerIndicator = true;
+    Composer composer = new(arrange: MandarinParser.OfHualuoPinyin);
 
     // Test Key Receiving
-    Composer.ReceiveKey(99);  // c
-    Composer.ReceiveKey("h");
-    Composer.ReceiveKey("y");
-    Composer.ReceiveKey("o");
-    Composer.ReceiveKey("n");
-    Composer.ReceiveKey("g");
+    composer.ReceiveKey(99);  // c
+    composer.ReceiveKey("h");
+    composer.ReceiveKey("y");
+    composer.ReceiveKey("o");
+    composer.ReceiveKey("n");
+    composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(!ToneMarkerIndicator);
+    bool toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(!toneMarkerIndicator);
 
-    Composer.ReceiveKey("2");  // 陽平
-    Assert.AreEqual(actual: Composer.Value, expected: "ㄑㄩㄥˊ");
-    Composer.DoBackSpace();
-    Composer.ReceiveKey(" ");  // 陰平
-    Assert.AreEqual(actual: Composer.Value,
+    composer.ReceiveKey("2");  // 陽平
+    Assert.AreEqual(actual: composer.Value, expected: "ㄑㄩㄥˊ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
                     expected: "ㄑㄩㄥ ");  // 這裡回傳的結果的陰平是空格
 
     // Test Getting Displayed Composition
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true),
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true),
                     expected: "qiong1");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true,
-                                                    IsTextBookStyle: true),
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true,
+                                                    isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: Composer.GetInlineCompositionForIMK(IsHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
         expected: "chyong1");
 
     // Test Tone 5
-    Composer.ReceiveKey("7");  // 輕聲
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ˙");
-    Assert.AreEqual(actual: Composer.GetComposition(IsTextBookStyle: true),
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ˙");
+    Assert.AreEqual(actual: composer.GetComposition(isTextBookStyle: true),
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
-    Composer.Clear();
-    Composer.ReceiveKey("3");  // 上聲
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(ToneMarkerIndicator);
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
   }
 
   [Test]
   public void TestUniversalPinyinKeyReceivingAndCompositions() {
-    Composer Composer = new(Arrange: MandarinParser.OfUniversalPinyin);
-    bool ToneMarkerIndicator = true;
+    Composer composer = new(arrange: MandarinParser.OfUniversalPinyin);
 
     // Test Key Receiving
-    Composer.ReceiveKey(99);  // c
-    Composer.ReceiveKey("y");
-    Composer.ReceiveKey("o");
-    Composer.ReceiveKey("n");
-    Composer.ReceiveKey("g");
+    composer.ReceiveKey(99);  // c
+    composer.ReceiveKey("y");
+    composer.ReceiveKey("o");
+    composer.ReceiveKey("n");
+    composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(!ToneMarkerIndicator);
+    bool toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(!toneMarkerIndicator);
 
-    Composer.ReceiveKey("2");  // 陽平
-    Assert.AreEqual(actual: Composer.Value, expected: "ㄑㄩㄥˊ");
-    Composer.DoBackSpace();
-    Composer.ReceiveKey(" ");  // 陰平
-    Assert.AreEqual(actual: Composer.Value,
+    composer.ReceiveKey("2");  // 陽平
+    Assert.AreEqual(actual: composer.Value, expected: "ㄑㄩㄥˊ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
                     expected: "ㄑㄩㄥ ");  // 這裡回傳的結果的陰平是空格
 
     // Test Getting Displayed Composition
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true),
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true),
                     expected: "qiong1");
-    Assert.AreEqual(actual: Composer.GetComposition(IsHanyuPinyin: true,
-                                                    IsTextBookStyle: true),
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true,
+                                                    isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: Composer.GetInlineCompositionForIMK(IsHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
         expected: "cyong1");
 
     // Test Tone 5
-    Composer.ReceiveKey("7");  // 輕聲
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄑㄩㄥ˙");
-    Assert.AreEqual(actual: Composer.GetComposition(IsTextBookStyle: true),
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ˙");
+    Assert.AreEqual(actual: composer.GetComposition(isTextBookStyle: true),
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
-    Composer.Clear();
-    Composer.ReceiveKey("3");  // 上聲
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(ToneMarkerIndicator);
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
   }
+}
 }
