@@ -24,90 +24,90 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using NUnit.Framework;
 
-namespace Tekkon.Tests;
-
+namespace Tekkon.Tests {
 public class TekkonTests {
   [Test]
   public void TestInitializingPhonabet() {
-    Phonabet ThePhonabetNull = new("0");
-    Phonabet ThePhonabetA = new("ㄉ");
-    Phonabet ThePhonabetB = new("ㄧ");
-    Phonabet ThePhonabetC = new("ㄠ");
-    Phonabet ThePhonabetD = new("ˇ");
-    Assert.True(ThePhonabetNull.Type == PhoneType.Null &&
-                ThePhonabetA.Type == PhoneType.Consonant &&
-                ThePhonabetB.Type == PhoneType.Semivowel &&
-                ThePhonabetC.Type == PhoneType.Vowel &&
-                ThePhonabetD.Type == PhoneType.Intonation);
+    Phonabet thePhonabetNull = new("0");
+    Phonabet thePhonabetA = new("ㄉ");
+    Phonabet thePhonabetB = new("ㄧ");
+    Phonabet thePhonabetC = new("ㄠ");
+    Phonabet thePhonabetD = new("ˇ");
+    Assert.True(thePhonabetNull.Type == PhoneType.Null &&
+                thePhonabetA.Type == PhoneType.Consonant &&
+                thePhonabetB.Type == PhoneType.Semivowel &&
+                thePhonabetC.Type == PhoneType.Vowel &&
+                thePhonabetD.Type == PhoneType.Intonation);
   }
 
   [Test]
   public void TestIsValidKeyWithKeys() {
-    bool Result = true;
-    Composer Composer = new(Arrange: MandarinParser.OfDachen);
+    bool result = true;
+    Composer composer = new(arrange: MandarinParser.OfDachen);
 
-    /// Testing Failed Key
-    Result = Composer.InputValidityCheck(0x0024);
-    Assert.True(Result == false);
+    // Testing Failed Key
+    result = composer.InputValidityCheck(0x0024);
+    Assert.True(result == false);
 
     // Testing Correct Qwerty Dachen Key
-    Composer.EnsureParser(Arrange: MandarinParser.OfDachen);
-    Result = Composer.InputValidityCheck(0x002F);
-    Assert.True(Result == true);
+    composer.EnsureParser(arrange: MandarinParser.OfDachen);
+    result = composer.InputValidityCheck(0x002F);
+    Assert.True(result);
 
     // Testing Correct ETen26 Key
-    Composer.EnsureParser(Arrange: MandarinParser.OfETen26);
-    Result = Composer.InputValidityCheck(0x0062);
-    Assert.True(Result == true);
+    composer.EnsureParser(arrange: MandarinParser.OfETen26);
+    result = composer.InputValidityCheck(0x0062);
+    Assert.True(result);
 
     // Testing Correct Hanyu-Pinyin Key
-    Composer.EnsureParser(Arrange: MandarinParser.OfHanyuPinyin);
-    Result = Composer.InputValidityCheck(0x0062);
-    Assert.True(Result == true);
+    composer.EnsureParser(arrange: MandarinParser.OfHanyuPinyin);
+    result = composer.InputValidityCheck(0x0062);
+    Assert.True(result);
   }
 
   // 下面這個測試不完全。完全版本放在 Intermediate 測試當中。
   [Test]
   public void TestPhonabetKeyReceivingAndCompositions() {
-    Composer Composer = new(Arrange: MandarinParser.OfDachen);
-    bool ToneMarkerIndicator = true;
+    Composer composer = new(arrange: MandarinParser.OfDachen);
+    bool toneMarkerIndicator = true;
 
     // Test Key Receiving;
-    Composer.ReceiveKey(0x0032);  // 2, ㄉ
-    Composer.ReceiveKey("j");     // ㄨ
-    Composer.ReceiveKey("u");     // ㄧ
-    Composer.ReceiveKey("l");     // ㄠ
+    composer.ReceiveKey(0x0032);  // 2, ㄉ
+    composer.ReceiveKey("j");     // ㄨ
+    composer.ReceiveKey("u");     // ㄧ
+    composer.ReceiveKey("l");     // ㄠ
 
     // Testing missing tone markers;
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(!toneMarkerIndicator);
 
-    Composer.ReceiveKey("3");  // 上聲
-    Assert.AreEqual(actual: Composer.Value, expected: "ㄉㄧㄠˇ");
-    Composer.DoBackSpace();
-    Composer.ReceiveKey(" ");  // 陰平
-    Assert.AreEqual(actual: Composer.Value,
+    composer.ReceiveKey("3");  // 上聲
+    Assert.AreEqual(actual: composer.Value, expected: "ㄉㄧㄠˇ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
                     expected: "ㄉㄧㄠ ");  // 這裡回傳的結果的陰平是空格
 
     // Test Getting Displayed Composition
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄉㄧㄠ");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ");
 
     // Test Tone 5
-    Composer.ReceiveKey("7");  // 輕聲
-    Assert.AreEqual(actual: Composer.GetComposition(), expected: "ㄉㄧㄠ˙");
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ˙");
 
     // Testing having tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker();
-    Assert.True(ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker();
+    Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(!ToneMarkerIndicator);
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
-    Composer.Clear();
-    Composer.ReceiveKey("3");  // 上聲
-    ToneMarkerIndicator = Composer.HasToneMarker(WithNothingElse: true);
-    Assert.True(ToneMarkerIndicator);
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
   }
+}
 }
