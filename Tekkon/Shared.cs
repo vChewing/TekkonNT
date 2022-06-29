@@ -26,6 +26,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Tekkon {
+/// <summary>
+/// 該結構用來存放鐵恨引擎的一些公用資料。
+/// </summary>
 public struct Shared {
   // MARK: - Phonabet to Hanyu-Pinyin Conversion Processing
 
