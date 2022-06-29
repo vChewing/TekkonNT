@@ -66,7 +66,7 @@ public enum MandarinParser {
   /// <summary>注音：IBM 排列。</summary>
   OfIBM = 5,
   /// <summary>注音：神通排列。</summary>
-  OfMiTac = 6,
+  OfMiTAC = 6,
   /// <summary>注音：精業排列。</summary>
   OfSeigyou = 7,
   /// <summary>注音：偽精業排列。</summary>

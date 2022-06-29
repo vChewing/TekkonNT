@@ -107,7 +107,7 @@ public struct Composer {
       case MandarinParser.OfETen26:
       case MandarinParser.OfHsu:
       case MandarinParser.OfIBM:
-      case MandarinParser.OfMiTac:
+      case MandarinParser.OfMiTAC:
       case MandarinParser.OfSeigyou:
       case MandarinParser.OfFakeSeigyou:
       default:
@@ -133,7 +133,7 @@ public struct Composer {
         case MandarinParser.OfETen26:
         case MandarinParser.OfHsu:
         case MandarinParser.OfIBM:
-        case MandarinParser.OfMiTac:
+        case MandarinParser.OfMiTAC:
         case MandarinParser.OfSeigyou:
         case MandarinParser.OfFakeSeigyou:
         default:
@@ -201,8 +201,8 @@ public struct Composer {
         return Shared.MapETen26StaticKeys.ContainsKey(inputKey.ToString());
       case MandarinParser.OfIBM:
         return Shared.MapQwertyIBM.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfMiTac:
-        return Shared.MapQwertyMiTac.ContainsKey(inputKey.ToString());
+      case MandarinParser.OfMiTAC:
+        return Shared.MapQwertyMiTAC.ContainsKey(inputKey.ToString());
       case MandarinParser.OfSeigyou:
         return Shared.MapSeigyou.ContainsKey(inputKey.ToString());
       case MandarinParser.OfFakeSeigyou:
@@ -252,7 +252,7 @@ public struct Composer {
       case MandarinParser.OfETen26:
       case MandarinParser.OfHsu:
       case MandarinParser.OfIBM:
-      case MandarinParser.OfMiTac:
+      case MandarinParser.OfMiTAC:
       case MandarinParser.OfSeigyou:
       case MandarinParser.OfFakeSeigyou:
       default:
@@ -369,7 +369,7 @@ public struct Composer {
         case MandarinParser.OfETen26:
         case MandarinParser.OfHsu:
         case MandarinParser.OfIBM:
-        case MandarinParser.OfMiTac:
+        case MandarinParser.OfMiTAC:
         case MandarinParser.OfSeigyou:
         case MandarinParser.OfFakeSeigyou:
         default:
@@ -459,9 +459,9 @@ public struct Composer {
       case MandarinParser.OfIBM:
         return Shared.MapQwertyIBM.ContainsKey(key) ? Shared.MapQwertyIBM[key]
                                                     : "";
-      case MandarinParser.OfMiTac:
-        return Shared.MapQwertyMiTac.ContainsKey(key)
-                   ? Shared.MapQwertyMiTac[key]
+      case MandarinParser.OfMiTAC:
+        return Shared.MapQwertyMiTAC.ContainsKey(key)
+                   ? Shared.MapQwertyMiTAC[key]
                    : "";
       case MandarinParser.OfSeigyou:
         return Shared.MapSeigyou.ContainsKey(key) ? Shared.MapSeigyou[key] : "";
