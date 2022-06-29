@@ -97,10 +97,9 @@ public struct Composer {
       case MandarinParser.OfUniversalPinyin:
         string toneReturned = "";
         toneReturned =
-            Intonation.Value switch
-            { " " => "1", "ˊ" => "2", "ˇ" => "3",
-              "ˋ" => "4", "˙" => "5",
-              _ => "" };
+            Intonation.Value switch { " " => "1", "ˊ" => "2", "ˇ" => "3",
+                                      "ˋ" => "4", "˙" => "5",
+                                      _ => "" };
         return RomajiBuffer + toneReturned;
       case MandarinParser.OfDachen:
       case MandarinParser.OfDachen26:
@@ -108,7 +107,7 @@ public struct Composer {
       case MandarinParser.OfETen26:
       case MandarinParser.OfHsu:
       case MandarinParser.OfIBM:
-      case MandarinParser.OfMiTac:
+      case MandarinParser.OfMiTAC:
       case MandarinParser.OfSeigyou:
       case MandarinParser.OfFakeSeigyou:
       default:
@@ -134,7 +133,7 @@ public struct Composer {
         case MandarinParser.OfETen26:
         case MandarinParser.OfHsu:
         case MandarinParser.OfIBM:
-        case MandarinParser.OfMiTac:
+        case MandarinParser.OfMiTAC:
         case MandarinParser.OfSeigyou:
         case MandarinParser.OfFakeSeigyou:
         default:
@@ -193,19 +192,17 @@ public struct Composer {
       case MandarinParser.OfDachen:
         return Shared.MapQwertyDachen.ContainsKey(inputKey.ToString());
       case MandarinParser.OfDachen26:
-        return Shared.MapDachenCp26StaticKeys.ContainsKey(
-            inputKey.ToString());
+        return Shared.MapDachenCp26StaticKeys.ContainsKey(inputKey.ToString());
       case MandarinParser.OfETen:
-        return Shared.MapQwertyETenTraditional.ContainsKey(
-            inputKey.ToString());
+        return Shared.MapQwertyETenTraditional.ContainsKey(inputKey.ToString());
       case MandarinParser.OfHsu:
         return Shared.MapHsuStaticKeys.ContainsKey(inputKey.ToString());
       case MandarinParser.OfETen26:
         return Shared.MapETen26StaticKeys.ContainsKey(inputKey.ToString());
       case MandarinParser.OfIBM:
         return Shared.MapQwertyIBM.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfMiTac:
-        return Shared.MapQwertyMiTac.ContainsKey(inputKey.ToString());
+      case MandarinParser.OfMiTAC:
+        return Shared.MapQwertyMiTAC.ContainsKey(inputKey.ToString());
       case MandarinParser.OfSeigyou:
         return Shared.MapSeigyou.ContainsKey(inputKey.ToString());
       case MandarinParser.OfFakeSeigyou:
@@ -255,7 +252,7 @@ public struct Composer {
       case MandarinParser.OfETen26:
       case MandarinParser.OfHsu:
       case MandarinParser.OfIBM:
-      case MandarinParser.OfMiTac:
+      case MandarinParser.OfMiTAC:
       case MandarinParser.OfSeigyou:
       case MandarinParser.OfFakeSeigyou:
       default:
@@ -372,10 +369,10 @@ public struct Composer {
         case MandarinParser.OfETen26:
         case MandarinParser.OfHsu:
         case MandarinParser.OfIBM:
-        case MandarinParser.OfMiTac:
+        case MandarinParser.OfMiTAC:
         case MandarinParser.OfSeigyou:
         case MandarinParser.OfFakeSeigyou:
-        default:          
+        default:
           break;
       }
     }
@@ -461,14 +458,13 @@ public struct Composer {
         return HandleETen26(key);
       case MandarinParser.OfIBM:
         return Shared.MapQwertyIBM.ContainsKey(key) ? Shared.MapQwertyIBM[key]
-                                                      : "";
-      case MandarinParser.OfMiTac:
-        return Shared.MapQwertyMiTac.ContainsKey(key)
-                   ? Shared.MapQwertyMiTac[key]
+                                                    : "";
+      case MandarinParser.OfMiTAC:
+        return Shared.MapQwertyMiTAC.ContainsKey(key)
+                   ? Shared.MapQwertyMiTAC[key]
                    : "";
       case MandarinParser.OfSeigyou:
-        return Shared.MapSeigyou.ContainsKey(key) ? Shared.MapSeigyou[key]
-                                                    : "";
+        return Shared.MapSeigyou.ContainsKey(key) ? Shared.MapSeigyou[key] : "";
       case MandarinParser.OfFakeSeigyou:
         return Shared.MapFakeSeigyou.ContainsKey(key)
                    ? Shared.MapFakeSeigyou[key]
@@ -586,23 +582,21 @@ public struct Composer {
 
     // 處理「一個按鍵對應兩個聲母」的情形。
     if (!Consonant.IsEmpty && incomingPhonabet.Type == PhoneType.Semivowel) {
-      Consonant = Consonant.Value switch
-      { "ㄍ" => incomingPhonabet.Value switch
-        { "ㄧ" => new("ㄑ"),
-          "ㄨ" => new("ㄍ"),
-          "ㄩ" => new("ㄑ"),
-          _ => Consonant },
-        "ㄓ" => incomingPhonabet.Value switch
-        { "ㄧ" => new("ㄐ"),
-          "ㄨ" => new("ㄓ"),
-          "ㄩ" => new("ㄐ"),
-          _ => Consonant },
-        "ㄕ" => incomingPhonabet.Value switch
-        { "ㄧ" => new("ㄒ"),
-          "ㄨ" => new("ㄕ"),
-          "ㄩ" => new("ㄒ"),
-          _ => Consonant },
-        _ => Consonant };
+      Consonant = Consonant.Value switch {
+        "ㄍ" => incomingPhonabet.Value switch { "ㄧ" => new("ㄑ"),
+                                                "ㄨ" => new("ㄍ"),
+                                                "ㄩ" => new("ㄑ"),
+                                                _ => Consonant },
+        "ㄓ" => incomingPhonabet.Value switch { "ㄧ" => new("ㄐ"),
+                                                "ㄨ" => new("ㄓ"),
+                                                "ㄩ" => new("ㄐ"),
+                                                _ => Consonant },
+        "ㄕ" => incomingPhonabet.Value switch { "ㄧ" => new("ㄒ"),
+                                                "ㄨ" => new("ㄕ"),
+                                                "ㄩ" => new("ㄒ"),
+                                                _ => Consonant },
+        _ => Consonant
+      };
     }
 
     if ("dfjk ".Contains(key) && !Consonant.IsEmpty && Semivowel.IsEmpty &&
@@ -750,36 +744,32 @@ public struct Composer {
       case PhoneType.Semivowel:
         switch (Consonant.Value) {
           case "ㄍ":  // 許氏鍵盤應該也需要這個自動糾正
-            Consonant = incomingPhonabet.Value switch
-            { "ㄧ" => new("ㄑ"),
-              "ㄨ" => new("ㄍ"),
-              "ㄩ" => new("ㄑ"),
-              _ => Consonant };
+            Consonant = incomingPhonabet.Value switch { "ㄧ" => new("ㄑ"),
+                                                        "ㄨ" => new("ㄍ"),
+                                                        "ㄩ" => new("ㄑ"),
+                                                        _ => Consonant };
             break;
           case "ㄓ":
             if (Intonation.IsEmpty) {
-              Consonant = incomingPhonabet.Value switch
-              { "ㄧ" => new("ㄐ"),
-                "ㄨ" => new("ㄓ"),
-                "ㄩ" => new("ㄐ"),
-                _ => Consonant };
+              Consonant = incomingPhonabet.Value switch { "ㄧ" => new("ㄐ"),
+                                                          "ㄨ" => new("ㄓ"),
+                                                          "ㄩ" => new("ㄐ"),
+                                                          _ => Consonant };
             }
             break;
           case "ㄔ":
             if (Intonation.IsEmpty) {
-              Consonant = incomingPhonabet.Value switch
-              { "ㄧ" => new("ㄑ"),
-                "ㄨ" => new("ㄔ"),
-                "ㄩ" => new("ㄑ"),
-                _ => Consonant };
+              Consonant = incomingPhonabet.Value switch { "ㄧ" => new("ㄑ"),
+                                                          "ㄨ" => new("ㄔ"),
+                                                          "ㄩ" => new("ㄑ"),
+                                                          _ => Consonant };
             }
             break;
           case "ㄕ":
-            Consonant = incomingPhonabet.Value switch
-            { "ㄧ" => new("ㄒ"),
-              "ㄨ" => new("ㄕ"),
-              "ㄩ" => new("ㄒ"),
-              _ => Consonant };
+            Consonant = incomingPhonabet.Value switch { "ㄧ" => new("ㄒ"),
+                                                        "ㄨ" => new("ㄕ"),
+                                                        "ㄩ" => new("ㄒ"),
+                                                        _ => Consonant };
             break;
         }
         break;

@@ -26,6 +26,9 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace Tekkon {
+/// <summary>
+/// 該結構用來存放鐵恨引擎的一些公用資料。
+/// </summary>
 public struct Shared {
   // MARK: - Phonabet to Hanyu-Pinyin Conversion Processing
 
@@ -1134,7 +1137,7 @@ public struct Shared {
   /// <summary>
   /// 神通排列專用處理陣列。
   /// </summary>
-  public readonly static Dictionary<string, string> MapQwertyMiTac =
+  public readonly static Dictionary<string, string> MapQwertyMiTAC =
       new() { [","] = "ㄓ", ["-"] = "ㄦ", ["."] = "ㄔ", ["/"] = "ㄕ",
               ["0"] = "ㄥ", ["1"] = "˙",  ["2"] = "ˊ",  ["3"] = "ˇ",
               ["4"] = "ˋ",  ["5"] = "ㄞ", ["6"] = "ㄠ", ["7"] = "ㄢ",

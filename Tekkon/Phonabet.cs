@@ -69,8 +69,19 @@ public struct Phonabet {
   // =======================
   // MARK: Phonabet Structure.
   // -----------------------
+  /// <summary>
+  /// 聲介韻調種類。
+  /// </summary>
   public PhoneType Type = PhoneType.Null;
+  /// <summary>
+  /// 承載的字元內容。
+  /// </summary>
+  /// <value>要承載的字元內容值。</value>
   public string Value { get; private set; } = "";
+  /// <summary>
+  /// 該 Phonabet 注音符號組件內容是否為空。
+  /// </summary>
+  /// <returns>若是空的話，則返回 true。</returns>
   public bool IsEmpty => string.IsNullOrEmpty(Value);
 
   /// <summary>
@@ -123,7 +134,15 @@ public struct Phonabet {
   // =======================
   // MARK: Misc Definitions.
   // -----------------------
+  /// <summary>
+  /// 返回經過雜湊化的資料實體。
+  /// </summary>
+  /// <returns>經過雜湊化的資料實體。</returns>
   public override int GetHashCode() { return HashCode.Combine(Value); }
+  /// <summary>
+  /// 返回經過字串化的資料實體。
+  /// </summary>
+  /// <returns>經過字串化的資料實體。</returns>
   public override string ToString() => $"{Value}";
 }
 }
