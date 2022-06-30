@@ -88,7 +88,7 @@ public struct Composer {
   /// </summary>
   /// <param name="isHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
   /// <returns>拼音/注音讀音字串，依照適合在輸入法組字區內顯示出來的格式。</returns>
-  public string GetInlineCompositionForImk(bool isHanyuPinyin = false) {
+  public string GetInlineCompositionForDisplay(bool isHanyuPinyin = false) {
     switch (Parser) {
       case MandarinParser.OfHanyuPinyin:
       case MandarinParser.OfSecondaryPinyin:
