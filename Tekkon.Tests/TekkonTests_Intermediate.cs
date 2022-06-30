@@ -55,7 +55,7 @@ public class TekkonTestsIntermediate {
                                                     isTextBookStyle: true),
                     expected: "diāo");  // 中階測試項目
     Assert.AreEqual(
-        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForDisplay(isHanyuPinyin: true),
         expected: "diao1");  // 中階測試項目
 
     // Test Tone 5
@@ -108,7 +108,7 @@ public class TekkonTestsIntermediate {
                                                     isTextBookStyle: true),
                     expected: "diāo");
     Assert.AreEqual(
-        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForDisplay(isHanyuPinyin: true),
         expected: "diao1");
 
     // Test Tone 5
@@ -163,7 +163,7 @@ public class TekkonTestsIntermediate {
                                                     isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForDisplay(isHanyuPinyin: true),
         expected: "chiung1");
 
     // Test Tone 5
@@ -218,7 +218,7 @@ public class TekkonTestsIntermediate {
                                                     isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForDisplay(isHanyuPinyin: true),
         expected: "chyung1");
 
     // Test Tone 5
@@ -273,7 +273,7 @@ public class TekkonTestsIntermediate {
                                                     isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForDisplay(isHanyuPinyin: true),
         expected: "chyong1");
 
     // Test Tone 5
@@ -327,7 +327,7 @@ public class TekkonTestsIntermediate {
                                                     isTextBookStyle: true),
                     expected: "qiōng");
     Assert.AreEqual(
-        actual: composer.GetInlineCompositionForImk(isHanyuPinyin: true),
+        actual: composer.GetInlineCompositionForDisplay(isHanyuPinyin: true),
         expected: "cyong1");
 
     // Test Tone 5
