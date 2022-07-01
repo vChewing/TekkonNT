@@ -95,8 +95,7 @@ public struct Composer {
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
-        string toneReturned = "";
-        toneReturned =
+        string toneReturned =
             Intonation.Value switch { " " => "1", "ˊ" => "2", "ˇ" => "3",
                                       "ˋ" => "4", "˙" => "5",
                                       _ => "" };
@@ -278,6 +277,24 @@ public struct Composer {
   /// <param name="phonabet">傳入的單個注音符號字串。</param>
   public void ReceiveKeyFromPhonabet(string phonabet = "") {
     Phonabet thePhone = new(phonabet);
+    switch (phonabet) {
+      case "ㄛ":
+        if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" &&
+            Semivowel.Value == "ㄨ")
+        Semivowel.Clear();
+        break;
+      case "ㄨ":
+        if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" &&
+            Vowel.Value == "ㄛ")
+          Vowel.Clear();
+        break;
+      case "ㄅ":
+      case "ㄆ":
+      case "ㄇ":
+      case "ㄈ":
+        if (Semivowel.Value + Vowel.Value == "ㄨㄛ") Semivowel.Clear();
+        break;
+    }
     switch (thePhone.Type) {
       case PhoneType.Consonant:
         Consonant = thePhone;
