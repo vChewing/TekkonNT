@@ -108,6 +108,19 @@ public class TekkonTests {
     composer.ReceiveKey("3");  // 上聲
     toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
+
+    // Testing exceptions of handling "ㄅㄨㄛ ㄆㄨㄛ ㄇㄨㄛ ㄈㄨㄛ"
+    composer.Clear();
+    composer.ReceiveKey("1");
+    composer.ReceiveKey("j");
+    composer.ReceiveKey("i");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄅㄛ");
+    composer.ReceiveKey("q");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄆㄛ");
+    composer.ReceiveKey("a");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄇㄛ");
+    composer.ReceiveKey("z");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄈㄛ");
   }
 }
 }
