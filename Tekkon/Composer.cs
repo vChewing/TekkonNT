@@ -54,7 +54,23 @@ public struct Composer {
   /// 注意：直接取這個參數的內容的話，陰平聲調會成為一個空格。
   /// 如果是要取不帶空格的注音的話，請使用「.getComposition()」而非「.Value」。
   /// </summary>
-  public string Value => $"{Consonant}{Semivowel}{Vowel}{Intonation}";
+  public string Value {
+    get {
+      if (Semivowel.Value + Vowel.Value == "ㄨㄛ") {
+        switch (Consonant.Value) {
+          case "ㄅ":
+            return "ㄅㄛ" + Intonation.Value;
+          case "ㄆ":
+            return "ㄆㄛ" + Intonation.Value;
+          case "ㄇ":
+            return "ㄇㄛ" + Intonation.Value;
+          case "ㄈ":
+            return "ㄈㄛ" + Intonation.Value;
+        }
+      }
+      return $"{Consonant}{Semivowel}{Vowel}{Intonation}";
+    }
+  }
 
   /// <summary>
   /// 與 value 類似，這個函式就是用來決定輸入法組字區內顯示的注音/拼音內容，
@@ -95,8 +111,7 @@ public struct Composer {
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
-        string toneReturned = "";
-        toneReturned =
+        string toneReturned =
             Intonation.Value switch { " " => "1", "ˊ" => "2", "ˇ" => "3",
                                       "ˋ" => "4", "˙" => "5",
                                       _ => "" };
