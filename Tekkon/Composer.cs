@@ -279,20 +279,23 @@ public struct Composer {
     Phonabet thePhone = new(phonabet);
     switch (phonabet) {
       case "ㄛ":
+      case "ㄥ":
         if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" &&
             Semivowel.Value == "ㄨ")
-        Semivowel.Clear();
+          Semivowel.Clear();
         break;
       case "ㄨ":
-        if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" &&
-            Vowel.Value == "ㄛ")
+        if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" && Vowel.Value is
+                                                               "ㄛ" or "ㄥ")
           Vowel.Clear();
         break;
       case "ㄅ":
       case "ㄆ":
       case "ㄇ":
       case "ㄈ":
-        if (Semivowel.Value + Vowel.Value == "ㄨㄛ") Semivowel.Clear();
+        if (Semivowel.Value + Vowel.Value == "ㄨㄛ" ||
+            Semivowel.Value + Vowel.Value == "ㄨㄥ")
+          Semivowel.Clear();
         break;
     }
     switch (thePhone.Type) {
