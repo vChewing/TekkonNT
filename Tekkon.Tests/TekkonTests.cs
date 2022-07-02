@@ -121,6 +121,19 @@ public class TekkonTests {
     Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄇㄛ");
     composer.ReceiveKey("z");
     Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄈㄛ");
+
+    // Testing exceptions of handling "ㄅㄨㄥ ㄆㄨㄥ ㄇㄨㄥ ㄈㄨㄥ"
+    composer.Clear();
+    composer.ReceiveKey("1");
+    composer.ReceiveKey("j");
+    composer.ReceiveKey("/");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄅㄥ");
+    composer.ReceiveKey("q");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄆㄥ");
+    composer.ReceiveKey("a");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄇㄥ");
+    composer.ReceiveKey("z");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄈㄥ");
   }
 }
 }
