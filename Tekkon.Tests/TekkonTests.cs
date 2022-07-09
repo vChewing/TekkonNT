@@ -134,6 +134,9 @@ public class TekkonTests {
     Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄇㄥ");
     composer.ReceiveKey("z");
     Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄈㄥ");
+
+    // Testing tool functions
+    Assert.AreEqual(Shared.RestoreToneOneInZhuyinKey("ㄉㄧㄠ"), "ㄉㄧㄠ1");
   }
 }
 }
