@@ -69,17 +69,14 @@ public struct Composer {
     switch (isHanyuPinyin) {
       case false:  // 注音輸出的場合
         string valReturnZhuyin = Value.Replace(" ", "");
-        if (!isTextBookStyle || !valReturnZhuyin.Contains('˙'))
-          return valReturnZhuyin;
-        valReturnZhuyin = valReturnZhuyin.Remove(valReturnZhuyin.Length - 1);
-        valReturnZhuyin = "˙" + valReturnZhuyin;
-        return valReturnZhuyin;
+        return isTextBookStyle
+                   ? Shared.CnvZhuyinChainToTextbookReading(valReturnZhuyin)
+                   : valReturnZhuyin;
       case true:  // 拼音輸出的場合
         string valReturnPinyin = Shared.CnvPhonaToHanyuPinyin(Value);
-        if (isTextBookStyle)
-          valReturnPinyin =
-              Shared.CnvHanyuPinyinToTextbookStyle(valReturnPinyin);
-        return valReturnPinyin;
+        return isTextBookStyle
+                   ? Shared.CnvHanyuPinyinToTextbookStyle(valReturnPinyin)
+                   : valReturnPinyin;
     }
   }
 
