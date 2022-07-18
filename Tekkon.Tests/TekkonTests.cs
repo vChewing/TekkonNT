@@ -42,7 +42,7 @@ public class TekkonTests {
 
   [Test]
   public void TestIsValidKeyWithKeys() {
-    bool result = true;
+    bool result;
     Composer composer = new(arrange: MandarinParser.OfDachen);
 
     // Testing Failed Key
@@ -69,7 +69,7 @@ public class TekkonTests {
   [Test]
   public void TestPhonabetKeyReceivingAndCompositions() {
     Composer composer = new(arrange: MandarinParser.OfDachen);
-    bool toneMarkerIndicator = true;
+    bool toneMarkerIndicator;
 
     // Test Key Receiving;
     composer.ReceiveKey(0x0032);  // 2, ㄉ
@@ -137,6 +137,7 @@ public class TekkonTests {
 
     // Testing tool functions
     Assert.AreEqual(Shared.RestoreToneOneInZhuyinKey("ㄉㄧㄠ"), "ㄉㄧㄠ1");
+    Assert.AreEqual(Shared.CnvZhuyinChainToTextbookReading("ㄊㄧㄥ-ㄓㄜ˙"),"ㄊㄧㄥ-˙ㄓㄜ");
   }
 }
 }
