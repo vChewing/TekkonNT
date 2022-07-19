@@ -287,7 +287,7 @@ public struct Composer {
       switch (phonabet) {
         case "ㄧ":
         case "ㄩ":
-          if (Vowel.Value is "ㄜ") Vowel.Clear();
+          if (Vowel.Value is "ㄜ") Vowel = new("ㄝ");
           break;
         case "ㄜ":
           if (Semivowel.Value is "ㄧ" or "ㄩ") thePhone = new("ㄝ");

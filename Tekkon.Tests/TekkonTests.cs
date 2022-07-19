@@ -152,7 +152,7 @@ public class TekkonTests {
     composer.ReceiveKey("s");
     composer.ReceiveKey("k");
     composer.ReceiveKey("u");
-    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄋㄧ");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄋㄧㄝ");
     composer.ReceiveKey("s");
     composer.ReceiveKey("m");
     composer.ReceiveKey("k");
