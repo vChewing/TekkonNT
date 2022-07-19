@@ -109,6 +109,9 @@ public class TekkonTests {
     toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
 
+    // Testing auto phonabet combination fixing process.
+    composer.PhonabetCombinationCorrectionEnabled = true;
+
     // Testing exceptions of handling "ㄅㄨㄛ ㄆㄨㄛ ㄇㄨㄛ ㄈㄨㄛ"
     composer.Clear();
     composer.ReceiveKey("1");
@@ -135,9 +138,36 @@ public class TekkonTests {
     composer.ReceiveKey("z");
     Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄈㄥ");
 
+    // Testing exceptions of handling "ㄋㄨㄟ ㄌㄨㄟ"
+    composer.Clear();
+    composer.ReceiveKey("s");
+    composer.ReceiveKey("j");
+    composer.ReceiveKey("o");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄋㄟ");
+    composer.ReceiveKey("x");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄌㄟ");
+
+    // Testing exceptions of handling "ㄧㄜ ㄩㄜ"
+    composer.Clear();
+    composer.ReceiveKey("s");
+    composer.ReceiveKey("k");
+    composer.ReceiveKey("u");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄋㄧ");
+    composer.ReceiveKey("s");
+    composer.ReceiveKey("m");
+    composer.ReceiveKey("k");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄋㄩㄝ");
+    composer.ReceiveKey("s");
+    composer.ReceiveKey("u");
+    composer.ReceiveKey("k");
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄋㄧㄝ");
+
     // Testing tool functions
     Assert.AreEqual(Shared.RestoreToneOneInZhuyinKey("ㄉㄧㄠ"), "ㄉㄧㄠ1");
-    Assert.AreEqual(Shared.CnvZhuyinChainToTextbookReading("ㄊㄧㄥ-ㄓㄜ˙"),"ㄊㄧㄥ-˙ㄓㄜ");
+    Assert.AreEqual(Shared.CnvZhuyinChainToTextbookReading("ㄊㄧㄥ-ㄓㄜ˙"),
+                    "ㄊㄧㄥ-˙ㄓㄜ");
+    Assert.AreEqual(Shared.CnvHanyuPinyinToPhona("jing3-gao4"),
+                    "ㄐㄧㄥˇ-ㄍㄠˋ");
   }
 }
 }

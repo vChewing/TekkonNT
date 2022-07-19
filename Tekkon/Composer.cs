@@ -50,6 +50,11 @@ public struct Composer {
   public MandarinParser Parser = MandarinParser.OfDachen;
 
   /// <summary>
+  /// 是否對錯誤的注音讀音組合做出自動糾正處理。
+  /// </summary>
+  public bool PhonabetCombinationCorrectionEnabled { get; set; }
+
+  /// <summary>
   /// 內容值，會直接按照正確的順序拼裝自己的聲介韻調內容、再回傳。
   /// 注意：直接取這個參數的內容的話，陰平聲調會成為一個空格。
   /// 如果是要取不帶空格的注音的話，請使用「.getComposition()」而非「.Value」。
@@ -154,7 +159,11 @@ public struct Composer {
   /// </summary>
   /// <param name="input">傳入的 String 內容，用以處理單個字符。</param>
   /// <param name="arrange">要使用的注音排列。</param>
-  public Composer(string input = "", MandarinParser arrange = 0) {
+  /// <param
+  /// name="correction">是否對錯誤的注音讀音組合做出自動糾正處理。</param>
+  public Composer(string input = "", MandarinParser arrange = 0,
+                  bool correction = false) {
+    PhonabetCombinationCorrectionEnabled = correction;
     EnsureParser(arrange);
     ReceiveKey(input);
   }
@@ -274,26 +283,42 @@ public struct Composer {
   /// <param name="phonabet">傳入的單個注音符號字串。</param>
   public void ReceiveKeyFromPhonabet(string phonabet = "") {
     Phonabet thePhone = new(phonabet);
-    switch (phonabet) {
-      case "ㄛ":
-      case "ㄥ":
-        if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" &&
-            Semivowel.Value == "ㄨ")
-          Semivowel.Clear();
-        break;
-      case "ㄨ":
-        if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" && Vowel.Value is
-                                                               "ㄛ" or "ㄥ")
-          Vowel.Clear();
-        break;
-      case "ㄅ":
-      case "ㄆ":
-      case "ㄇ":
-      case "ㄈ":
-        if (Semivowel.Value + Vowel.Value == "ㄨㄛ" ||
-            Semivowel.Value + Vowel.Value == "ㄨㄥ")
-          Semivowel.Clear();
-        break;
+    if (PhonabetCombinationCorrectionEnabled) {
+      switch (phonabet) {
+        case "ㄧ":
+        case "ㄩ":
+          if (Vowel.Value is "ㄜ") Vowel.Clear();
+          break;
+        case "ㄜ":
+          if (Semivowel.Value is "ㄧ" or "ㄩ") thePhone = new("ㄝ");
+          break;
+        case "ㄛ":
+        case "ㄥ":
+          if (Consonant.Value is "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" &&
+              Semivowel.Value == "ㄨ")
+            Semivowel.Clear();
+          break;
+        case "ㄟ":
+          if (Consonant.Value is "ㄋ" or "ㄌ" && Semivowel.Value == "ㄨ")
+            Semivowel.Clear();
+          break;
+        case "ㄨ":
+          switch (Consonant.Value) {
+            case "ㄅ" or "ㄆ" or "ㄇ" or "ㄈ" when Vowel.Value is "ㄛ" or "ㄥ":
+            case "ㄋ" or "ㄌ" when Vowel.Value is "ㄟ":
+              Vowel.Clear();
+              break;
+          }
+          break;
+        case "ㄅ":
+        case "ㄆ":
+        case "ㄇ":
+        case "ㄈ":
+          if (Semivowel.Value + Vowel.Value == "ㄨㄛ" ||
+              Semivowel.Value + Vowel.Value == "ㄨㄥ")
+            Semivowel.Clear();
+          break;
+      }
     }
     switch (thePhone.Type) {
       case PhoneType.Consonant:
