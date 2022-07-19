@@ -65,7 +65,7 @@ public struct Shared {
     foreach (var neta in target.Split('-')) {
       if (neta.Length == 0) continue;
       var newString = neta;
-      if (newString[newString.Length - 1] == '˙')
+      if (newString[^1] == '˙')
         newString = "˙" + newString.Substring(0, newString.Length - 1);
       arrReturn.Add(newString);
     }
@@ -91,6 +91,27 @@ public struct Shared {
       arrReturn.Add(newString);
     }
     return string.Join(newSeparator, arrReturn);
+  }
+
+  /// <summary>
+  /// 該函式用來將漢語拼音轉為注音。
+  /// </summary>
+  /// <param name="target">要轉換的漢語拼音內容，要求必須帶有 12345
+  /// 數字標調。</param> <returns>轉換結果。</returns>
+  public static string CnvHanyuPinyinToPhona(string target) {
+    if (target.Contains('_')) return target;
+    foreach (string key in MapHanyuPinyin.Keys.OrderBy(x => x.Length)
+                 .Reverse()) {
+      if (target.Contains(key))
+        target = target.Replace(key, MapHanyuPinyin[key]);
+    }
+    foreach (string key in MapArayuruPinyinIntonation.Keys
+                 .OrderBy(x => x.Length)
+                 .Reverse()) {
+      if (target.Contains(key))
+        target = target.Replace(key, MapArayuruPinyinIntonation[key]);
+    }
+    return target;
   }
 
   /// <summary>
