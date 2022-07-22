@@ -166,8 +166,8 @@ public class TekkonTests {
     Assert.AreEqual(Shared.RestoreToneOneInZhuyinKey("ㄉㄧㄠ"), "ㄉㄧㄠ1");
     Assert.AreEqual(Shared.CnvZhuyinChainToTextbookReading("ㄊㄧㄥ-ㄓㄜ˙"),
                     "ㄊㄧㄥ-˙ㄓㄜ");
-    Assert.AreEqual(Shared.CnvHanyuPinyinToPhona("jing3-gao4"),
-                    "ㄐㄧㄥˇ-ㄍㄠˋ");
+    Assert.AreEqual(Shared.CnvHanyuPinyinToPhona("bian4-le5-tian1"),
+                    "ㄅㄧㄢˋ-ㄌㄜ˙-ㄊㄧㄢ");
   }
 }
 }
