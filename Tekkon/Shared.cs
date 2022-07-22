@@ -97,8 +97,12 @@ public struct Shared {
   /// 該函式用來將漢語拼音轉為注音。
   /// </summary>
   /// <param name="target">要轉換的漢語拼音內容，要求必須帶有 12345
-  /// 數字標調。</param> <returns>轉換結果。</returns>
-  public static string CnvHanyuPinyinToPhona(string target) {
+  /// 數字標調。</param>
+  /// <param
+  /// name="newToneOne">對陰平指定新的標記。預設情況下該標記為空字串。</param>
+  /// <returns>轉換結果。</returns>
+  public static string CnvHanyuPinyinToPhona(string target,
+                                             string newToneOne = "") {
     if (target.Contains('_')) return target;
     foreach (string key in MapHanyuPinyin.Keys.OrderBy(x => x.Length)
                  .Reverse()) {
@@ -109,7 +113,8 @@ public struct Shared {
                  .OrderBy(x => x.Length)
                  .Reverse()) {
       if (target.Contains(key))
-        target = target.Replace(key, MapArayuruPinyinIntonation[key]);
+        target = target.Replace(
+            key, key == "1" ? newToneOne : MapArayuruPinyinIntonation[key]);
     }
     return target;
   }
