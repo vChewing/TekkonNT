@@ -162,6 +162,24 @@ public class TekkonTests {
     composer.ReceiveKey("k");
     Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄋㄧㄝ");
 
+    // Testing exceptions of handling "ㄨㄜ ㄨㄝ"
+    composer.Clear();
+    composer.ReceiveKey("j");
+    composer.ReceiveKey("k");
+    Assert.AreEqual(composer.GetComposition(), "ㄩㄝ");
+    composer.Clear();
+    composer.ReceiveKey("j");
+    composer.ReceiveKey(",");
+    Assert.AreEqual(composer.GetComposition(), "ㄩㄝ");
+    composer.Clear();
+    composer.ReceiveKey(",");
+    composer.ReceiveKey("j");
+    Assert.AreEqual(composer.GetComposition(), "ㄩㄝ");
+    composer.Clear();
+    composer.ReceiveKey("k");
+    composer.ReceiveKey("j");
+    Assert.AreEqual(composer.GetComposition(), "ㄩㄝ");
+
     // Testing tool functions
     Assert.AreEqual(Shared.RestoreToneOneInZhuyinKey("ㄉㄧㄠ"), "ㄉㄧㄠ1");
     Assert.AreEqual(Shared.CnvZhuyinChainToTextbookReading("ㄊㄧㄥ-ㄓㄜ˙"),
