@@ -1138,6 +1138,21 @@ public struct Shared {
               ["y"] = "ㄔ", ["z"] = "ㄠ", [" "] = " " };
 
   /// <summary>
+  /// 星光排列排列預處理專用陣列，但未包含全部的映射內容。<br /><br />
+  /// 在這裡將二十六個字母寫全，也只是為了方便做 validity check。<br />
+  /// 這裡提前對複音按鍵做處理，然後再用程式判斷介母類型、據此判斷是否需要做複音切換。
+  /// </summary>
+  public readonly static Dictionary<string, string> MapStarlightStaticKeys =
+      new() { ["a"] = "ㄚ", ["b"] = "ㄅ", ["c"] = "ㄘ", ["d"] = "ㄉ",
+              ["e"] = "ㄜ", ["f"] = "ㄈ", ["g"] = "ㄍ", ["h"] = "ㄏ",
+              ["i"] = "ㄧ", ["j"] = "ㄓ", ["k"] = "ㄎ", ["l"] = "ㄌ",
+              ["m"] = "ㄇ", ["n"] = "ㄋ", ["o"] = "ㄛ", ["p"] = "ㄆ",
+              ["q"] = "ㄔ", ["r"] = "ㄖ", ["s"] = "ㄙ", ["t"] = "ㄊ",
+              ["u"] = "ㄨ", ["v"] = "ㄩ", ["w"] = "ㄡ", ["x"] = "ㄕ",
+              ["y"] = "ㄞ", ["z"] = "ㄗ", [" "] = " ",  ["6"] = " ",
+              ["7"] = "ˊ",  ["8"] = "ˇ",  ["9"] = "ˋ",  ["0"] = "˙" };
+
+  /// <summary>
   /// 倚天傳統排列專用處理陣列。
   /// </summary>
   public readonly static Dictionary<string, string> MapQwertyETenTraditional =

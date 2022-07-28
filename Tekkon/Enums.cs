@@ -71,6 +71,8 @@ public enum MandarinParser {
   OfSeigyou = 7,
   /// <summary>注音：偽精業排列。</summary>
   OfFakeSeigyou = 8,
+  /// <summary>注音：星光動態排列。</summary>
+  OfStarlight = 9,
   /// <summary>拼音：漢語拼音排列。</summary>
   OfHanyuPinyin = 100,
   /// <summary>拼音：國音二式排列。</summary>
