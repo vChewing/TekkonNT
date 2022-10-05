@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Tekkon {
 /// <summary>
@@ -103,7 +104,8 @@ public struct Shared {
   /// <returns>轉換結果。</returns>
   public static string CnvHanyuPinyinToPhona(string target,
                                              string newToneOne = "") {
-    if (target.Contains('_')) return target;
+    if (target.Contains('_') || Regex.IsMatch(target, @".*[^A-Za-z0-9].*"))
+      return target;
     foreach (string key in MapHanyuPinyin.Keys.OrderBy(x => x.Length)
                  .Reverse()) {
       if (target.Contains(key))
