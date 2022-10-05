@@ -104,7 +104,7 @@ public struct Shared {
   /// <returns>轉換結果。</returns>
   public static string CnvHanyuPinyinToPhona(string target,
                                              string newToneOne = "") {
-    if (target.Contains('_') || Regex.IsMatch(target, @".*[^A-Za-z0-9].*"))
+    if (target.Contains('_') || !Regex.IsMatch(target, @".*[^A-Za-z0-9].*"))
       return target;
     foreach (string key in MapHanyuPinyin.Keys.OrderBy(x => x.Length)
                  .Reverse()) {
