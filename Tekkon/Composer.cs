@@ -40,7 +40,7 @@ public struct Composer {
                   Intonation = new();
 
   /// <summary>
-  /// 為拉丁字母專用的組音區。
+  /// 拼音組音區。
   /// </summary>
   public string RomajiBuffer = "";
 
@@ -226,6 +226,14 @@ public struct Composer {
   }
 
   /// <summary>
+  /// 按需更新拼音組音區的內容顯示。
+  /// </summary>
+  public void UpdateRomajiBuffer() {
+    RomajiBuffer = Shared.CnvPhonaToHanyuPinyin(target: Consonant.Value +
+                                                Semivowel.Value + Vowel.Value);
+  }
+
+  /// <summary>
   /// 接受傳入的按鍵訊號時的處理，處理對象為 String。<br />
   /// 另有同名函式可處理 UniChar 訊號。<br />
   /// <br />
@@ -345,6 +353,7 @@ public struct Composer {
       default:
         break;
     }
+    UpdateRomajiBuffer();
   }
 
   /// <summary>
@@ -468,7 +477,7 @@ public struct Composer {
   /// </summary>
   /// <param name="withNothingElse">追加判定「槽內是否僅有調號」。</param>
   /// <returns>有則真，無則假。</returns>
-  public bool HasToneMarker(bool withNothingElse = false) =>
+  public bool HasIntonation(bool withNothingElse = false) =>
       withNothingElse ? !Intonation.IsEmpty && Vowel.IsEmpty
                             && Semivowel.IsEmpty && Consonant.IsEmpty
                       : !Intonation.IsEmpty;

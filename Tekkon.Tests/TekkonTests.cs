@@ -78,7 +78,7 @@ public class TekkonTests {
     composer.ReceiveKey("l");     // ㄠ
 
     // Testing missing tone markers;
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(!toneMarkerIndicator);
 
     composer.ReceiveKey("3");  // 上聲
@@ -96,17 +96,17 @@ public class TekkonTests {
     Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ˙");
 
     // Testing having tone markers
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
     composer.Clear();
     composer.ReceiveKey("3");  // 上聲
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
 
     // Testing auto phonabet combination fixing process.
