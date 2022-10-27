@@ -37,7 +37,7 @@ public class TekkonTestsIntermediate {
     composer.ReceiveKey("l");     // ㄠ
 
     // Testing missing tone markers;
-    bool toneMarkerIndicator = composer.HasToneMarker();
+    bool toneMarkerIndicator = composer.HasIntonation();
     Assert.True(!toneMarkerIndicator);
 
     composer.ReceiveKey("3");  // 上聲
@@ -65,17 +65,17 @@ public class TekkonTestsIntermediate {
                     expected: "˙ㄉㄧㄠ");  // 中階測試項目
 
     // Testing having tone markers
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
     composer.Clear();
     composer.ReceiveKey("3");  // 上聲
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
   }
 
@@ -90,7 +90,7 @@ public class TekkonTestsIntermediate {
     composer.ReceiveKey("o");
 
     // Testing missing tone markers;
-    bool toneMarkerIndicator = composer.HasToneMarker();
+    bool toneMarkerIndicator = composer.HasIntonation();
     Assert.True(!toneMarkerIndicator);
 
     composer.ReceiveKey("3");  // 上聲
@@ -118,17 +118,17 @@ public class TekkonTestsIntermediate {
                     expected: "˙ㄉㄧㄠ");
 
     // Testing having tone markers
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
     composer.Clear();
     composer.ReceiveKey("3");  // 上聲
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
   }
 
@@ -145,7 +145,7 @@ public class TekkonTestsIntermediate {
     composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    bool toneMarkerIndicator = composer.HasToneMarker();
+    bool toneMarkerIndicator = composer.HasIntonation();
     Assert.True(!toneMarkerIndicator);
 
     composer.ReceiveKey("2");  // 陽平
@@ -173,17 +173,17 @@ public class TekkonTestsIntermediate {
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
     composer.Clear();
     composer.ReceiveKey("3");  // 上聲
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
   }
 
@@ -200,7 +200,7 @@ public class TekkonTestsIntermediate {
     composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    bool toneMarkerIndicator = composer.HasToneMarker();
+    bool toneMarkerIndicator = composer.HasIntonation();
     Assert.True(!toneMarkerIndicator);
 
     composer.ReceiveKey("2");  // 陽平
@@ -228,17 +228,17 @@ public class TekkonTestsIntermediate {
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
     composer.Clear();
     composer.ReceiveKey("3");  // 上聲
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
   }
 
@@ -255,7 +255,7 @@ public class TekkonTestsIntermediate {
     composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    bool toneMarkerIndicator = composer.HasToneMarker();
+    bool toneMarkerIndicator = composer.HasIntonation();
     Assert.True(!toneMarkerIndicator);
 
     composer.ReceiveKey("2");  // 陽平
@@ -283,17 +283,17 @@ public class TekkonTestsIntermediate {
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
     composer.Clear();
     composer.ReceiveKey("3");  // 上聲
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
   }
 
@@ -309,7 +309,7 @@ public class TekkonTestsIntermediate {
     composer.ReceiveKey("g");
 
     // Testing missing tone markers
-    bool toneMarkerIndicator = composer.HasToneMarker();
+    bool toneMarkerIndicator = composer.HasIntonation();
     Assert.True(!toneMarkerIndicator);
 
     composer.ReceiveKey("2");  // 陽平
@@ -337,17 +337,17 @@ public class TekkonTestsIntermediate {
                     expected: "˙ㄑㄩㄥ");
 
     // Testing having tone markers
-    toneMarkerIndicator = composer.HasToneMarker();
+    toneMarkerIndicator = composer.HasIntonation();
     Assert.True(toneMarkerIndicator);
 
     // Testing having not-only tone markers
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(!toneMarkerIndicator);
 
     // Testing having only tone markers
     composer.Clear();
     composer.ReceiveKey("3");  // 上聲
-    toneMarkerIndicator = composer.HasToneMarker(withNothingElse: true);
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
   }
 }
