@@ -229,7 +229,7 @@ public struct Composer {
   /// 按需更新拼音組音區的內容顯示。
   /// </summary>
   public void UpdateRomajiBuffer() {
-    RomajiBuffer = Shared.CnvPhonaToHanyuPinyin(target: Consonant.Value +
+    RomajiBuffer = Shared.CnvPhonaToHanyuPinyin(targetJoined: Consonant.Value +
                                                 Semivowel.Value + Vowel.Value);
   }
 

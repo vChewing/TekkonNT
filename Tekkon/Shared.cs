@@ -36,34 +36,34 @@ public struct Shared {
   /// <summary>
   /// 注音轉拼音，要求陰平必須是空格。
   /// </summary>
-  /// <param name="target">傳入的 String 對象物件。</param>
+  /// <param name="targetJoined">傳入的 String 對象物件。</param>
   /// <returns>漢語拼音字串。</returns>
-  public static string CnvPhonaToHanyuPinyin(string target) {
+  public static string CnvPhonaToHanyuPinyin(string targetJoined) {
     return ArrPhonaToHanyuPinyin.Aggregate(
-        target, (current, key) => current.Replace(key.Item1, key.Item2));
+        targetJoined, (current, key) => current.Replace(key.Item1, key.Item2));
   }
 
   /// <summary>
   /// 漢語拼音數字標調式轉漢語拼音教科書格式，要求陰平必須是數字 1。
   /// </summary>
-  /// <param name="target">傳入的 String 對象物件。</param>
+  /// <param name="targetJoined">傳入的 String 對象物件。</param>
   /// <returns>符合教科書排版規範的漢語拼音字串。</returns>
-  public static string CnvHanyuPinyinToTextbookStyle(string target) {
+  public static string CnvHanyuPinyinToTextbookStyle(string targetJoined) {
     return ArrHanyuPinyinTextbookStyleConversionTable.Aggregate(
-        target, (current, key) => current.Replace(key.Item1, key.Item2));
+        targetJoined, (current, key) => current.Replace(key.Item1, key.Item2));
   }
 
   /// <summary>
   /// 該函式負責將注音轉為教科書印刷的方式（先寫輕聲）。
   /// </summary>
   /// <param
-  /// name="target">要拿來做轉換處理的讀音鏈，以英文減號來分隔每個讀音。</param>
+  /// name="targetJoined">要拿來做轉換處理的讀音鏈，以英文減號來分隔每個讀音。</param>
   /// <param name="newSeparator">新的讀音分隔符。</param>
   /// <returns>經過轉換處理的讀音鏈。</returns>
   public static string CnvZhuyinChainToTextbookReading(
-      string target, string newSeparator = "-") {
+      string targetJoined, string newSeparator = "-") {
     List<string> arrReturn = new();
-    foreach (var neta in target.Split('-')) {
+    foreach (var neta in targetJoined.Split('-')) {
       if (neta.Length == 0) continue;
       var newString = neta;
       if (newString[^1] == '˙')
@@ -77,13 +77,13 @@ public struct Shared {
   /// 該函式用來恢復注音當中的陰平聲調，恢復之後會以「1」表示陰平。
   /// </summary>
   /// <param
-  /// name="target">要拿來做轉換處理的讀音鏈，以英文減號來分隔每個讀音。</param>
+  /// name="targetJoined">要拿來做轉換處理的讀音鏈，以英文減號來分隔每個讀音。</param>
   /// <param name="newSeparator">新的讀音分隔符。</param>
   /// <returns>經過轉換處理的讀音鏈。</returns>
-  public static string RestoreToneOneInZhuyinKey(string target,
+  public static string RestoreToneOneInZhuyinKey(string targetJoined,
                                                  string newSeparator = "-") {
     List<string> arrReturn = new();
-    foreach (var neta in target.Split('-')) {
+    foreach (var neta in targetJoined.Split('-')) {
       if (neta.Length == 0) continue;
       var newString = neta;
       if (!newString.Contains('ˊ') && !newString.Contains('ˇ') &&
@@ -97,28 +97,29 @@ public struct Shared {
   /// <summary>
   /// 該函式用來將漢語拼音轉為注音。
   /// </summary>
-  /// <param name="target">要轉換的漢語拼音內容，要求必須帶有 12345
+  /// <param name="targetJoined">要轉換的漢語拼音內容，要求必須帶有 12345
   /// 數字標調。</param>
   /// <param
   /// name="newToneOne">對陰平指定新的標記。預設情況下該標記為空字串。</param>
   /// <returns>轉換結果。</returns>
-  public static string CnvHanyuPinyinToPhona(string target,
+  public static string CnvHanyuPinyinToPhona(string targetJoined,
                                              string newToneOne = "") {
-    if (target.Contains('_') || !Regex.IsMatch(target, @".*[^A-Za-z0-9].*"))
-      return target;
+    if (targetJoined.Contains('_') ||
+        !Regex.IsMatch(targetJoined, @".*[^A-Za-z0-9].*"))
+      return targetJoined;
     foreach (string key in MapHanyuPinyin.Keys.OrderBy(x => x.Length)
                  .Reverse()) {
-      if (target.Contains(key))
-        target = target.Replace(key, MapHanyuPinyin[key]);
+      if (targetJoined.Contains(key))
+        targetJoined = targetJoined.Replace(key, MapHanyuPinyin[key]);
     }
     foreach (string key in MapArayuruPinyinIntonation.Keys
                  .OrderBy(x => x.Length)
                  .Reverse()) {
-      if (target.Contains(key))
-        target = target.Replace(
+      if (targetJoined.Contains(key))
+        targetJoined = targetJoined.Replace(
             key, key == "1" ? newToneOne : MapArayuruPinyinIntonation[key]);
     }
-    return target;
+    return targetJoined;
   }
 
   /// <summary>
