@@ -75,7 +75,7 @@ public struct Composer {
       case false:  // 注音輸出的場合
         string valReturnZhuyin = Value.Replace(" ", "");
         return isTextBookStyle
-                   ? Shared.CnvZhuyinChainToTextbookReading(valReturnZhuyin)
+                   ? Shared.CnvPhonaToTextbookReading(valReturnZhuyin)
                    : valReturnZhuyin;
       case true:  // 拼音輸出的場合
         string valReturnPinyin = Shared.CnvPhonaToHanyuPinyin(Value);

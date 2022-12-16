@@ -57,41 +57,29 @@ public struct Shared {
   /// 該函式負責將注音轉為教科書印刷的方式（先寫輕聲）。
   /// </summary>
   /// <param
-  /// name="targetJoined">要拿來做轉換處理的讀音鏈，以英文減號來分隔每個讀音。</param>
-  /// <param name="newSeparator">新的讀音分隔符。</param>
-  /// <returns>經過轉換處理的讀音鏈。</returns>
-  public static string CnvZhuyinChainToTextbookReading(
-      string targetJoined, string newSeparator = "-") {
-    List<string> arrReturn = new();
-    foreach (var neta in targetJoined.Split('-')) {
-      if (neta.Length == 0) continue;
-      var newString = neta;
-      if (newString[^1] == '˙')
-        newString = "˙" + newString.Substring(0, newString.Length - 1);
-      arrReturn.Add(newString);
-    }
-    return string.Join(newSeparator, arrReturn);
+  /// name="target">要拿來做轉換處理的讀音。</param>
+  /// <returns>經過轉換處理的讀音。</returns>
+  public static string CnvPhonaToTextbookReading(string target) {
+    if (target.Length == 0) return target;
+    string newString = target;
+    if (newString[^1] == '˙')
+      newString = "˙" + newString.Substring(0, newString.Length - 1);
+    return newString;
   }
 
   /// <summary>
   /// 該函式用來恢復注音當中的陰平聲調，恢復之後會以「1」表示陰平。
   /// </summary>
   /// <param
-  /// name="targetJoined">要拿來做轉換處理的讀音鏈，以英文減號來分隔每個讀音。</param>
-  /// <param name="newSeparator">新的讀音分隔符。</param>
-  /// <returns>經過轉換處理的讀音鏈。</returns>
-  public static string RestoreToneOneInZhuyinKey(string targetJoined,
-                                                 string newSeparator = "-") {
-    List<string> arrReturn = new();
-    foreach (var neta in targetJoined.Split('-')) {
-      if (neta.Length == 0) continue;
-      var newString = neta;
-      if (!newString.Contains('ˊ') && !newString.Contains('ˇ') &&
-          !newString.Contains('ˋ') && !newString.Contains('˙'))
-        newString += "1";
-      arrReturn.Add(newString);
-    }
-    return string.Join(newSeparator, arrReturn);
+  /// name="target">要拿來做轉換處理的讀音。</param>
+  /// <returns>經過轉換處理的讀音。</returns>
+  public static string RestoreToneOneInPhona(string target) {
+    if (target.Length == 0) return target;
+    string newString = target;
+    if (!newString.Contains('ˊ') && !newString.Contains('ˇ') &&
+        !newString.Contains('ˋ') && !newString.Contains('˙'))
+      newString += "1";
+    return newString;
   }
 
   /// <summary>
