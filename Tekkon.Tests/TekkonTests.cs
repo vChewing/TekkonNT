@@ -186,5 +186,46 @@ public class TekkonTests {
     Assert.AreEqual(Shared.CnvHanyuPinyinToPhona("bian4-le5-tian1"),
                     "ㄅㄧㄢˋ-ㄌㄜ˙-ㄊㄧㄢ");
   }
+
+  [Test]
+  public void TestPhonabetCombinationCorrection() {
+    Composer composer = new(arrange: MandarinParser.OfDachen, correction: true);
+    composer.ReceiveKeyFromPhonabet("ㄓ");
+    composer.ReceiveKeyFromPhonabet("ㄧ");
+    composer.ReceiveKeyFromPhonabet("ˋ");
+    Assert.AreEqual(composer.Value, "ㄓˋ");
+
+    composer.Clear();
+    composer.ReceiveKeyFromPhonabet("ㄓ");
+    composer.ReceiveKeyFromPhonabet("ㄩ");
+    composer.ReceiveKeyFromPhonabet("ˋ");
+    Assert.AreEqual(composer.Value, "ㄐㄩˋ");
+
+    composer.Clear();
+    composer.ReceiveKeyFromPhonabet("ㄓ");
+    composer.ReceiveKeyFromPhonabet("ㄧ");
+    composer.ReceiveKeyFromPhonabet("ㄢ");
+    Assert.AreEqual(composer.Value, "ㄓㄢ");
+
+    composer.Clear();
+    composer.ReceiveKeyFromPhonabet("ㄓ");
+    composer.ReceiveKeyFromPhonabet("ㄩ");
+    composer.ReceiveKeyFromPhonabet("ㄢ");
+    Assert.AreEqual(composer.Value, "ㄐㄩㄢ");
+
+    composer.Clear();
+    composer.ReceiveKeyFromPhonabet("ㄓ");
+    composer.ReceiveKeyFromPhonabet("ㄧ");
+    composer.ReceiveKeyFromPhonabet("ㄢ");
+    composer.ReceiveKeyFromPhonabet("ˋ");
+    Assert.AreEqual(composer.Value, "ㄓㄢˋ");
+
+    composer.Clear();
+    composer.ReceiveKeyFromPhonabet("ㄓ");
+    composer.ReceiveKeyFromPhonabet("ㄩ");
+    composer.ReceiveKeyFromPhonabet("ㄢ");
+    composer.ReceiveKeyFromPhonabet("ˋ");
+    Assert.AreEqual(composer.Value, "ㄐㄩㄢˋ");
+  }
 }
 }
