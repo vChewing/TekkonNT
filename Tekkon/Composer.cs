@@ -335,6 +335,20 @@ public struct Composer {
             Semivowel.Clear();
           break;
       }
+      if ((thePhone.Type is PhoneType.Intonation or PhoneType.Vowel) &&
+          (Consonant.Value is "ㄓ" or "ㄔ" or "ㄕ" or "ㄗ" or "ㄘ" or "ㄙ")) {
+        switch (Semivowel.Value) {
+          case "ㄧ":
+            Semivowel.Clear();
+            break;
+          case "ㄩ":
+            Consonant = Consonant.Value switch { "ㄓ" or "ㄗ" => new("ㄐ"),
+                                                 "ㄔ" or "ㄘ" => new("ㄑ"),
+                                                 "ㄕ" or "ㄙ" => new("ㄒ"),
+                                                 _ => Consonant };
+            break;
+        }
+      }
     }
     switch (thePhone.Type) {
       case PhoneType.Consonant:
