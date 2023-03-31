@@ -97,11 +97,12 @@ public struct Composer {
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
+      case MandarinParser.OfWadeGilesPinyin:
         string toneReturned =
             Intonation.Value switch { " " => "1", "ˊ" => "2", "ˇ" => "3",
                                       "ˋ" => "4", "˙" => "5",
                                       _ => "" };
-        return RomajiBuffer + toneReturned;
+        return RomajiBuffer.Replace("v", "ü") + toneReturned;
       case MandarinParser.OfDachen:
       case MandarinParser.OfDachen26:
       case MandarinParser.OfETen:
@@ -127,6 +128,7 @@ public struct Composer {
         case MandarinParser.OfYalePinyin:
         case MandarinParser.OfHualuoPinyin:
         case MandarinParser.OfUniversalPinyin:
+        case MandarinParser.OfWadeGilesPinyin:
           return Intonation.IsEmpty && RomajiBuffer == "";
         case MandarinParser.OfDachen:
         case MandarinParser.OfDachen26:
@@ -214,6 +216,8 @@ public struct Composer {
         return Shared.MapFakeSeigyou.ContainsKey(inputKey.ToString());
       case MandarinParser.OfStarlight:
         return Shared.MapStarlightStaticKeys.ContainsKey(inputKey.ToString());
+      case MandarinParser.OfWadeGilesPinyin:
+        return Shared.MapWadeGilesPinyinKeys.Contains(inputKey);
       case MandarinParser.OfHanyuPinyin:
       case MandarinParser.OfSecondaryPinyin:
       case MandarinParser.OfYalePinyin:
@@ -247,13 +251,15 @@ public struct Composer {
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
+      case MandarinParser.OfWadeGilesPinyin:
         if (Shared.MapArayuruPinyinIntonation.ContainsKey(input)) {
           string theTone = Shared.MapArayuruPinyinIntonation[input];
           Intonation = new(theTone);
         } else {
           // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
           // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
-          if (RomajiBuffer.Length > 5) {
+          int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
+          if (RomajiBuffer.Length > maxCount - 1) {
             RomajiBuffer = RomajiBuffer.Skip(1).ToString();
           }
           string romajiBufferBackup = RomajiBuffer + input;
@@ -381,74 +387,38 @@ public struct Composer {
                               bool isRomaji = false) {
     Clear();
     if (!isRomaji) {
-      foreach (char key in givenSequence) {
-        ReceiveKey(key);
-      }
-    } else {
-      switch (Parser) {
-        case MandarinParser.OfHanyuPinyin:
-          string dictResult1 = "";
-          if (Shared.MapHanyuPinyin.ContainsKey(givenSequence))
-            dictResult1 = Shared.MapHanyuPinyin[givenSequence];
-          if (dictResult1 != "") {
-            foreach (char phonabet in dictResult1) {
-              ReceiveKeyFromPhonabet(phonabet.ToString());
-            }
-          }
-          break;
-        case MandarinParser.OfSecondaryPinyin:
-          string dictResult2 = "";
-          if (Shared.MapSecondaryPinyin.ContainsKey(givenSequence))
-            dictResult2 = Shared.MapSecondaryPinyin[givenSequence];
-          if (dictResult2 != "") {
-            foreach (char phonabet in dictResult2) {
-              ReceiveKeyFromPhonabet(phonabet.ToString());
-            }
-          }
-          break;
-        case MandarinParser.OfYalePinyin:
-          string dictResult3 = "";
-          if (Shared.MapYalePinyin.ContainsKey(givenSequence))
-            dictResult3 = Shared.MapYalePinyin[givenSequence];
-          if (dictResult3 != "") {
-            foreach (char phonabet in dictResult3) {
-              ReceiveKeyFromPhonabet(phonabet.ToString());
-            }
-          }
-          break;
-        case MandarinParser.OfHualuoPinyin:
-          string dictResult4 = "";
-          if (Shared.MapHualuoPinyin.ContainsKey(givenSequence))
-            dictResult4 = Shared.MapHualuoPinyin[givenSequence];
-          if (dictResult4 != "") {
-            foreach (char phonabet in dictResult4) {
-              ReceiveKeyFromPhonabet(phonabet.ToString());
-            }
-          }
-          break;
-        case MandarinParser.OfUniversalPinyin:
-          string dictResult5 = "";
-          if (Shared.MapUniversalPinyin.ContainsKey(givenSequence))
-            dictResult5 = Shared.MapUniversalPinyin[givenSequence];
-          if (dictResult5 != "") {
-            foreach (char phonabet in dictResult5) {
-              ReceiveKeyFromPhonabet(phonabet.ToString());
-            }
-          }
-          break;
-        case MandarinParser.OfDachen:
-        case MandarinParser.OfDachen26:
-        case MandarinParser.OfETen:
-        case MandarinParser.OfETen26:
-        case MandarinParser.OfHsu:
-        case MandarinParser.OfIBM:
-        case MandarinParser.OfMiTAC:
-        case MandarinParser.OfSeigyou:
-        case MandarinParser.OfFakeSeigyou:
-        default:
-          break;
-      }
+      foreach (char key in givenSequence) ReceiveKey(key);
+      return;
     }
+    string dictResult = "";
+    switch (Parser) {
+      case MandarinParser.OfHanyuPinyin:
+        if (Shared.MapHanyuPinyin.ContainsKey(givenSequence))
+          dictResult = Shared.MapHanyuPinyin[givenSequence];
+        break;
+      case MandarinParser.OfSecondaryPinyin:
+        if (Shared.MapSecondaryPinyin.ContainsKey(givenSequence))
+          dictResult = Shared.MapSecondaryPinyin[givenSequence];
+        break;
+      case MandarinParser.OfYalePinyin:
+        if (Shared.MapYalePinyin.ContainsKey(givenSequence))
+          dictResult = Shared.MapYalePinyin[givenSequence];
+        break;
+      case MandarinParser.OfHualuoPinyin:
+        if (Shared.MapHualuoPinyin.ContainsKey(givenSequence))
+          dictResult = Shared.MapHualuoPinyin[givenSequence];
+        break;
+      case MandarinParser.OfUniversalPinyin:
+        if (Shared.MapUniversalPinyin.ContainsKey(givenSequence))
+          dictResult = Shared.MapUniversalPinyin[givenSequence];
+        break;
+      case MandarinParser.OfWadeGilesPinyin:
+        if (Shared.MapWadeGilesPinyin.ContainsKey(givenSequence))
+          dictResult = Shared.MapWadeGilesPinyin[givenSequence];
+        break;
+    }
+    foreach (char phonabet in dictResult)
+      ReceiveKeyFromPhonabet(phonabet.ToString());
   }
 
   /// <summary>
@@ -549,6 +519,7 @@ public struct Composer {
       case MandarinParser.OfYalePinyin:
       case MandarinParser.OfHualuoPinyin:
       case MandarinParser.OfUniversalPinyin:
+      case MandarinParser.OfWadeGilesPinyin:
       default:
         break;
     }

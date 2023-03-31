@@ -82,7 +82,9 @@ public enum MandarinParser {
   /// <summary>拼音：華羅拼音排列。</summary>
   OfHualuoPinyin = 103,
   /// <summary>拼音：通用拼音排列。</summary>
-  OfUniversalPinyin = 104
+  OfUniversalPinyin = 104,
+  /// <summary>拼音：韋氏拼音排列。</summary>
+  OfWadeGilesPinyin = 105
   // C# 似乎不支援在這裡直接給一個動態 var。
   // 所以，針對每個輸入模式的 token 轉換需要寫在輸入法內。
 }
