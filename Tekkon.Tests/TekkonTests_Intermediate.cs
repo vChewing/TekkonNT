@@ -350,5 +350,61 @@ public class TekkonTestsIntermediate {
     toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
     Assert.True(toneMarkerIndicator);
   }
+
+  [Test]
+  public void TestWadeGilesPinyinKeyReceivingAndCompositions() {
+    Composer composer = new(arrange: MandarinParser.OfWadeGilesPinyin);
+
+    // Test Key Receiving
+    composer.ReceiveKey(99);  // c
+    composer.ReceiveKey("h");
+    composer.ReceiveKey("'");  // 韋氏拼音清濁分辨鍵
+    composer.ReceiveKey("i");
+    composer.ReceiveKey("u");
+    composer.ReceiveKey("n");
+    composer.ReceiveKey("g");
+
+    // Testing missing tone markers
+    bool toneMarkerIndicator = composer.HasIntonation();
+    Assert.True(!toneMarkerIndicator);
+
+    composer.ReceiveKey("2");  // 陽平
+    Assert.AreEqual(actual: composer.Value, expected: "ㄑㄩㄥˊ");
+    composer.DoBackSpace();
+    composer.ReceiveKey(" ");  // 陰平
+    Assert.AreEqual(actual: composer.Value,
+                    expected: "ㄑㄩㄥ ");  // 這裡回傳的結果的陰平是空格
+
+    // Test Getting Displayed Composition
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true),
+                    expected: "qiong1");
+    Assert.AreEqual(actual: composer.GetComposition(isHanyuPinyin: true,
+                                                    isTextBookStyle: true),
+                    expected: "qiōng");
+    Assert.AreEqual(
+        actual: composer.GetInlineCompositionForDisplay(isHanyuPinyin: true),
+        expected: "ch'iung1");
+
+    // Test Tone 5
+    composer.ReceiveKey("7");  // 輕聲
+    Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ˙");
+    Assert.AreEqual(actual: composer.GetComposition(isTextBookStyle: true),
+                    expected: "˙ㄑㄩㄥ");
+
+    // Testing having tone markers
+    toneMarkerIndicator = composer.HasIntonation();
+    Assert.True(toneMarkerIndicator);
+
+    // Testing having not-only tone markers
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
+    Assert.True(!toneMarkerIndicator);
+
+    // Testing having only tone markers
+    composer.Clear();
+    composer.ReceiveKey("3");  // 上聲
+    toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
+    Assert.True(toneMarkerIndicator);
+  }
 }
 }
