@@ -238,6 +238,54 @@ public struct Composer {
   }
 
   /// <summary>
+  /// 自我變換單個注音資料值。
+  /// </summary>
+  /// <param name="strOf">要取代的內容。</param>
+  /// <param name="strWith">要取代成的內容。</param>
+  private void FixValue(string strOf, string strWith) {
+    Phonabet theOld = new(strOf);
+    if (!string.IsNullOrEmpty(strOf)) {
+      switch (theOld.Type) {
+        case PhoneType.Consonant when Consonant.Value == theOld.Value:
+          Consonant.Clear();
+          break;
+        case PhoneType.Semivowel when Semivowel.Value == theOld.Value:
+          Semivowel.Clear();
+          break;
+        case PhoneType.Vowel when Vowel.Value == theOld.Value:
+          Vowel.Clear();
+          break;
+        case PhoneType.Intonation when Intonation.Value == theOld.Value:
+          Intonation.Clear();
+          break;
+        case PhoneType.Null:
+          return;
+        default:
+          return;
+      }
+    }
+    Phonabet theNew = new(strWith);
+    switch (theNew.Type) {
+      case PhoneType.Consonant:
+        Consonant = theNew;
+        break;
+      case PhoneType.Semivowel:
+        Semivowel = theNew;
+        break;
+      case PhoneType.Vowel:
+        Vowel = theNew;
+        break;
+      case PhoneType.Intonation:
+        Intonation = theNew;
+        break;
+      case PhoneType.Null:
+        return;
+      default:
+        return;
+    }
+  }
+
+  /// <summary>
   /// 接受傳入的按鍵訊號時的處理，處理對象為 String。<br />
   /// 另有同名函式可處理 UniChar 訊號。<br />
   /// <br />
@@ -616,7 +664,7 @@ public struct Composer {
             Vowel = new("ㄡ");
             break;
           case true:
-            Vowel = new("ㄆ");
+            Consonant = new("ㄆ");
             break;
           default:
             Vowel = new("ㄡ");
@@ -630,12 +678,12 @@ public struct Composer {
 
     if ("dfjk ".Contains(key) && !Consonant.IsEmpty && Semivowel.IsEmpty &&
         Vowel.IsEmpty) {
-      Consonant.SelfReplace("ㄆ", "ㄡ");
-      Consonant.SelfReplace("ㄇ", "ㄢ");
-      Consonant.SelfReplace("ㄊ", "ㄤ");
-      Consonant.SelfReplace("ㄋ", "ㄣ");
-      Consonant.SelfReplace("ㄌ", "ㄥ");
-      Consonant.SelfReplace("ㄏ", "ㄦ");
+      FixValue("ㄆ", "ㄡ");
+      FixValue("ㄇ", "ㄢ");
+      FixValue("ㄊ", "ㄤ");
+      FixValue("ㄋ", "ㄣ");
+      FixValue("ㄌ", "ㄥ");
+      FixValue("ㄏ", "ㄦ");
     }
 
     // 後置修正
@@ -773,26 +821,23 @@ public struct Composer {
 
     if ("dfjs ".Contains(key)) {
       if (!Consonant.IsEmpty && Semivowel.IsEmpty && Vowel.IsEmpty) {
-        Consonant.SelfReplace("ㄍ", "ㄜ");
-        Consonant.SelfReplace("ㄋ", "ㄣ");
-        Consonant.SelfReplace("ㄌ", "ㄦ");
-        Consonant.SelfReplace("ㄎ", "ㄤ");
-        Consonant.SelfReplace("ㄇ", "ㄢ");
-      }
-      if (!Consonant.IsEmpty && Vowel.IsEmpty) {
-        Consonant.SelfReplace("ㄧ", "ㄝ");
+        FixValue("ㄍ", "ㄜ");
+        FixValue("ㄋ", "ㄣ");
+        FixValue("ㄌ", "ㄦ");
+        FixValue("ㄎ", "ㄤ");
+        FixValue("ㄇ", "ㄢ");
       }
       if (!Vowel.IsEmpty && "ㄢㄣㄤㄥ".Contains(Vowel.Value) &&
           Semivowel.IsEmpty) {
-        Consonant.SelfReplace("ㄐ", "ㄓ");
-        Consonant.SelfReplace("ㄑ", "ㄔ");
-        Consonant.SelfReplace("ㄒ", "ㄕ");
+        FixValue("ㄐ", "ㄓ");
+        FixValue("ㄑ", "ㄔ");
+        FixValue("ㄒ", "ㄕ");
       }
       if (!Consonant.IsEmpty && "ㄐㄑㄒ".Contains(Consonant.Value) &&
           Semivowel.IsEmpty) {
-        Consonant.SelfReplace("ㄐ", "ㄓ");
-        Consonant.SelfReplace("ㄑ", "ㄔ");
-        Consonant.SelfReplace("ㄒ", "ㄕ");
+        FixValue("ㄐ", "ㄓ");
+        FixValue("ㄑ", "ㄔ");
+        FixValue("ㄒ", "ㄕ");
       }
       if (Consonant.Value == "ㄏ" && Semivowel.IsEmpty && Vowel.IsEmpty) {
         Consonant.Clear();
@@ -847,13 +892,13 @@ public struct Composer {
 
     if ("67890 ".Contains(key)) {
       if (!Consonant.IsEmpty && Semivowel.IsEmpty && Vowel.IsEmpty) {
-        Consonant.SelfReplace("ㄈ", "ㄠ");
-        Consonant.SelfReplace("ㄍ", "ㄥ");
-        Consonant.SelfReplace("ㄎ", "ㄤ");
-        Consonant.SelfReplace("ㄌ", "ㄦ");
-        Consonant.SelfReplace("ㄇ", "ㄢ");
-        Consonant.SelfReplace("ㄋ", "ㄣ");
-        Consonant.SelfReplace("ㄊ", "ㄟ");
+        FixValue("ㄈ", "ㄠ");
+        FixValue("ㄍ", "ㄥ");
+        FixValue("ㄎ", "ㄤ");
+        FixValue("ㄌ", "ㄦ");
+        FixValue("ㄇ", "ㄢ");
+        FixValue("ㄋ", "ㄣ");
+        FixValue("ㄊ", "ㄟ");
       }
     }
 
@@ -1037,9 +1082,9 @@ public struct Composer {
         break;
       case PhoneType.Vowel:
         if (Semivowel.IsEmpty && !Consonant.IsEmpty) {
-          Consonant.SelfReplace("ㄐ", "ㄓ");
-          Consonant.SelfReplace("ㄑ", "ㄔ");
-          Consonant.SelfReplace("ㄒ", "ㄕ");
+          FixValue("ㄐ", "ㄓ");
+          FixValue("ㄑ", "ㄔ");
+          FixValue("ㄒ", "ㄕ");
         }
         break;
       case PhoneType.Null:
