@@ -62,6 +62,11 @@ public struct Composer {
   public string Value => $"{Consonant}{Semivowel}{Vowel}{Intonation}";
 
   /// <summary>
+  /// 當前注拼槽是否處於拼音模式。
+  /// </summary>
+  public bool IsPinyinMode => (int)Parser >= 100;
+
+  /// <summary>
   /// 與 value 類似，這個函式就是用來決定輸入法組字區內顯示的注音/拼音內容，
   /// 但可以指定是否輸出教科書格式（拼音的調號在字母上方、注音的輕聲寫在左側）。
   /// </summary>
@@ -91,30 +96,12 @@ public struct Composer {
   /// <param name="isHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
   /// <returns>拼音/注音讀音字串，依照適合在輸入法組字區內顯示出來的格式。</returns>
   public string GetInlineCompositionForDisplay(bool isHanyuPinyin = false) {
-    switch (Parser) {
-      case MandarinParser.OfHanyuPinyin:
-      case MandarinParser.OfSecondaryPinyin:
-      case MandarinParser.OfYalePinyin:
-      case MandarinParser.OfHualuoPinyin:
-      case MandarinParser.OfUniversalPinyin:
-      case MandarinParser.OfWadeGilesPinyin:
-        string toneReturned =
-            Intonation.Value switch { " " => "1", "ˊ" => "2", "ˇ" => "3",
-                                      "ˋ" => "4", "˙" => "5",
-                                      _ => "" };
-        return RomajiBuffer.Replace("v", "ü") + toneReturned;
-      case MandarinParser.OfDachen:
-      case MandarinParser.OfDachen26:
-      case MandarinParser.OfETen:
-      case MandarinParser.OfETen26:
-      case MandarinParser.OfHsu:
-      case MandarinParser.OfIBM:
-      case MandarinParser.OfMiTAC:
-      case MandarinParser.OfSeigyou:
-      case MandarinParser.OfFakeSeigyou:
-      default:
-        return GetComposition(isHanyuPinyin);
-    }
+    if (!IsPinyinMode) return GetComposition(isHanyuPinyin);
+    string toneReturned =
+        Intonation.Value switch { " " => "1", "ˊ" => "2", "ˇ" => "3",
+                                  "ˋ" => "4", "˙" => "5",
+                                  _ => "" };
+    return RomajiBuffer.Replace("v", "ü") + toneReturned;
   }
 
   /// <summary>
@@ -122,27 +109,9 @@ public struct Composer {
   /// </summary>
   public bool IsEmpty {
     get {
-      switch (Parser) {
-        case MandarinParser.OfHanyuPinyin:
-        case MandarinParser.OfSecondaryPinyin:
-        case MandarinParser.OfYalePinyin:
-        case MandarinParser.OfHualuoPinyin:
-        case MandarinParser.OfUniversalPinyin:
-        case MandarinParser.OfWadeGilesPinyin:
-          return Intonation.IsEmpty && RomajiBuffer == "";
-        case MandarinParser.OfDachen:
-        case MandarinParser.OfDachen26:
-        case MandarinParser.OfETen:
-        case MandarinParser.OfETen26:
-        case MandarinParser.OfHsu:
-        case MandarinParser.OfIBM:
-        case MandarinParser.OfMiTAC:
-        case MandarinParser.OfSeigyou:
-        case MandarinParser.OfFakeSeigyou:
-        default:
-          return Consonant.Value == "" && Semivowel.Value == "" &&
-                 Vowel.Value == "" && Intonation.Value == "";
-      }
+      if (IsPinyinMode) return Intonation.IsEmpty && RomajiBuffer == "";
+      return Consonant.Value == "" && Semivowel.Value == "" &&
+             Vowel.Value == "" && Intonation.Value == "";
     }
   }
 
@@ -293,40 +262,23 @@ public struct Composer {
   /// </summary>
   /// <param name="input">傳入的 String 內容。</param>
   public void ReceiveKey(string input) {
-    switch (Parser) {
-      case MandarinParser.OfHanyuPinyin:
-      case MandarinParser.OfSecondaryPinyin:
-      case MandarinParser.OfYalePinyin:
-      case MandarinParser.OfHualuoPinyin:
-      case MandarinParser.OfUniversalPinyin:
-      case MandarinParser.OfWadeGilesPinyin:
-        if (Shared.MapArayuruPinyinIntonation.ContainsKey(input)) {
-          string theTone = Shared.MapArayuruPinyinIntonation[input];
-          Intonation = new(theTone);
-        } else {
-          // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
-          // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
-          int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
-          if (RomajiBuffer.Length > maxCount - 1) {
-            RomajiBuffer = RomajiBuffer.Skip(1).ToString();
-          }
-          string romajiBufferBackup = RomajiBuffer + input;
-          ReceiveSequence(romajiBufferBackup, true);
-          RomajiBuffer = romajiBufferBackup;
-        }
-        break;
-      case MandarinParser.OfDachen:
-      case MandarinParser.OfDachen26:
-      case MandarinParser.OfETen:
-      case MandarinParser.OfETen26:
-      case MandarinParser.OfHsu:
-      case MandarinParser.OfIBM:
-      case MandarinParser.OfMiTAC:
-      case MandarinParser.OfSeigyou:
-      case MandarinParser.OfFakeSeigyou:
-      default:
-        ReceiveKeyFromPhonabet(Translate(input));
-        break;
+    if (!IsPinyinMode) {
+      ReceiveKeyFromPhonabet(Translate(input));
+      return;
+    }
+    if (Shared.MapArayuruPinyinIntonation.ContainsKey(input)) {
+      string theTone = Shared.MapArayuruPinyinIntonation[input];
+      Intonation = new(theTone);
+    } else {
+      // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
+      // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
+      int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
+      if (RomajiBuffer.Length > maxCount - 1) {
+        RomajiBuffer = RomajiBuffer.Skip(1).ToString();
+      }
+      string romajiBufferBackup = RomajiBuffer + input;
+      ReceiveSequence(romajiBufferBackup, true);
+      RomajiBuffer = romajiBufferBackup;
     }
   }
 
@@ -487,7 +439,7 @@ public struct Composer {
   /// 基本上就是按順序從游標前方開始往後刪。
   /// </summary>
   public void DoBackSpace() {
-    if (Shared.ArrPinyinParsers.Contains(Parser) && RomajiBuffer.Length != 0) {
+    if (IsPinyinMode && RomajiBuffer.Length != 0) {
       if (!Intonation.IsEmpty) {
         Intonation.Clear();
       } else {
@@ -520,7 +472,27 @@ public struct Composer {
   /// <param name="arrange">給該注拼槽指定注音排列。</param>
   public void EnsureParser(MandarinParser arrange = 0) { Parser = arrange; }
 
-  // MARK: - Parser Processings
+  /// <summary>
+  /// 拿取用來進行索引檢索用的注音字串。
+  ///
+  /// 如果輸入法的辭典索引是漢語拼音的話，你可能用不上這個函式。
+  /// <remarks>該字串結果不能為空，否則組字引擎會炸。
+  /// 因為 C# 沒有 string? 類型，所以必須用 string.IsNullOrEmpty()
+  /// 專門檢查。</remarks>
+  /// </summary>
+  /// <param name="Pronouncable">是否可以唸出。</param>
+  /// <returns>可用的查詢用注音字串，或者 nil。</returns>
+  public string PhonabetKeyForQuery(bool Pronouncable) {
+    string readingKey = GetComposition();
+    bool validKeyGeneratable = IsPinyinMode switch {
+      false => Pronouncable switch { false => !string.IsNullOrEmpty(readingKey),
+                                     true => IsPronouncable },
+      true => IsPronouncable
+    };
+    return validKeyGeneratable ? readingKey : null;
+  }
+
+  // MARK: - Parser Processing
 
   // 注拼槽對內處理用函式都在這一小節。
 
@@ -532,46 +504,30 @@ public struct Composer {
   /// <param name="key">傳入的 String 訊號。</param>
   /// <returns></returns>
   private string Translate(string key) {
-    switch (Parser) {
-      case MandarinParser.OfDachen:
-        return Shared.MapQwertyDachen.ContainsKey(key)
-                   ? Shared.MapQwertyDachen[key]
-                   : "";
-      case MandarinParser.OfDachen26:
-        return HandleDachen26(key);
-      case MandarinParser.OfETen:
-        return Shared.MapQwertyETenTraditional.ContainsKey(key)
-                   ? Shared.MapQwertyETenTraditional[key]
-                   : "";
-      case MandarinParser.OfHsu:
-        return HandleHsu(key);
-      case MandarinParser.OfETen26:
-        return HandleETen26(key);
-      case MandarinParser.OfIBM:
-        return Shared.MapQwertyIBM.ContainsKey(key) ? Shared.MapQwertyIBM[key]
-                                                    : "";
-      case MandarinParser.OfMiTAC:
-        return Shared.MapQwertyMiTAC.ContainsKey(key)
-                   ? Shared.MapQwertyMiTAC[key]
-                   : "";
-      case MandarinParser.OfSeigyou:
-        return Shared.MapSeigyou.ContainsKey(key) ? Shared.MapSeigyou[key] : "";
-      case MandarinParser.OfFakeSeigyou:
-        return Shared.MapFakeSeigyou.ContainsKey(key)
-                   ? Shared.MapFakeSeigyou[key]
-                   : "";
-      case MandarinParser.OfStarlight:
-        return HandleStarlight(key);
-      case MandarinParser.OfHanyuPinyin:
-      case MandarinParser.OfSecondaryPinyin:
-      case MandarinParser.OfYalePinyin:
-      case MandarinParser.OfHualuoPinyin:
-      case MandarinParser.OfUniversalPinyin:
-      case MandarinParser.OfWadeGilesPinyin:
-      default:
-        break;
-    }
-    return "";
+    if (IsPinyinMode) return "";
+    return Parser switch {
+      MandarinParser.OfDachen => Shared.MapQwertyDachen.ContainsKey(key)
+                                     ? Shared.MapQwertyDachen[key]
+                                     : "",
+      MandarinParser.OfDachen26 => HandleDachen26(key),
+      MandarinParser.OfETen => Shared.MapQwertyETenTraditional.ContainsKey(key)
+                                   ? Shared.MapQwertyETenTraditional[key]
+                                   : "",
+      MandarinParser.OfHsu => HandleHsu(key),
+      MandarinParser.OfETen26 => HandleETen26(key),
+      MandarinParser.OfIBM =>
+          Shared.MapQwertyIBM.ContainsKey(key) ? Shared.MapQwertyIBM[key] : "",
+      MandarinParser.OfMiTAC => Shared.MapQwertyMiTAC.ContainsKey(key)
+                                    ? Shared.MapQwertyMiTAC[key]
+                                    : "",
+      MandarinParser.OfSeigyou =>
+          Shared.MapSeigyou.ContainsKey(key) ? Shared.MapSeigyou[key] : "",
+      MandarinParser.OfFakeSeigyou => Shared.MapFakeSeigyou.ContainsKey(key)
+                                          ? Shared.MapFakeSeigyou[key]
+                                          : "",
+      MandarinParser.OfStarlight => HandleStarlight(key),
+      _ => ""
+    };
   }
 
   /// <summary>
