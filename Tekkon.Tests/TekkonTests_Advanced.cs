@@ -3032,9 +3032,8 @@ public class TekkonTestsAdvanced {
     // Testing handleHsu()
     Composer composer = new(arrange: MandarinParser.OfHsu);
     Assert.AreEqual(actual: composer.CnvSequence("kek"), expected: "ㄎㄧㄤ");
-    // Assert.AreEqual(actual: composer.CnvSequence("vezf"), expected:
-    // "ㄍㄧㄠˊ"); Assert.AreEqual(actual: composer.CnvSequence("gen"),
-    // expected: "ㄍㄧㄣ");
+    Assert.AreEqual(actual: composer.CnvSequence("gewd"), expected: "ㄍㄧㄠˊ");
+    Assert.AreEqual(actual: composer.CnvSequence("gen"), expected: "ㄍㄧㄣ");
     Assert.AreEqual(actual: composer.CnvSequence("bekd"), expected: "ㄅㄧㄤˊ");
     Assert.AreEqual(actual: composer.CnvSequence("bekj"), expected: "ㄅㄧㄤˋ");
     Assert.AreEqual(actual: composer.CnvSequence("dxk"), expected: "ㄉㄨㄤ");
@@ -4512,9 +4511,8 @@ public class TekkonTestsAdvanced {
     // Testing handleHsu()
     Composer composer = new(arrange: MandarinParser.OfStarlight);
     Assert.AreEqual(actual: composer.CnvSequence("kik"), expected: "ㄎㄧㄤ");
-    // Assert.AreEqual(actual: composer.CnvSequence("gif7"), expected:
-    // "ㄍㄧㄠˊ"); Assert.AreEqual(actual: composer.CnvSequence("gin"),
-    // expected: "ㄍㄧㄣ");
+    Assert.AreEqual(actual: composer.CnvSequence("gif7"), expected: "ㄍㄧㄠˊ");
+    Assert.AreEqual(actual: composer.CnvSequence("gin"), expected: "ㄍㄧㄣ");
     Assert.AreEqual(actual: composer.CnvSequence("bik7"), expected: "ㄅㄧㄤˊ");
     Assert.AreEqual(actual: composer.CnvSequence("bik9"), expected: "ㄅㄧㄤˋ");
     Assert.AreEqual(actual: composer.CnvSequence("duk"), expected: "ㄉㄨㄤ");

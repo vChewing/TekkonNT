@@ -550,6 +550,9 @@ public struct Composer {
         else
           Intonation = new("˙");
         break;
+      case "e":
+        if (Consonant.Value == "ㄍ") Consonant = new("ㄑ");
+        break;
       case "f":
         if (!IsPronouncable)
           Consonant = new("ㄈ");
@@ -997,7 +1000,7 @@ public struct Composer {
   }
 
   /// <summary>
-  /// 所有動態注音鍵盤佈局都會用到的共用糾錯處理步驟。
+  /// 所有動態注音排列都會用到的共用糾錯處理步驟。
   /// </summary>
   /// <param name="incomingPhonabet">傳入的注音 Phonabet。</param>
   private void CommonFixWhenHandlingDynamicArrangeInputs(
@@ -1006,9 +1009,10 @@ public struct Composer {
     switch (incomingPhonabet.Type) {
       case PhoneType.Semivowel:
         switch (Consonant.Value) {
-          case "ㄍ":  // 星光鍵盤應該也需要這個自動糾正，與許氏雷同
-            Consonant = incomingPhonabet.Value switch { "ㄧ" => new("ㄑ"),
-                                                        "ㄨ" => new("ㄍ"),
+          case "ㄍ":
+            // 這裡不處理「ㄍㄧ」到「ㄑㄧ」的轉換，因為只有倚天26需要處理這個。
+            // 星光鍵盤應該也需要這個自動糾正，與許氏雷同；
+            Consonant = incomingPhonabet.Value switch { "ㄨ" => new("ㄍ"),
                                                         "ㄩ" => new("ㄑ"),
                                                         _ => Consonant };
             break;
