@@ -67,6 +67,19 @@ public struct Composer {
   public bool IsPinyinMode => (int)Parser >= 100;
 
   /// <summary>
+  /// 統計有效的聲介韻（調）個數。
+  /// </summary>
+  /// <param name="withIntonation">是否統計聲調。</param>
+  /// <returns>統計出的有效 Phonabet 個數。</returns>
+  public int Count(bool withIntonation = false) {
+    int result = (withIntonation && Intonation.IsValid) ? 1 : 0;
+    result += Consonant.IsValid ? 1 : 0;
+    result += Semivowel.IsValid ? 1 : 0;
+    result += Vowel.IsValid ? 1 : 0;
+    return result;
+  }
+
+  /// <summary>
   /// 與 value 類似，這個函式就是用來決定輸入法組字區內顯示的注音/拼音內容，
   /// 但可以指定是否輸出教科書格式（拼音的調號在字母上方、注音的輕聲寫在左側）。
   /// </summary>
@@ -185,6 +198,8 @@ public struct Composer {
         return Shared.MapFakeSeigyou.ContainsKey(inputKey.ToString());
       case MandarinParser.OfStarlight:
         return Shared.MapStarlightStaticKeys.ContainsKey(inputKey.ToString());
+      case MandarinParser.OfAlvinLiu:
+        return Shared.MapAlvinLiuStaticKeys.ContainsKey(inputKey.ToString());
       case MandarinParser.OfWadeGilesPinyin:
         return Shared.MapWadeGilesPinyinKeys.Contains(inputKey);
       case MandarinParser.OfHanyuPinyin:
@@ -212,46 +227,18 @@ public struct Composer {
   /// <param name="strOf">要取代的內容。</param>
   /// <param name="strWith">要取代成的內容。</param>
   private void FixValue(string strOf, string strWith) {
-    Phonabet theOld = new(strOf);
-    if (!string.IsNullOrEmpty(strOf)) {
-      switch (theOld.Type) {
-        case PhoneType.Consonant when Consonant.Value == theOld.Value:
-          Consonant.Clear();
-          break;
-        case PhoneType.Semivowel when Semivowel.Value == theOld.Value:
-          Semivowel.Clear();
-          break;
-        case PhoneType.Vowel when Vowel.Value == theOld.Value:
-          Vowel.Clear();
-          break;
-        case PhoneType.Intonation when Intonation.Value == theOld.Value:
-          Intonation.Clear();
-          break;
-        case PhoneType.Null:
-          return;
-        default:
-          return;
-      }
-    }
-    Phonabet theNew = new(strWith);
-    switch (theNew.Type) {
-      case PhoneType.Consonant:
-        Consonant = theNew;
-        break;
-      case PhoneType.Semivowel:
-        Semivowel = theNew;
-        break;
-      case PhoneType.Vowel:
-        Vowel = theNew;
-        break;
-      case PhoneType.Intonation:
-        Intonation = theNew;
-        break;
-      case PhoneType.Null:
-        return;
-      default:
-        return;
-    }
+    if (string.IsNullOrEmpty(strOf) || string.IsNullOrEmpty(strWith)) return;
+    if (Consonant.Value == strOf)
+      Consonant.Clear();
+    else if (Semivowel.Value == strOf)
+      Semivowel.Clear();
+    else if (Vowel.Value == strOf)
+      Vowel.Clear();
+    else if (Intonation.Value == strOf)
+      Intonation.Clear();
+    else
+      return;
+    ReceiveKeyFromPhonabet(strWith);
   }
 
   /// <summary>
@@ -526,12 +513,13 @@ public struct Composer {
                                           ? Shared.MapFakeSeigyou[key]
                                           : "",
       MandarinParser.OfStarlight => HandleStarlight(key),
+      MandarinParser.OfAlvinLiu => HandleAlvinLiu(key),
       _ => ""
     };
   }
 
   /// <summary>
-  /// 倚天忘形注音排列比較麻煩，需要單獨處理。<br />
+  /// 倚天忘形注音排列是複合注音排列，需要單獨處理。<br />
   /// <br />
   /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
   /// </summary>
@@ -541,102 +529,59 @@ public struct Composer {
     string strReturn = Shared.MapETen26StaticKeys.ContainsKey(key)
                            ? Shared.MapETen26StaticKeys[key]
                            : "";
-    Phonabet incomingPhonabet = new(strReturn);
-
+    string keysToHandleHere = "dfhjklmnpqtw";
     switch (key) {
-      case "d":
-        if (!IsPronouncable)
-          Consonant = new("ㄉ");
-        else
-          Intonation = new("˙");
+      case "d" when IsPronouncable:
+        strReturn = "˙";
         break;
-      case "e":
-        if (Consonant.Value == "ㄍ") Consonant = new("ㄑ");
+      case "f" when IsPronouncable:
+        strReturn = "ˊ";
         break;
-      case "f":
-        if (!IsPronouncable)
-          Consonant = new("ㄈ");
-        else
-          Intonation = new("ˊ");
+      case "j" when IsPronouncable:
+        strReturn = "ˇ";
         break;
-      case "j":
-        if (!IsPronouncable)
-          Consonant = new("ㄖ");
-        else
-          Intonation = new("ˇ");
+      case "k" when IsPronouncable:
+        strReturn = "ˋ";
         break;
-      case "k":
-        if (!IsPronouncable)
-          Consonant = new("ㄎ");
-        else
-          Intonation = new("ˋ");
+      case "e" when Consonant.Value == "ㄍ":
+        Consonant = new("ㄑ");
         break;
-      case "h":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄏ");
-        else
-          Vowel = new("ㄦ");
+      case "p" when!Consonant.IsEmpty || Semivowel.Value == "ㄧ":
+        strReturn = "ㄡ";
         break;
-      case "l":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄌ");
-        else
-          Vowel = new("ㄥ");
+      case "h" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄦ";
         break;
-      case "m":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty) {
-          Consonant = new("ㄇ");
-        } else {
-          Vowel = new("ㄢ");
-        }
+      case "l" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄥ";
         break;
-      case "n":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄋ");
-        else
-          Vowel = new("ㄣ");
+      case "m" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄢ";
         break;
-      case "q":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄗ");
-        else
-          Vowel = new("ㄟ");
+      case "n" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄣ";
         break;
-      case "t":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄊ");
-        else
-          Vowel = new("ㄤ");
+      case "q" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄟ";
         break;
-      case "w":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄘ");
-        else
-          Vowel = new("ㄝ");
+      case "t" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄤ";
         break;
-      case "p":
-        switch (Consonant.IsEmpty) {
-          case true when Semivowel.IsEmpty:
-            Consonant = new("ㄆ");
-            break;
-          case true when Semivowel.Value == "ㄧ":
-            Vowel = new("ㄡ");
-            break;
-          case true:
-            Consonant = new("ㄆ");
-            break;
-          default:
-            Vowel = new("ㄡ");
-            break;
-        }
+      case "w" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄝ";
+        break;
+      default:
         break;
     }
 
-    // 處理特殊情形。
-    CommonFixWhenHandlingDynamicArrangeInputs(incomingPhonabet);
+    if (keysToHandleHere.DoesHave(key)) {
+      ReceiveKeyFromPhonabet(strReturn);
+    }
 
-    if ("dfjk ".Contains(key) && !Consonant.IsEmpty && Semivowel.IsEmpty &&
-        Vowel.IsEmpty) {
+    // 處理公共特殊情形。
+    CommonFixWhenHandlingDynamicArrangeInputs(new(strReturn));
+
+    if ("dfjk ".DoesHave(key) && Count() == 1) {
       FixValue("ㄆ", "ㄡ");
       FixValue("ㄇ", "ㄢ");
       FixValue("ㄊ", "ㄤ");
@@ -649,14 +594,14 @@ public struct Composer {
     if (Value == "ㄍ˙") Consonant = new("ㄑ");
 
     // 這些按鍵在上文處理過了，就不要再回傳了。
-    if ("dfhjklmnpqtw".Contains(key)) strReturn = "";
+    if (keysToHandleHere.DoesHave(key)) strReturn = "";
 
     // 回傳結果是空字串的話，不要緊，因為上文已經代處理過分配過程了。
     return strReturn;
   }
 
   /// <summary>
-  /// 許氏鍵盤與倚天忘形一樣同樣也比較麻煩，需要單獨處理。<br />
+  /// 許氏鍵盤注音排列是複合注音排列，需要單獨處理。<br />
   /// <br />
   /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
   /// </summary>
@@ -666,156 +611,93 @@ public struct Composer {
     string strReturn = Shared.MapHsuStaticKeys.ContainsKey(key)
                            ? Shared.MapHsuStaticKeys[key]
                            : "";
-    Phonabet incomingPhonabet = new(strReturn);
-
-    if (key == " " && Value == "ㄋ") {
-      Consonant.Clear();
-      Vowel = new("ㄣ");
-    }
-
+    string keysToHandleHere = "acdefghjklmns";
     switch (key) {
-      case "d":
-        if (IsPronouncable) {
-          Intonation = new("ˊ");
-        } else {
-          Consonant = new("ㄉ");
-        }
+      case "d" when IsPronouncable:
+        strReturn = "ˊ";
         break;
-      case "f":
-        if (IsPronouncable) {
-          Intonation = new("ˇ");
-        } else {
-          Consonant = new("ㄈ");
-        }
+      case "f" when IsPronouncable:
+        strReturn = "ˇ";
         break;
-      case "s":
-        if (IsPronouncable) {
-          Intonation = new("˙");
-        } else {
-          Consonant = new("ㄙ");
-        }
+      case "s" when IsPronouncable:
+        strReturn = "˙";
         break;
-      case "j":
-        if (IsPronouncable) {
-          Intonation = new("ˋ");
-        } else {
-          Consonant = new("ㄓ");
-        }
+      case "j" when IsPronouncable:
+        strReturn = "ˋ";
         break;
-      case "a":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty) {
-          Consonant = new("ㄘ");
-        } else {
-          Vowel = new("ㄟ");
-        }
+      case "a" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄟ";
         break;
-      case "v":
-        if (Semivowel.IsEmpty) {
-          Consonant = new("ㄔ");
-        } else {
-          Consonant = new("ㄑ");
-        }
+      case "v" when!Semivowel.IsEmpty:
+        strReturn = "ㄑ";
         break;
-      case "c":
-        if (Semivowel.IsEmpty) {
-          Consonant = new("ㄕ");
-        } else {
-          Consonant = new("ㄒ");
-        }
+      case "c" when!Semivowel.IsEmpty:
+        strReturn = "ㄒ";
         break;
-      case "e":
-        if (Semivowel.IsEmpty) {
-          Semivowel = new("ㄧ");
-        } else {
-          Vowel = new("ㄝ");
-        }
+      case "e" when!Semivowel.IsEmpty:
+        strReturn = "ㄝ";
         break;
-      case "g":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty) {
-          Consonant = new("ㄍ");
-        } else {
-          Vowel = new("ㄜ");
-        }
+      case "g" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄜ";
         break;
-      case "h":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty) {
-          Consonant = new("ㄏ");
-        } else {
-          Vowel = new("ㄛ");
-        }
+      case "h" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄛ";
         break;
-      case "k":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty) {
-          Consonant = new("ㄎ");
-        } else {
-          Vowel = new("ㄤ");
-        }
+      case "k" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄤ";
         break;
-      case "m":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty) {
-          Consonant = new("ㄇ");
-        } else {
-          Vowel = new("ㄢ");
-        }
+      case "m" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄢ";
         break;
-      case "n":
-        if (Consonant.IsEmpty && Semivowel.IsEmpty) {
-          Consonant = new("ㄋ");
-        } else {
-          Vowel = new("ㄣ");
-        }
+      case "n" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄣ";
         break;
       case "l":
-        if (Value == "" && !Consonant.IsEmpty && !Semivowel.IsEmpty)
-          Vowel = new("ㄦ");
-        else if (Consonant.IsEmpty && Semivowel.IsEmpty)
-          Consonant = new("ㄌ");
-        else
-          Vowel = new("ㄥ");
+        if (string.IsNullOrEmpty(Value) && !Consonant.IsEmpty &&
+            !Semivowel.IsEmpty) {
+          strReturn = "ㄦ";
+        } else if (Consonant.IsEmpty && Semivowel.IsEmpty) {
+          strReturn = "ㄌ";
+        } else {
+          strReturn = "ㄥ";
+        }
+        break;
+      default:
         break;
     }
 
-    // 處理特殊情形。
-    CommonFixWhenHandlingDynamicArrangeInputs(incomingPhonabet);
+    if (keysToHandleHere.DoesHave(key)) {
+      ReceiveKeyFromPhonabet(strReturn);
+    }
 
-    if ("dfjs ".Contains(key)) {
-      if (!Consonant.IsEmpty && Semivowel.IsEmpty && Vowel.IsEmpty) {
-        FixValue("ㄍ", "ㄜ");
-        FixValue("ㄋ", "ㄣ");
-        FixValue("ㄌ", "ㄦ");
-        FixValue("ㄎ", "ㄤ");
-        FixValue("ㄇ", "ㄢ");
-      }
-      if (!Vowel.IsEmpty && "ㄢㄣㄤㄥ".Contains(Vowel.Value) &&
-          Semivowel.IsEmpty) {
-        FixValue("ㄐ", "ㄓ");
-        FixValue("ㄑ", "ㄔ");
-        FixValue("ㄒ", "ㄕ");
-      }
-      if (!Consonant.IsEmpty && "ㄐㄑㄒ".Contains(Consonant.Value) &&
-          Semivowel.IsEmpty) {
-        FixValue("ㄐ", "ㄓ");
-        FixValue("ㄑ", "ㄔ");
-        FixValue("ㄒ", "ㄕ");
-      }
-      if (Consonant.Value == "ㄏ" && Semivowel.IsEmpty && Vowel.IsEmpty) {
-        Consonant.Clear();
-        Vowel = new("ㄛ");
-      }
+    // 處理公共特殊情形。
+    CommonFixWhenHandlingDynamicArrangeInputs(new(strReturn));
+
+    if ("dfjs ".DoesHave(key) && Count() == 1) {
+      FixValue("ㄒ", "ㄕ");
+      FixValue("ㄍ", "ㄜ");
+      FixValue("ㄋ", "ㄣ");
+      FixValue("ㄌ", "ㄦ");
+      FixValue("ㄎ", "ㄤ");
+      FixValue("ㄇ", "ㄢ");
+      FixValue("ㄐ", "ㄓ");
+      FixValue("ㄑ", "ㄔ");
+      FixValue("ㄒ", "ㄕ");
+      FixValue("ㄏ", "ㄛ");
     }
 
     // 後置修正
     if (Value == "ㄔ˙") Consonant = new("ㄑ");
 
-    // 這些按鍵在上文處理過了，就不要再回傳了。;
-    if ("acdefghjklmns".Contains(key)) strReturn = "";
+    // 這些按鍵在上文處理過了，就不要再回傳了。
+    if (keysToHandleHere.DoesHave(key)) strReturn = "";
 
-    // 回傳結果是空的話，不要緊，因為上文已經代處理過分配過程了。
+    // 回傳結果是空字串的話，不要緊，因為上文已經代處理過分配過程了。
     return strReturn;
   }
 
   /// <summary>
-  /// 星光排列一樣同樣也比較麻煩，需要單獨處理。<br />
+  /// 星光注音排列是複合注音排列，需要單獨處理。<br />
   /// <br />
   /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
   /// </summary>
@@ -825,51 +707,62 @@ public struct Composer {
     string strReturn = Shared.MapStarlightStaticKeys.ContainsKey(key)
                            ? Shared.MapStarlightStaticKeys[key]
                            : "";
-    Phonabet incomingPhonabet = new(strReturn);
-
+    string keysToHandleHere = "efgklmnt";
     switch (key) {
-      case "e":
-        return Semivowel.Value is "ㄧ" or "ㄩ" ? "ㄝ" : "ㄜ";
-      case "f":
-        return Vowel.Value is "ㄠ" || !IsPronouncable ? "ㄈ" : "ㄠ";
-      case "g":
-        return Vowel.Value is "ㄥ" || !IsPronouncable ? "ㄍ" : "ㄥ";
-      case "k":
-        return Vowel.Value is "ㄤ" || !IsPronouncable ? "ㄎ" : "ㄤ";
-      case "l":
-        return Vowel.Value is "ㄦ" || !IsPronouncable ? "ㄌ" : "ㄦ";
-      case "m":
-        return Vowel.Value is "ㄢ" || !IsPronouncable ? "ㄇ" : "ㄢ";
-      case "n":
-        return Vowel.Value is "ㄣ" || !IsPronouncable ? "ㄋ" : "ㄣ";
-      case "t":
-        return Vowel.Value is "ㄟ" || !IsPronouncable ? "ㄊ" : "ㄟ";
+      case "e" when "ㄧㄩ".DoesHave(Semivowel.Value):
+        strReturn = "ㄝ";
+        break;
+      case "f" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄠ";
+        break;
+      case "g" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄥ";
+        break;
+      case "k" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄤ";
+        break;
+      case "l" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄦ";
+        break;
+      case "m" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄢ";
+        break;
+      case "n" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄣ";
+        break;
+      case "t" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄟ";
+        break;
+      default:
+        break;
     }
 
-    // 處理特殊情形。
-    CommonFixWhenHandlingDynamicArrangeInputs(incomingPhonabet);
-
-    if ("67890 ".Contains(key)) {
-      if (!Consonant.IsEmpty && Semivowel.IsEmpty && Vowel.IsEmpty) {
-        FixValue("ㄈ", "ㄠ");
-        FixValue("ㄍ", "ㄥ");
-        FixValue("ㄎ", "ㄤ");
-        FixValue("ㄌ", "ㄦ");
-        FixValue("ㄇ", "ㄢ");
-        FixValue("ㄋ", "ㄣ");
-        FixValue("ㄊ", "ㄟ");
-      }
+    if (keysToHandleHere.DoesHave(key)) {
+      ReceiveKeyFromPhonabet(strReturn);
     }
 
-    // 這些按鍵在上文處理過了，就不要再回傳了。;
-    if ("efgklmn".Contains(key)) strReturn = "";
+    // 處理公共特殊情形。
+    CommonFixWhenHandlingDynamicArrangeInputs(new(strReturn));
 
-    // 回傳結果是空的話，不要緊，因為上文已經代處理過分配過程了。
+    if ("67890 ".DoesHave(key) && Count() == 1) {
+      FixValue("ㄈ", "ㄠ");
+      FixValue("ㄍ", "ㄥ");
+      FixValue("ㄎ", "ㄤ");
+      FixValue("ㄌ", "ㄦ");
+      FixValue("ㄇ", "ㄢ");
+      FixValue("ㄋ", "ㄣ");
+      FixValue("ㄊ", "ㄟ");
+    }
+
+    // 這些按鍵在上文處理過了，就不要再回傳了。
+    if (keysToHandleHere.DoesHave(key)) strReturn = "";
+
+    // 回傳結果是空字串的話，不要緊，因為上文已經代處理過分配過程了。
     return strReturn;
   }
 
   /// <summary>
-  /// 酷音大千二十六鍵一樣同樣也比較麻煩，需要單獨處理。<br />
+  /// 酷音大千二十六鍵注音排列是複合注音排列，需要單獨處理。<br />
   /// <br />
   /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
   /// </summary>
@@ -881,121 +774,161 @@ public struct Composer {
                            : "";
 
     switch (key) {
-      case "e":
-        if (IsPronouncable)
-          Intonation = new("ˊ");
-        else
-          Consonant = new("ㄍ");
+      case "e" when IsPronouncable:
+        strReturn = "ˊ";
         break;
-      case "r":
-        if (IsPronouncable)
-          Intonation = new("ˇ");
-        else
-          Consonant = new("ㄐ");
+      case "r" when IsPronouncable:
+        strReturn = "ˇ";
         break;
-      case "d":
-        if (IsPronouncable)
-          Intonation = new("ˋ");
-        else
-          Consonant = new("ㄎ");
+      case "d" when IsPronouncable:
+        strReturn = "ˋ";
         break;
-      case "y":
-        if (IsPronouncable)
-          Intonation = new("˙");
-        else
-          Consonant = new("ㄗ");
+      case "y" when IsPronouncable:
+        strReturn = "˙";
         break;
-      case "b":
-        if (!Consonant.IsEmpty || !Semivowel.IsEmpty)
-          Vowel = new("ㄝ");
-        else
-          Consonant = new("ㄖ");
+      case "b" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄝ";
         break;
-      case "i":
-        if (Vowel.IsEmpty || Vowel.Value == "ㄞ")
-          Vowel = new("ㄛ");
-        else
-          Vowel = new("ㄞ");
+      case "i" when Vowel.IsEmpty || Vowel.Value == "ㄞ":
+        strReturn = "ㄛ";
         break;
-      case "l":
-        if (Vowel.IsEmpty || Vowel.Value == "ㄤ")
-          Vowel = new("ㄠ");
-        else
-          Vowel = new("ㄤ");
+      case "l" when Vowel.IsEmpty || Vowel.Value == "ㄤ":
+        strReturn = "ㄠ";
         break;
-      case "n":
-        if (!Consonant.IsEmpty || !Semivowel.IsEmpty) {
-          if (Consonant.Value == "ㄙ" && Semivowel.IsEmpty && Vowel.IsEmpty)
-            Consonant.Clear();
-          Vowel = new("ㄥ");
-        } else
-          Consonant = new("ㄙ");
+      case "n" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        if (Value == "ㄙ") Consonant.Clear();
+        strReturn = "ㄥ";
         break;
-      case "o":
-        if (Vowel.IsEmpty || Vowel.Value == "ㄢ")
-          Vowel = new("ㄟ");
-        else
-          Vowel = new("ㄢ");
+      case "o" when Vowel.IsEmpty || Vowel.Value == "ㄢ":
+        strReturn = "ㄟ";
         break;
-      case "p":
-        if (Vowel.IsEmpty || Vowel.Value == "ㄦ")
-          Vowel = new("ㄣ");
-        else
-          Vowel = new("ㄦ");
+      case "p" when Vowel.IsEmpty || Vowel.Value == "ㄦ":
+        strReturn = "ㄣ";
         break;
-      case "q":
-        if (Consonant.IsEmpty || Consonant.Value == "ㄅ")
-          Consonant = new("ㄆ");
-        else
-          Consonant = new("ㄅ");
+      case "q" when Consonant.IsEmpty || Consonant.Value == "ㄅ":
+        strReturn = "ㄆ";
         break;
-      case "t":
-        if (Consonant.IsEmpty || Consonant.Value == "ㄓ")
-          Consonant = new("ㄔ");
-        else
-          Consonant = new("ㄓ");
+      case "t" when Consonant.IsEmpty || Consonant.Value == "ㄓ":
+        strReturn = "ㄔ";
         break;
-      case "w":
-        if (Consonant.IsEmpty || Consonant.Value == "ㄉ")
-          Consonant = new("ㄊ");
-        else
-          Consonant = new("ㄉ");
+      case "w" when Consonant.IsEmpty || Consonant.Value == "ㄉ":
+        strReturn = "ㄊ";
         break;
       case "m":
         if (Semivowel.Value == "ㄩ" && Vowel.Value != "ㄡ") {
           Semivowel.Clear();
-          Vowel = new("ㄡ");
+          strReturn = "ㄡ";
         } else if (Semivowel.Value != "ㄩ" && Vowel.Value == "ㄡ") {
-          Semivowel = new("ㄩ");
           Vowel.Clear();
+          strReturn = "ㄩ";
         } else if (!Semivowel.IsEmpty)
-          Vowel = new("ㄡ");
-        else {
-          ReceiveKeyFromPhonabet(
-              !Consonant.IsEmpty && "ㄐㄑㄒ".Contains(Consonant.Value) ? "ㄩ"
-                                                                       : "ㄡ");
-        }
+          strReturn = "ㄡ";
+        else
+          strReturn = ("ㄐㄑㄒ".DoesHave(Consonant.Value)) ? "ㄩ" : "ㄡ";
         break;
       case "u":
         if (Semivowel.Value == "ㄧ" && Vowel.Value != "ㄚ") {
           Semivowel.Clear();
-          Vowel = new("ㄚ");
+          strReturn = "ㄚ";
         } else if (Semivowel.Value != "ㄧ" && Vowel.Value == "ㄚ")
-          Semivowel = new("ㄧ");
+          strReturn = "ㄧ";
         else if (Semivowel.Value == "ㄧ" && Vowel.Value == "ㄚ") {
           Semivowel.Clear();
           Vowel.Clear();
         } else if (!Semivowel.IsEmpty)
-          Vowel = new("ㄚ");
+          strReturn = "ㄚ";
         else
-          Semivowel = new("ㄧ");
+          strReturn = "ㄧ";
         break;
     }
 
-    // 這些按鍵在上文處理過了，就不要再回傳了。
-    if ("qwtilopnbmuerdy".Contains(key)) strReturn = "";
-
     // 回傳結果是空的話，不要緊，因為上文已經代處理過分配過程了。
+    return strReturn;
+  }
+
+  /// <summary>
+  /// 劉氏擬音注音排列是複合注音排列，需要單獨處理。<br />
+  /// <br />
+  /// 回傳結果是空字串的話，不要緊，因為該函式內部已經處理過分配過程了。
+  /// <remarks>該處理兼顧了「原旨排列方案」與「微軟新注音相容排列方案」。</remarks>
+  /// </summary>
+  /// <param name="key">傳入的 string 訊號。</param>
+  /// <returns>尚無追加處理而直接傳回的結果，或者是空字串。</returns>
+  private string HandleAlvinLiu(string key = "") {
+    string strReturn = Shared.MapAlvinLiuStaticKeys.ContainsKey(key)
+                           ? Shared.MapAlvinLiuStaticKeys[key]
+                           : "";
+
+    // 前置處理專有特殊情形。
+    if (strReturn != "ㄦ" && !Vowel.IsEmpty) FixValue("ㄦ", "ㄌ");
+
+    string keysToHandleHere = "dfjlegnhkbmc";
+    switch (key) {
+      case "d" when IsPronouncable:
+        strReturn = "˙";
+        break;
+      case "f" when IsPronouncable:
+        strReturn = "ˊ";
+        break;
+      case "j" when IsPronouncable:
+        strReturn = "ˇ";
+        break;
+      case "l" when IsPronouncable:
+        strReturn = "ˋ";
+        break;
+      case "e" when "ㄧㄩ".DoesHave(Semivowel.Value):
+        strReturn = "ㄝ";
+        break;
+      case "g" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄤ";
+        break;
+      case "n" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄣ";
+        break;
+      case "h" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄞ";
+        break;
+      case "k" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄟ";
+        break;
+      case "b" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄢ";
+        break;
+      case "m" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄥ";
+        break;
+      case "c" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
+        strReturn = "ㄝ";
+        break;
+      default:
+        break;
+    }
+
+    if (keysToHandleHere.DoesHave(key)) {
+      ReceiveKeyFromPhonabet(strReturn);
+    }
+
+    // 處理公共特殊情形。
+    CommonFixWhenHandlingDynamicArrangeInputs(new(strReturn));
+
+    if ("dfjl ".DoesHave(key) && Count() == 1) {
+      FixValue("ㄑ", "ㄔ");
+      FixValue("ㄊ", "ㄦ");
+      FixValue("ㄍ", "ㄤ");
+      FixValue("ㄏ", "ㄞ");
+      FixValue("ㄐ", "ㄓ");
+      FixValue("ㄎ", "ㄟ");
+      FixValue("ㄌ", "ㄦ");
+      FixValue("ㄒ", "ㄕ");
+      FixValue("ㄅ", "ㄢ");
+      FixValue("ㄋ", "ㄣ");
+      FixValue("ㄇ", "ㄥ");
+    }
+
+    // 這些按鍵在上文處理過了，就不要再回傳了。
+    if (keysToHandleHere.DoesHave(key)) strReturn = "";
+
+    // 回傳結果是空字串的話，不要緊，因為上文已經代處理過分配過程了。
     return strReturn;
   }
 
@@ -1005,7 +938,7 @@ public struct Composer {
   /// <param name="incomingPhonabet">傳入的注音 Phonabet。</param>
   private void CommonFixWhenHandlingDynamicArrangeInputs(
       Phonabet incomingPhonabet) {
-    // 處理特殊情形。
+    // 處理公共特殊情形。
     switch (incomingPhonabet.Type) {
       case PhoneType.Semivowel:
         switch (Consonant.Value) {
@@ -1038,6 +971,11 @@ public struct Composer {
                                                         "ㄩ" => new("ㄒ"),
                                                         _ => Consonant };
             break;
+        }
+        if (incomingPhonabet.Value == "ㄨ") {
+          FixValue("ㄐ", "ㄓ");
+          FixValue("ㄑ", "ㄔ");
+          FixValue("ㄒ", "ㄕ");
         }
         break;
       case PhoneType.Vowel:

@@ -83,6 +83,10 @@ public struct Phonabet {
   /// </summary>
   /// <returns>若是空的話，則返回 true。</returns>
   public bool IsEmpty => string.IsNullOrEmpty(Value);
+  /// <summary>
+  /// 稟明自身是否是合理的聲介韻調。
+  /// </summary>
+  public bool IsValid => Type != PhoneType.Null;
 
   /// <summary>
   /// 初期化，會根據傳入的 input 字串參數來自動判定自身的 PhoneType 類型屬性值。
