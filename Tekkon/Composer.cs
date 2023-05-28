@@ -176,41 +176,47 @@ public struct Composer {
   /// <returns>傳入的字符是否合規。</returns>
   public bool InputValidityCheck(int inputCharCode) {
     char inputKey = (char)Math.Abs(inputCharCode);
-    if (inputKey >= 128) return false;
-    switch (Parser) {
-      case MandarinParser.OfDachen:
-        return Shared.MapQwertyDachen.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfDachen26:
-        return Shared.MapDachenCp26StaticKeys.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfETen:
-        return Shared.MapQwertyETenTraditional.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfHsu:
-        return Shared.MapHsuStaticKeys.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfETen26:
-        return Shared.MapETen26StaticKeys.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfIBM:
-        return Shared.MapQwertyIBM.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfMiTAC:
-        return Shared.MapQwertyMiTAC.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfSeigyou:
-        return Shared.MapSeigyou.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfFakeSeigyou:
-        return Shared.MapFakeSeigyou.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfStarlight:
-        return Shared.MapStarlightStaticKeys.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfAlvinLiu:
-        return Shared.MapAlvinLiuStaticKeys.ContainsKey(inputKey.ToString());
-      case MandarinParser.OfWadeGilesPinyin:
-        return Shared.MapWadeGilesPinyinKeys.Contains(inputKey);
-      case MandarinParser.OfHanyuPinyin:
-      case MandarinParser.OfSecondaryPinyin:
-      case MandarinParser.OfYalePinyin:
-      case MandarinParser.OfHualuoPinyin:
-      case MandarinParser.OfUniversalPinyin:
-        return Shared.MapArayuruPinyin.Contains(inputKey);
-      default:
-        return false;
-    }
+    return (inputKey < 128) && InputValidityCheckStr(inputKey.ToString());
+  }
+
+  /// <summary>
+  /// 用於檢測「某個輸入字符訊號的合規性」的函式。<br />
+  /// <br />
+  /// 注意：回傳結果會受到當前注音排列 parser 屬性的影響。
+  /// </summary>
+  /// <param name="charStr">傳入的字元（String）。</param>
+  /// <returns>傳入的字符是否合規。</returns>
+  public bool InputValidityCheckStr(string charStr) {
+    return Parser switch {
+      MandarinParser.OfDachen => Shared.MapQwertyDachen.ContainsKey(charStr),
+      MandarinParser.OfDachen26 =>
+          Shared.MapDachenCp26StaticKeys.ContainsKey(charStr),
+      MandarinParser.OfETen =>
+          Shared.MapQwertyETenTraditional.ContainsKey(charStr),
+      MandarinParser.OfHsu => Shared.MapHsuStaticKeys.ContainsKey(charStr),
+      MandarinParser.OfETen26 =>
+          Shared.MapETen26StaticKeys.ContainsKey(charStr),
+      MandarinParser.OfIBM => Shared.MapQwertyIBM.ContainsKey(charStr),
+      MandarinParser.OfMiTAC => Shared.MapQwertyMiTAC.ContainsKey(charStr),
+      MandarinParser.OfSeigyou => Shared.MapSeigyou.ContainsKey(charStr),
+      MandarinParser.OfFakeSeigyou =>
+          Shared.MapFakeSeigyou.ContainsKey(charStr),
+      MandarinParser.OfStarlight =>
+          Shared.MapStarlightStaticKeys.ContainsKey(charStr),
+      MandarinParser.OfAlvinLiu =>
+          Shared.MapAlvinLiuStaticKeys.ContainsKey(charStr),
+      MandarinParser.OfWadeGilesPinyin =>
+          Shared.MapWadeGilesPinyinKeys.Contains(charStr),
+      MandarinParser.OfHanyuPinyin => Shared.MapArayuruPinyin.Contains(charStr),
+      MandarinParser.OfSecondaryPinyin =>
+          Shared.MapArayuruPinyin.Contains(charStr),
+      MandarinParser.OfYalePinyin => Shared.MapArayuruPinyin.Contains(charStr),
+      MandarinParser.OfHualuoPinyin =>
+          Shared.MapArayuruPinyin.Contains(charStr),
+      MandarinParser.OfUniversalPinyin =>
+          Shared.MapArayuruPinyin.Contains(charStr),
+      _ => false
+    };
   }
 
   /// <summary>
