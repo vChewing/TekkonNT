@@ -59,7 +59,7 @@ public struct Shared {
   /// <param
   /// name="target">要拿來做轉換處理的讀音。</param>
   /// <returns>經過轉換處理的讀音。</returns>
-  public static string CnvPhonaToTextbookReading(string target) {
+  public static string CnvPhonaToTextbookStyle(string target) {
     if (target.Length == 0) return target;
     string newString = target;
     if (newString[^1] == '˙')

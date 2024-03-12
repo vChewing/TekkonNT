@@ -182,7 +182,7 @@ public class TekkonTests {
 
     // Testing tool functions
     Assert.AreEqual(Shared.RestoreToneOneInPhona("ㄉㄧㄠ"), "ㄉㄧㄠ1");
-    Assert.AreEqual(Shared.CnvPhonaToTextbookReading("ㄓㄜ˙"), "˙ㄓㄜ");
+    Assert.AreEqual(Shared.CnvPhonaToTextbookStyle("ㄓㄜ˙"), "˙ㄓㄜ");
     Assert.AreEqual(Shared.CnvHanyuPinyinToPhona("bian4-le5-tian1"),
                     "ㄅㄧㄢˋ-ㄌㄜ˙-ㄊㄧㄢ");
   }
