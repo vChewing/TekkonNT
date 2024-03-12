@@ -92,9 +92,8 @@ public struct Composer {
     switch (isHanyuPinyin) {
       case false:  // 注音輸出的場合
         string valReturnZhuyin = Value.Replace(" ", "");
-        return isTextBookStyle
-                   ? Shared.CnvPhonaToTextbookReading(valReturnZhuyin)
-                   : valReturnZhuyin;
+        return isTextBookStyle ? Shared.CnvPhonaToTextbookStyle(valReturnZhuyin)
+                               : valReturnZhuyin;
       case true:  // 拼音輸出的場合
         string valReturnPinyin = Shared.CnvPhonaToHanyuPinyin(Value);
         return isTextBookStyle
@@ -131,7 +130,7 @@ public struct Composer {
   /// <summary>
   /// 注拼槽內容是否可唸。
   /// </summary>
-  public bool IsPronouncable =>
+  public bool IsPronounceable =>
       !Vowel.IsEmpty || !Semivowel.IsEmpty || !Consonant.IsEmpty;
 
   // MARK: 注拼槽對外處理函式.
@@ -376,12 +375,13 @@ public struct Composer {
   /// 內容，用以處理一整串擊鍵輸入。</param>
   /// <param
   /// name="isRomaji">如果輸入的字串是諸如漢語拼音這樣的西文字母拼音的話，請啟用此選項。</param>
-  public void ReceiveSequence(string givenSequence = "",
-                              bool isRomaji = false) {
+  /// <returns>處理之後的結果。</returns>
+  public string ReceiveSequence(string givenSequence = "",
+                                bool isRomaji = false) {
     Clear();
     if (!isRomaji) {
       foreach (char key in givenSequence) ReceiveKey(key);
-      return;
+      return Value;
     }
     string dictResult = "";
     switch (Parser) {
@@ -412,6 +412,7 @@ public struct Composer {
     }
     foreach (char phonabet in dictResult)
       ReceiveKeyFromPhonabet(phonabet.ToString());
+    return Value;
   }
 
   /// <summary>
@@ -473,16 +474,17 @@ public struct Composer {
   /// 因為 C# 沒有 string? 類型，所以必須用 string.IsNullOrEmpty()
   /// 專門檢查。</remarks>
   /// </summary>
-  /// <param name="Pronouncable">是否可以唸出。</param>
+  /// <param name="pronounceableOnly">是否可以唸出。</param>
   /// <returns>可用的查詢用注音字串，或者 nil。</returns>
-  public string PhonabetKeyForQuery(bool Pronouncable) {
+  public string PhonabetKeyForQuery(bool pronounceableOnly) {
     string readingKey = GetComposition();
-    bool validKeyGeneratable = IsPinyinMode switch {
-      false => Pronouncable switch { false => !string.IsNullOrEmpty(readingKey),
-                                     true => IsPronouncable },
-      true => IsPronouncable
+    bool isSelfPronouncable = IsPronounceable;
+    bool validKeyAvailable = (IsPinyinMode, pronounceableOnly) switch {
+      (false, true) => isSelfPronouncable,
+      (false, false) => !string.IsNullOrEmpty(readingKey),
+      (true, _) => isSelfPronouncable,
     };
-    return validKeyGeneratable ? readingKey : null;
+    return validKeyAvailable ? readingKey : null;
   }
 
   // MARK: - Parser Processing
@@ -537,16 +539,16 @@ public struct Composer {
                            : "";
     string keysToHandleHere = "dfhjklmnpqtw";
     switch (key) {
-      case "d" when IsPronouncable:
+      case "d" when IsPronounceable:
         strReturn = "˙";
         break;
-      case "f" when IsPronouncable:
+      case "f" when IsPronounceable:
         strReturn = "ˊ";
         break;
-      case "j" when IsPronouncable:
+      case "j" when IsPronounceable:
         strReturn = "ˇ";
         break;
-      case "k" when IsPronouncable:
+      case "k" when IsPronounceable:
         strReturn = "ˋ";
         break;
       case "e" when Consonant.Value == "ㄍ":
@@ -619,16 +621,16 @@ public struct Composer {
                            : "";
     string keysToHandleHere = "acdefghjklmns";
     switch (key) {
-      case "d" when IsPronouncable:
+      case "d" when IsPronounceable:
         strReturn = "ˊ";
         break;
-      case "f" when IsPronouncable:
+      case "f" when IsPronounceable:
         strReturn = "ˇ";
         break;
-      case "s" when IsPronouncable:
+      case "s" when IsPronounceable:
         strReturn = "˙";
         break;
-      case "j" when IsPronouncable:
+      case "j" when IsPronounceable:
         strReturn = "ˋ";
         break;
       case "a" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
@@ -780,16 +782,16 @@ public struct Composer {
                            : "";
 
     switch (key) {
-      case "e" when IsPronouncable:
+      case "e" when IsPronounceable:
         strReturn = "ˊ";
         break;
-      case "r" when IsPronouncable:
+      case "r" when IsPronounceable:
         strReturn = "ˇ";
         break;
-      case "d" when IsPronouncable:
+      case "d" when IsPronounceable:
         strReturn = "ˋ";
         break;
-      case "y" when IsPronouncable:
+      case "y" when IsPronounceable:
         strReturn = "˙";
         break;
       case "b" when!Consonant.IsEmpty || !Semivowel.IsEmpty:
@@ -870,16 +872,16 @@ public struct Composer {
 
     string keysToHandleHere = "dfjlegnhkbmc";
     switch (key) {
-      case "d" when IsPronouncable:
+      case "d" when IsPronounceable:
         strReturn = "˙";
         break;
-      case "f" when IsPronouncable:
+      case "f" when IsPronounceable:
         strReturn = "ˊ";
         break;
-      case "j" when IsPronouncable:
+      case "j" when IsPronounceable:
         strReturn = "ˇ";
         break;
-      case "l" when IsPronouncable:
+      case "l" when IsPronounceable:
         strReturn = "ˋ";
         break;
       case "e" when "ㄧㄩ".DoesHave(Semivowel.Value):
