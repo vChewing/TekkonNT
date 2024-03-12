@@ -1,26 +1,10 @@
 // (c) 2022 and onwards The vChewing Project (MIT-NTL License).
-/*
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
-the Software, and to permit persons to whom the Software is furnished to do so,
-subject to the following conditions:
-
-1. The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-2. No trademark license is granted to use the trade names, trademarks, service
-marks, or product names of Contributor, except as required to fulfill notice
-requirements above.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
-COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
+// ====================
+// This code is released under the MIT license (SPDX-License-Identifier: MIT)
+// ... with NTL restriction stating that:
+// No trademark license is granted to use the trade names, trademarks, service
+// marks, or product names of Contributor, except as required to fulfill notice
+// requirements defined in MIT License.
 
 using System;
 using System.Linq;
@@ -335,15 +319,21 @@ public struct Composer {
       }
       if ((thePhone.Type is PhoneType.Intonation or PhoneType.Vowel) &&
           (Consonant.Value is "ㄓ" or "ㄔ" or "ㄕ" or "ㄗ" or "ㄘ" or "ㄙ")) {
-        switch (Semivowel.Value) {
-          case "ㄧ":
+        switch (Semivowel.Value, Consonant.Value) {
+          case ("ㄧ", _):
             Semivowel.Clear();
             break;
-          case "ㄩ":
-            Consonant = Consonant.Value switch { "ㄓ" or "ㄗ" => new("ㄐ"),
-                                                 "ㄔ" or "ㄘ" => new("ㄑ"),
-                                                 "ㄕ" or "ㄙ" => new("ㄒ"),
-                                                 _ => Consonant };
+          case ("ㄩ", "ㄓ"):
+          case ("ㄩ", "ㄗ"):
+            Consonant = new("ㄐ");
+            break;
+          case ("ㄩ", "ㄔ"):
+          case ("ㄩ", "ㄘ"):
+            Consonant = new("ㄑ");
+            break;
+          case ("ㄩ", "ㄕ"):
+          case ("ㄩ", "ㄙ"):
+            Consonant = new("ㄒ");
             break;
         }
       }
@@ -829,10 +819,10 @@ public struct Composer {
         } else if (Semivowel.Value != "ㄩ" && Vowel.Value == "ㄡ") {
           Vowel.Clear();
           strReturn = "ㄩ";
-        } else if (!Semivowel.IsEmpty)
+        } else if (!Semivowel.IsEmpty || !"ㄐㄑㄒ".DoesHave(Consonant.Value))
           strReturn = "ㄡ";
         else
-          strReturn = ("ㄐㄑㄒ".DoesHave(Consonant.Value)) ? "ㄩ" : "ㄡ";
+          strReturn = "ㄩ";
         break;
       case "u":
         if (Semivowel.Value == "ㄧ" && Vowel.Value != "ㄚ") {
@@ -949,6 +939,17 @@ public struct Composer {
     // 處理公共特殊情形。
     switch (incomingPhonabet.Type) {
       case PhoneType.Semivowel:
+        string newConstantStr =
+            (Consonant.Value, incomingPhonabet.Value) switch {
+              ("ㄓ", "ㄧ") => "ㄐ",
+              ("ㄓ", "ㄩ") => "ㄐ",
+              ("ㄍ", "ㄩ") => "ㄑ",
+              ("ㄔ", "ㄧ") => "ㄑ",
+              ("ㄔ", "ㄩ") => "ㄑ",
+              ("ㄕ", "ㄧ") => "ㄒ",
+              ("ㄕ", "ㄩ") => "ㄒ",
+              _ => "",
+            };
         switch (Consonant.Value) {
           case "ㄍ":
             // 這裡不處理「ㄍㄧ」到「ㄑㄧ」的轉換，因為只有倚天26需要處理這個。
