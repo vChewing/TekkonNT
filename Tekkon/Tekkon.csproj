@@ -1,7 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
     <CodePage>65001</CodePage>
     <ReleaseVersion>1.6.0</ReleaseVersion>
     <PackageId>vChewing.Tekkon</PackageId>
@@ -21,14 +20,14 @@
     <Description>Tekkon Engine is a module made for processing combo-composition of stroke-based Mandarin Chinese phonetics (i.e. Zhuyin / Bopomofo).</Description>
     <PackageProjectUrl>https://github.com/ShikiSuen/TekkonNT</PackageProjectUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <LangVersion>6</LangVersion>
+    <TargetFrameworks>net46;net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <LangVersion>10.0</LangVersion>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <LangVersion>10.0</LangVersion>
     <DebugType></DebugType>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>

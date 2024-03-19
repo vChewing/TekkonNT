@@ -12,7 +12,7 @@ namespace Tekkon.Tests {
 public class TekkonTestsIntermediate {
   [Test]
   public void TestPhonabetKeyReceivingAndCompositions_Intermediate() {
-    Composer composer = new(arrange: MandarinParser.OfDachen);
+    Composer composer = new Composer(arrange: MandarinParser.OfDachen);
 
     // Test Key Receiving;
     composer.ReceiveKey(0x0032);  // 2, ㄉ
@@ -65,7 +65,7 @@ public class TekkonTestsIntermediate {
 
   [Test]
   public void TestHanyuPinyinKeyReceivingAndCompositions_Full() {
-    Composer composer = new(arrange: MandarinParser.OfHanyuPinyin);
+    Composer composer = new Composer(arrange: MandarinParser.OfHanyuPinyin);
 
     // Test Key Receiving
     composer.ReceiveKey(100);  // d
@@ -118,7 +118,7 @@ public class TekkonTestsIntermediate {
 
   [Test]
   public void TestSecondaryPinyinKeyReceivingAndCompositions() {
-    Composer composer = new(arrange: MandarinParser.OfSecondaryPinyin);
+    Composer composer = new Composer(arrange: MandarinParser.OfSecondaryPinyin);
 
     // Test Key Receiving
     composer.ReceiveKey(99);  // c
@@ -173,7 +173,7 @@ public class TekkonTestsIntermediate {
 
   [Test]
   public void TestYalePinyinKeyReceivingAndCompositions() {
-    Composer composer = new(arrange: MandarinParser.OfYalePinyin);
+    Composer composer = new Composer(arrange: MandarinParser.OfYalePinyin);
 
     // Test Key Receiving
     composer.ReceiveKey(99);  // c
@@ -228,7 +228,7 @@ public class TekkonTestsIntermediate {
 
   [Test]
   public void TestHualuoPinyinKeyReceivingAndCompositions() {
-    Composer composer = new(arrange: MandarinParser.OfHualuoPinyin);
+    Composer composer = new Composer(arrange: MandarinParser.OfHualuoPinyin);
 
     // Test Key Receiving
     composer.ReceiveKey(99);  // c
@@ -283,7 +283,7 @@ public class TekkonTestsIntermediate {
 
   [Test]
   public void TestUniversalPinyinKeyReceivingAndCompositions() {
-    Composer composer = new(arrange: MandarinParser.OfUniversalPinyin);
+    Composer composer = new Composer(arrange: MandarinParser.OfUniversalPinyin);
 
     // Test Key Receiving
     composer.ReceiveKey(99);  // c
@@ -337,7 +337,7 @@ public class TekkonTestsIntermediate {
 
   [Test]
   public void TestWadeGilesPinyinKeyReceivingAndCompositions() {
-    Composer composer = new(arrange: MandarinParser.OfWadeGilesPinyin);
+    Composer composer = new Composer(arrange: MandarinParser.OfWadeGilesPinyin);
 
     // Test Key Receiving
     composer.ReceiveKey(99);  // c
