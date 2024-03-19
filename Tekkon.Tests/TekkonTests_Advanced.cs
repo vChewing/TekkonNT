@@ -8,8 +8,7 @@
 
 using NUnit.Framework;
 
-namespace Tekkon.Tests;
-
+namespace Tekkon.Tests {
 public class TekkonTestsAdvanced {
   // MARK: - Keyboard Arrangement Tests
 
@@ -27,7 +26,7 @@ public class TekkonTestsAdvanced {
   [Test]
   public void TestQwertyDachenKeys() {
     // Testing Dachen Traditional Mapping (QWERTY);
-    Composer composer = new(arrange: MandarinParser.OfDachen);
+    Composer composer = new Composer(arrange: MandarinParser.OfDachen);
     int counter = 0;
     CheckEq(ref counter, ref composer, "18 ", "ㄅㄚ ");
     CheckEq(ref counter, ref composer, "m,4", "ㄩㄝˋ");
@@ -49,7 +48,7 @@ public class TekkonTestsAdvanced {
   [Test]
   public void TestDachen26Keys() {
     // Testing handleDachen26()
-    Composer composer = new(arrange: MandarinParser.OfDachen26);
+    Composer composer = new Composer(arrange: MandarinParser.OfDachen26);
     int counter = 0;
     CheckEq(ref counter, ref composer, "dull", "ㄎㄧㄤ");
     CheckEq(ref counter, ref composer, "eule", "ㄍㄧㄠˊ");
@@ -1530,7 +1529,7 @@ public class TekkonTestsAdvanced {
   [Test]
   public void TestETen26Keys() {
     // Testing handleETen26()
-    Composer composer = new(arrange: MandarinParser.OfETen26);
+    Composer composer = new Composer(arrange: MandarinParser.OfETen26);
     int counter = 0;
     CheckEq(ref counter, ref composer, "ket", "ㄎㄧㄤ");
     // CheckEq(ref counter, ref composer, "vezf"), expected:
@@ -3012,7 +3011,7 @@ public class TekkonTestsAdvanced {
   [Test]
   public void TestHsuKeys() {
     // Testing handleHsu()
-    Composer composer = new(arrange: MandarinParser.OfHsu);
+    Composer composer = new Composer(arrange: MandarinParser.OfHsu);
     int counter = 0;
     CheckEq(ref counter, ref composer, "kek", "ㄎㄧㄤ");
     CheckEq(ref counter, ref composer, "gewd", "ㄍㄧㄠˊ");
@@ -4493,7 +4492,7 @@ public class TekkonTestsAdvanced {
   [Test]
   public void TestStarlightKeys() {
     // Testing handleHsu()
-    Composer composer = new(arrange: MandarinParser.OfStarlight);
+    Composer composer = new Composer(arrange: MandarinParser.OfStarlight);
     int counter = 0;
     CheckEq(ref counter, ref composer, "kik", "ㄎㄧㄤ");
     CheckEq(ref counter, ref composer, "gif7", "ㄍㄧㄠˊ");
@@ -5974,7 +5973,7 @@ public class TekkonTestsAdvanced {
   [Test]
   public void TestAlvinLiuKeys() {
     // Testing handleHsu()
-    Composer composer = new(arrange: MandarinParser.OfAlvinLiu);
+    Composer composer = new Composer(arrange: MandarinParser.OfAlvinLiu);
     int counter = 0;
     CheckEq(ref counter, ref composer, "kig", "ㄎㄧㄤ");
     CheckEq(ref counter, ref composer, "giwf", "ㄍㄧㄠˊ");
@@ -7525,4 +7524,6 @@ public class TekkonTestsAdvanced {
     CheckEq(ref counter, ref composer, "ycl", "ㄩㄝˋ");
     Assert.AreEqual(counter, 0);
   }
+}
+
 }

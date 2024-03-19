@@ -6,7 +6,6 @@
 // marks, or product names of Contributor, except as required to fulfill notice
 // requirements defined in MIT License.
 
-using System;
 using System.Linq;
 
 namespace Tekkon {
@@ -56,12 +55,12 @@ public struct Phonabet {
   /// <summary>
   /// 聲介韻調種類。
   /// </summary>
-  public PhoneType Type = PhoneType.Null;
+  public PhoneType Type;
   /// <summary>
   /// 承載的字元內容。
   /// </summary>
   /// <value>要承載的字元內容值。</value>
-  public string Value { get; private set; } = "";
+  public string Value { get; private set; }
   /// <summary>
   /// 該 Phonabet 注音符號組件內容是否為空。
   /// </summary>
@@ -77,6 +76,8 @@ public struct Phonabet {
   /// </summary>
   /// <param name="input">傳入的字串參數</param>
   public Phonabet(string input = "") {
+    Value = "";
+    Type = PhoneType.Null;
     if (string.IsNullOrEmpty(input)) return;
     if (!AllowedPhonabets.Contains(input.LastOrDefault())) return;
     Value = input.LastOrDefault().ToString();
@@ -84,10 +85,16 @@ public struct Phonabet {
   }
 
   /// <summary>
+  /// Unity 2017.4 用的 C# 6.0 的 String 是可以 null
+  /// 的，影響了鐵恨引擎的一些內部運算。這裡用了這麼一個應對變數。
+  /// </summary>
+  public char Char => string.IsNullOrEmpty(Value) ? '？' : Value.First();
+
+  /// <summary>
   /// 自我清空內容。
   /// </summary>
   public void Clear() {
-    Value = "";
+    if (Value != null) Value = "";
     Type = PhoneType.Null;
   }
 
@@ -126,7 +133,7 @@ public struct Phonabet {
   /// 返回經過雜湊化的資料實體。
   /// </summary>
   /// <returns>經過雜湊化的資料實體。</returns>
-  public override int GetHashCode() { return HashCode.Combine(Value); }
+  public override int GetHashCode() { return Value.GetHashCode(); }
   /// <summary>
   /// 返回經過字串化的資料實體。
   /// </summary>

@@ -12,11 +12,11 @@ namespace Tekkon.Tests {
 public class TekkonTests {
   [Test]
   public void TestInitializingPhonabet() {
-    Phonabet thePhonabetNull = new("0");
-    Phonabet thePhonabetA = new("ㄉ");
-    Phonabet thePhonabetB = new("ㄧ");
-    Phonabet thePhonabetC = new("ㄠ");
-    Phonabet thePhonabetD = new("ˇ");
+    Phonabet thePhonabetNull = new Phonabet("0");
+    Phonabet thePhonabetA = new Phonabet("ㄉ");
+    Phonabet thePhonabetB = new Phonabet("ㄧ");
+    Phonabet thePhonabetC = new Phonabet("ㄠ");
+    Phonabet thePhonabetD = new Phonabet("ˇ");
     Assert.True(thePhonabetNull.Type == PhoneType.Null &&
                 thePhonabetA.Type == PhoneType.Consonant &&
                 thePhonabetB.Type == PhoneType.Semivowel &&
@@ -27,7 +27,7 @@ public class TekkonTests {
   [Test]
   public void TestIsValidKeyWithKeys() {
     bool result;
-    Composer composer = new(arrange: MandarinParser.OfDachen);
+    Composer composer = new Composer(arrange: MandarinParser.OfDachen);
 
     // Testing Failed Key
     result = composer.InputValidityCheck(0x0024);
@@ -52,7 +52,7 @@ public class TekkonTests {
   // 下面這個測試不完全。完全版本放在 Intermediate 測試當中。
   [Test]
   public void TestPhonabetKeyReceivingAndCompositions() {
-    Composer composer = new(arrange: MandarinParser.OfDachen);
+    Composer composer = new Composer(arrange: MandarinParser.OfDachen);
     bool toneMarkerIndicator;
 
     // Test Key Receiving;
@@ -179,7 +179,8 @@ public class TekkonTests {
 
   [Test]
   public void TestPhonabetCombinationCorrection() {
-    Composer composer = new(arrange: MandarinParser.OfDachen, correction: true);
+    Composer composer =
+        new Composer(arrange: MandarinParser.OfDachen, correction: true);
     composer.ReceiveKeyFromPhonabet("ㄓ");
     composer.ReceiveKeyFromPhonabet("ㄧ");
     composer.ReceiveKeyFromPhonabet("ˋ");
