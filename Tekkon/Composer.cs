@@ -16,18 +16,35 @@ namespace Tekkon {
   /// @arrange參數來指定注音排列（預設為「.ofDachen」大千佈局）。
   /// </summary>
   public struct Composer {
-    /// 聲介韻調。
-    public Phonabet Consonant, Semivowel, Vowel, Intonation;
+    /// <summary>
+    /// 聲母。
+    /// </summary>
+    public Phonabet Consonant { get; internal set; } = new Phonabet();
+
+    /// <summary>
+    /// 介母。
+    /// </summary>
+    public Phonabet Semivowel { get; internal set; } = new Phonabet();
+
+    /// <summary>
+    /// 韻母。
+    /// </summary>
+    public Phonabet Vowel { get; internal set; } = new Phonabet();
+
+    /// <summary>
+    /// 聲調。
+    /// </summary>
+    public Phonabet Intonation { get; internal set; } = new Phonabet();
 
     /// <summary>
     /// 拼音組音區。
     /// </summary>
-    public string RomajiBuffer;
+    public string RomajiBuffer { get; internal set; } = "";
 
     /// <summary>
     /// 注音排列種類。預設情況下是大千排列（Windows / macOS 預設注音排列）。
     /// </summary>
-    public MandarinParser Parser;
+    public MandarinParser Parser { get; internal set; } = MandarinParser.OfDachen;
 
     /// <summary>
     /// 是否對錯誤的注音讀音組合做出自動糾正處理。
@@ -242,13 +259,13 @@ namespace Tekkon {
     private void FixValue(string strOf, string strWith) {
       if (string.IsNullOrEmpty(strOf) || string.IsNullOrEmpty(strWith)) return;
       if (Consonant.Value == strOf)
-        Consonant.Clear();
+        Consonant = new Phonabet();
       else if (Semivowel.Value == strOf)
-        Semivowel.Clear();
+        Semivowel = new Phonabet();
       else if (Vowel.Value == strOf)
-        Vowel.Clear();
+        Vowel = new Phonabet();
       else if (Intonation.Value == strOf)
-        Intonation.Clear();
+        Intonation = new Phonabet();
       else
         return;
       ReceiveKeyFromPhonabet(strWith);
@@ -324,11 +341,11 @@ namespace Tekkon {
           case "ㄛ":
           case "ㄥ":
             if ("ㄅㄆㄇㄈ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
-              Semivowel.Clear();
+              Semivowel = new Phonabet();
             break;
           case "ㄟ":
             if ("ㄋㄌ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
-              Semivowel.Clear();
+              Semivowel = new Phonabet();
             break;
           case "ㄨ":
             switch (Vowel.Value) {
@@ -339,7 +356,7 @@ namespace Tekkon {
                   case "ㄆ":
                   case "ㄇ":
                   case "ㄈ":
-                    Vowel.Clear();
+                    Vowel = new Phonabet();
                     break;
                 }
                 break;
@@ -347,7 +364,7 @@ namespace Tekkon {
                 switch (Consonant.Value) {
                   case "ㄋ":
                   case "ㄌ":
-                    Vowel.Clear();
+                    Vowel = new Phonabet();
                     break;
                 }
                 break;
@@ -361,7 +378,7 @@ namespace Tekkon {
           case "ㄈ":
             if (Semivowel.Value + Vowel.Value == "ㄨㄛ" ||
                 Semivowel.Value + Vowel.Value == "ㄨㄥ")
-              Semivowel.Clear();
+              Semivowel = new Phonabet();
             break;
         }
         if (new[] { PhoneType.Intonation, PhoneType.Vowel }.Contains(
@@ -369,7 +386,7 @@ namespace Tekkon {
             "ㄓㄔㄕㄗㄘㄙ".DoesHave(Consonant.Value)) {
           switch (Semivowel.Value) {
             case "ㄧ":
-              Semivowel.Clear();
+              Semivowel = new Phonabet();
               break;
             case "ㄩ":
               switch (Consonant.Value) {
@@ -852,7 +869,7 @@ namespace Tekkon {
           break;
         case "n":
           if (!Consonant.IsEmpty || !Semivowel.IsEmpty) {
-            if (Value == "ㄙ") Consonant.Clear();
+            if (Value == "ㄙ") Consonant = new Phonabet();
             strReturn = "ㄥ";
           }
           break;
@@ -873,10 +890,10 @@ namespace Tekkon {
           break;
         case "m":
           if (Semivowel.Value == "ㄩ" && Vowel.Value != "ㄡ") {
-            Semivowel.Clear();
+            Semivowel = new Phonabet();
             strReturn = "ㄡ";
           } else if (Semivowel.Value != "ㄩ" && Vowel.Value == "ㄡ") {
-            Vowel.Clear();
+            Vowel = new Phonabet();
             strReturn = "ㄩ";
           } else if (!Semivowel.IsEmpty || !"ㄐㄑㄒ".DoesHave(Consonant.Value))
             strReturn = "ㄡ";
@@ -885,13 +902,13 @@ namespace Tekkon {
           break;
         case "u":
           if (Semivowel.Value == "ㄧ" && Vowel.Value != "ㄚ") {
-            Semivowel.Clear();
+            Semivowel = new Phonabet();
             strReturn = "ㄚ";
           } else if (Semivowel.Value != "ㄧ" && Vowel.Value == "ㄚ")
             strReturn = "ㄧ";
           else if (Semivowel.Value == "ㄧ" && Vowel.Value == "ㄚ") {
-            Semivowel.Clear();
-            Vowel.Clear();
+            Semivowel = new Phonabet();
+            Vowel = new Phonabet();
           } else if (!Semivowel.IsEmpty)
             strReturn = "ㄚ";
           else
