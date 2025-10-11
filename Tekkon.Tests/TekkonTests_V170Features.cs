@@ -3,6 +3,7 @@
 // This code is released under the SPDX-License-Identifier: `LGPL-3.0-or-later`.
 
 using System;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
@@ -76,10 +77,10 @@ namespace Tekkon.Tests {
       Assert.IsNotEmpty(Phonabet.AllowedPhonabets);
       
       // Verify they contain Runes
-      Assert.IsTrue(System.Linq.Enumerable.Contains(Phonabet.AllowedConsonants, new Rune('ㄅ')));
-      Assert.IsTrue(System.Linq.Enumerable.Contains(Phonabet.AllowedSemivowels, new Rune('ㄧ')));
-      Assert.IsTrue(System.Linq.Enumerable.Contains(Phonabet.AllowedVowels, new Rune('ㄚ')));
-      Assert.IsTrue(System.Linq.Enumerable.Contains(Phonabet.AllowedIntonations, new Rune('ˊ')));
+      Assert.IsTrue(Phonabet.AllowedConsonants.Contains(new Rune('ㄅ')));
+      Assert.IsTrue(Phonabet.AllowedSemivowels.Contains(new Rune('ㄧ')));
+      Assert.IsTrue(Phonabet.AllowedVowels.Contains(new Rune('ㄚ')));
+      Assert.IsTrue(Phonabet.AllowedIntonations.Contains(new Rune('ˊ')));
     }
 
     [Test]
