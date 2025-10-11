@@ -2,6 +2,9 @@
 // ====================
 // This code is released under the SPDX-License-Identifier: `LGPL-3.0-or-later`.
 
+using System.Collections.Generic;
+using System.Text;
+
 using NUnit.Framework;
 
 namespace Tekkon.Tests {
@@ -14,10 +17,19 @@ namespace Tekkon.Tests {
       Phonabet thePhonabetC = new Phonabet("ㄠ");
       Phonabet thePhonabetD = new Phonabet("ˇ");
       Assert.True(thePhonabetNull.Type == PhoneType.Null &&
-                  thePhonabetA.Type == PhoneType.Consonant &&
-                  thePhonabetB.Type == PhoneType.Semivowel &&
-                  thePhonabetC.Type == PhoneType.Vowel &&
-                  thePhonabetD.Type == PhoneType.Intonation);
+            thePhonabetA.Type == PhoneType.Consonant &&
+            thePhonabetB.Type == PhoneType.Semivowel &&
+            thePhonabetC.Type == PhoneType.Vowel &&
+            thePhonabetD.Type == PhoneType.Intonation);
+      Assert.AreEqual(new Rune('~'), thePhonabetNull.ScalarValue);
+      Assert.AreEqual(new Rune('ㄉ'), thePhonabetA.ScalarValue);
+      Assert.AreEqual(new Rune('ㄧ'), thePhonabetB.ScalarValue);
+      Assert.AreEqual(new Rune('ㄠ'), thePhonabetC.ScalarValue);
+      Assert.AreEqual(new Rune('ˇ'), thePhonabetD.ScalarValue);
+
+      Phonabet phonabetFromRune = new Phonabet(new Rune('ㄓ'));
+      Assert.AreEqual(PhoneType.Consonant, phonabetFromRune.Type);
+      Assert.AreEqual(new Rune('ㄓ'), phonabetFromRune.ScalarValue);
     }
 
     [Test]
@@ -177,42 +189,72 @@ namespace Tekkon.Tests {
     public void TestPhonabetCombinationCorrection() {
       Composer composer =
           new Composer(arrange: MandarinParser.OfDachen, correction: true);
-      composer.ReceiveKeyFromPhonabet("ㄓ");
-      composer.ReceiveKeyFromPhonabet("ㄧ");
-      composer.ReceiveKeyFromPhonabet("ˋ");
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄓ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄧ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ˋ'));
       Assert.AreEqual(composer.Value, "ㄓˋ");
 
       composer.Clear();
-      composer.ReceiveKeyFromPhonabet("ㄓ");
-      composer.ReceiveKeyFromPhonabet("ㄩ");
-      composer.ReceiveKeyFromPhonabet("ˋ");
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄓ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄩ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ˋ'));
       Assert.AreEqual(composer.Value, "ㄐㄩˋ");
 
       composer.Clear();
-      composer.ReceiveKeyFromPhonabet("ㄓ");
-      composer.ReceiveKeyFromPhonabet("ㄧ");
-      composer.ReceiveKeyFromPhonabet("ㄢ");
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄓ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄧ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄢ'));
       Assert.AreEqual(composer.Value, "ㄓㄢ");
 
       composer.Clear();
-      composer.ReceiveKeyFromPhonabet("ㄓ");
-      composer.ReceiveKeyFromPhonabet("ㄩ");
-      composer.ReceiveKeyFromPhonabet("ㄢ");
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄓ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄩ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄢ'));
       Assert.AreEqual(composer.Value, "ㄐㄩㄢ");
 
       composer.Clear();
-      composer.ReceiveKeyFromPhonabet("ㄓ");
-      composer.ReceiveKeyFromPhonabet("ㄧ");
-      composer.ReceiveKeyFromPhonabet("ㄢ");
-      composer.ReceiveKeyFromPhonabet("ˋ");
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄓ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄧ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄢ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ˋ'));
       Assert.AreEqual(composer.Value, "ㄓㄢˋ");
 
       composer.Clear();
-      composer.ReceiveKeyFromPhonabet("ㄓ");
-      composer.ReceiveKeyFromPhonabet("ㄩ");
-      composer.ReceiveKeyFromPhonabet("ㄢ");
-      composer.ReceiveKeyFromPhonabet("ˋ");
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄓ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄩ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ㄢ'));
+      composer.ReceiveKeyFromPhonabet(new Rune('ˋ'));
       Assert.AreEqual(composer.Value, "ㄐㄩㄢˋ");
+    }
+
+    [Test]
+    public void TestMandarinParserExtensions() {
+      Assert.True(MandarinParser.OfHanyuPinyin.IsPinyin());
+      Assert.False(MandarinParser.OfDachen.IsPinyin());
+
+      Assert.True(MandarinParser.OfHsu.IsDynamic());
+      Assert.False(MandarinParser.OfIBM.IsDynamic());
+
+      IReadOnlyDictionary<string, string> pinyinMap =
+          MandarinParser.OfHanyuPinyin.MapZhuyinPinyin();
+      Assert.NotNull(pinyinMap);
+      Assert.True(pinyinMap.ContainsKey("zhe"));
+      Assert.AreEqual("ㄓㄜ", pinyinMap["zhe"]);
+
+      Assert.IsNull(MandarinParser.OfDachen.MapZhuyinPinyin());
+
+      HashSet<string> hanyuReadings =
+          MandarinParser.OfHanyuPinyin.AllPossibleReadings();
+      Assert.True(hanyuReadings.Contains("shi"));
+      Assert.True(hanyuReadings.Contains("shi4"));
+
+      HashSet<string> zhuyinReadings =
+          MandarinParser.OfDachen.AllPossibleReadings();
+      Assert.True(zhuyinReadings.Contains("ㄅㄚ"));
+      Assert.True(zhuyinReadings.Contains("ㄅㄚˋ"));
+
+      Assert.AreEqual("Dachen", MandarinParser.OfDachen.NameTag());
+      Assert.AreEqual("HanyuPinyin", MandarinParser.OfHanyuPinyin.NameTag());
     }
   }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 
 namespace Tekkon {
   /// <summary>
@@ -186,41 +187,40 @@ namespace Tekkon {
     /// <param name="charStr">傳入的字元（String）。</param>
     /// <returns>傳入的字符是否合規。</returns>
     public bool InputValidityCheckStr(string charStr) {
+      if (string.IsNullOrEmpty(charStr)) return false;
+      if (!Rune.TryGetRuneAt(charStr, 0, out Rune rune)) return false;
+      string runeString = rune.ToString();
       switch (Parser) {
         case MandarinParser.OfDachen:
-          return Shared.MapQwertyDachen.ContainsKey(charStr);
+          return Shared.MapQwertyDachen.ContainsKey(runeString);
         case MandarinParser.OfDachen26:
-          return Shared.MapDachenCp26StaticKeys.ContainsKey(charStr);
+          return Shared.MapDachenCp26StaticKeys.ContainsKey(runeString);
         case MandarinParser.OfETen:
-          return Shared.MapQwertyETenTraditional.ContainsKey(charStr);
+          return Shared.MapQwertyETenTraditional.ContainsKey(runeString);
         case MandarinParser.OfHsu:
-          return Shared.MapHsuStaticKeys.ContainsKey(charStr);
+          return Shared.MapHsuStaticKeys.ContainsKey(runeString);
         case MandarinParser.OfETen26:
-          return Shared.MapETen26StaticKeys.ContainsKey(charStr);
+          return Shared.MapETen26StaticKeys.ContainsKey(runeString);
         case MandarinParser.OfIBM:
-          return Shared.MapQwertyIBM.ContainsKey(charStr);
+          return Shared.MapQwertyIBM.ContainsKey(runeString);
         case MandarinParser.OfMiTAC:
-          return Shared.MapQwertyMiTAC.ContainsKey(charStr);
+          return Shared.MapQwertyMiTAC.ContainsKey(runeString);
         case MandarinParser.OfSeigyou:
-          return Shared.MapSeigyou.ContainsKey(charStr);
+          return Shared.MapSeigyou.ContainsKey(runeString);
         case MandarinParser.OfFakeSeigyou:
-          return Shared.MapFakeSeigyou.ContainsKey(charStr);
+          return Shared.MapFakeSeigyou.ContainsKey(runeString);
         case MandarinParser.OfStarlight:
-          return Shared.MapStarlightStaticKeys.ContainsKey(charStr);
+          return Shared.MapStarlightStaticKeys.ContainsKey(runeString);
         case MandarinParser.OfAlvinLiu:
-          return Shared.MapAlvinLiuStaticKeys.ContainsKey(charStr);
+          return Shared.MapAlvinLiuStaticKeys.ContainsKey(runeString);
         case MandarinParser.OfWadeGilesPinyin:
-          return Shared.MapWadeGilesPinyinKeys.Contains(charStr);
+          return Shared.MapWadeGilesPinyinRunes.Contains(rune);
         case MandarinParser.OfHanyuPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfSecondaryPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfYalePinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfHualuoPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfUniversalPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
+          return Shared.MapArayuruPinyinRunes.Contains(rune);
         default:
           return false;
       }
@@ -262,22 +262,9 @@ namespace Tekkon {
     /// </summary>
     /// <param name="input">傳入的 String 內容。</param>
     public void ReceiveKey(string input) {
-      if (!IsPinyinMode) {
-        ReceiveKeyFromPhonabet(Translate(input));
-        return;
-      }
-      if (Shared.MapArayuruPinyinIntonation.ContainsKey(input)) {
-        string theTone = Shared.MapArayuruPinyinIntonation[input];
-        Intonation = new Phonabet(theTone);
-      } else {
-        // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
-        // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
-        int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
-        if (RomajiBuffer.Length > maxCount - 1) RomajiBuffer = RomajiBuffer.Skip(1).ToString();
-        string romajiBufferBackup = RomajiBuffer + input;
-        ReceiveSequence(romajiBufferBackup, true);
-        RomajiBuffer = romajiBufferBackup;
-      }
+      if (string.IsNullOrEmpty(input)) return;
+      if (!Rune.TryGetRuneAt(input, 0, out Rune rune)) return;
+      ReceiveKey(rune);
     }
 
     /// <summary>
@@ -289,6 +276,30 @@ namespace Tekkon {
     /// <param name="inputChar">傳入的 char 內容，格式為 int。</param>
     public void ReceiveKey(int inputChar) =>
         ReceiveKey(((char)Math.Abs(inputChar)).ToString());
+
+    /// <summary>
+    /// 接受傳入的按鍵訊號時的處理，處理對象為 Unicode Scalar。
+    /// </summary>
+    /// <param name="input">傳入的 Unicode Scalar 內容。</param>
+    public void ReceiveKey(Rune input) {
+      if (!IsPinyinMode) {
+        ReceiveKeyFromPhonabet(Translate(input.ToString()));
+        return;
+      }
+      string scalarString = input.ToString();
+      if (Shared.MapArayuruPinyinIntonation.TryGetValue(input, out Rune toneRune)) {
+        Intonation = new Phonabet(toneRune);
+      } else {
+        // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
+        // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
+        int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
+        if (RomajiBuffer.Length > maxCount - 1)
+          RomajiBuffer = new string(RomajiBuffer.Skip(1).ToArray());
+        string romajiBufferBackup = RomajiBuffer + scalarString;
+        ReceiveSequence(romajiBufferBackup, true);
+        RomajiBuffer = romajiBufferBackup;
+      }
+    }
 
     /// <summary>
     /// 接受傳入的按鍵訊號時的處理，處理對象為單個注音符號。
@@ -305,18 +316,18 @@ namespace Tekkon {
             break;
           case "ㄜ":
             if (Semivowel.Value == "ㄨ") Semivowel = new Phonabet("ㄩ");
-            if ("ㄧㄩ".Contains(Semivowel.Char)) thePhone = new Phonabet("ㄝ");
+            if ("ㄧㄩ".DoesHave(Semivowel.Value)) thePhone = new Phonabet("ㄝ");
             break;
           case "ㄝ":
             if (Semivowel.Value == "ㄨ") Semivowel = new Phonabet("ㄩ");
             break;
           case "ㄛ":
           case "ㄥ":
-            if ("ㄅㄆㄇㄈ".Contains(Consonant.Char) && Semivowel.Value == "ㄨ")
+            if ("ㄅㄆㄇㄈ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
               Semivowel.Clear();
             break;
           case "ㄟ":
-            if ("ㄋㄌ".Contains(Consonant.Char) && Semivowel.Value == "ㄨ")
+            if ("ㄋㄌ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
               Semivowel.Clear();
             break;
           case "ㄨ":
@@ -355,7 +366,7 @@ namespace Tekkon {
         }
         if (new[] { PhoneType.Intonation, PhoneType.Vowel }.Contains(
                 thePhone.Type) &&
-            "ㄓㄔㄕㄗㄘㄙ".Contains(Consonant.Char)) {
+            "ㄓㄔㄕㄗㄘㄙ".DoesHave(Consonant.Value)) {
           switch (Semivowel.Value) {
             case "ㄧ":
               Semivowel.Clear();
@@ -398,6 +409,13 @@ namespace Tekkon {
       }
       UpdateRomajiBuffer();
     }
+
+    /// <summary>
+    /// 接受傳入的按鍵訊號時的處理，處理對象為單個注音符號 Unicode Scalar。
+    /// </summary>
+    /// <param name="phonabet">傳入的單個注音符號 Unicode Scalar。</param>
+    public void ReceiveKeyFromPhonabet(Rune phonabet) =>
+        ReceiveKeyFromPhonabet(phonabet.ToString());
 
     /// <summary>
     /// 處理一連串的按鍵輸入。
