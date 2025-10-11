@@ -20,7 +20,7 @@ namespace Tekkon.Tests {
       var composer2 = new Composer(arrange: MandarinParser.OfETen);
       composer2.EnsureParser(arrange: MandarinParser.OfDachen);
       Assert.AreEqual(composer.Parser, composer2.Parser);
-      
+
       foreach (var parser in MandarinParserExtensions.AllCases) {
         Assert.AreNotEqual(parser.IsDynamic().ToString(), parser.NameTag());
         composer.EnsureParser(arrange: parser);
@@ -287,16 +287,16 @@ namespace Tekkon.Tests {
     [Test]
     public void TestPinyinTrieConvertingPinyinChopsToZhuyin() {
       PinyinTrie trie = new PinyinTrie(MandarinParser.OfHanyuPinyin);
-      
+
       // Test search functionality
       List<string> results = trie.Search("shi");
       Assert.IsNotNull(results);
       Assert.IsTrue(results.Any(item => item.Contains("ㄕ")));
-      
+
       List<string> missing = trie.Search("xyz");
       Assert.IsNotNull(missing);
       Assert.IsEmpty(missing);
-      
+
       // Test chopped pinyin to zhuyin conversion
       List<string> chopped = new List<string> { "shi", "jie", "da", "zhan" };
       List<string> zhuyin = trie.DeductChoppedPinyinToZhuyin(chopped, initialZhuyinOnly: false);

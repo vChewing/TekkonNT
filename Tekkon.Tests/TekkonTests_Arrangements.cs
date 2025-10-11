@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using NUnit.Framework;
 
 namespace Tekkon.Tests {
@@ -31,11 +32,11 @@ namespace Tekkon.Tests {
 
     public bool Verify() {
       if (string.IsNullOrEmpty(Typing)) return true;
-      
+
       var composer = new Composer(arrange: Parser);
       string strResult = composer.CnvSequence(Typing);
       if (strResult == Expected) return true;
-      
+
       string parserTag = Parser.NameTag();
       string strError = $"MISMATCH ({parserTag}): \"{Typing}\" -> \"{strResult}\" != \"{Expected}\"";
       Console.WriteLine(strError);
@@ -50,7 +51,7 @@ namespace Tekkon.Tests {
     private void CheckEq(ref int counter, ref Composer composer, string strGivenSeq, string strExpected) {
       string strResult = composer.CnvSequence(strGivenSeq);
       if (strResult == strExpected) return;
-      
+
       string parserTag = composer.Parser.NameTag();
       string strError = $"MISMATCH ({parserTag}): \"{strGivenSeq}\" -> \"{strResult}\" != \"{strExpected}\"";
       Console.WriteLine(strError);
@@ -89,41 +90,41 @@ namespace Tekkon.Tests {
     public void TestDynamicKeyLayouts() {
       // Get all dynamic parsers
       var dynamicParsers = MandarinParserExtensions.AllDynamicZhuyinCases.ToList();
-      
+
       foreach (var (parser, idxRaw) in dynamicParsers.Select((p, i) => (p, i))) {
         var cases = new List<SubTestCase>();
         Console.WriteLine($" -> [Tekkon] Preparing tests for dynamic keyboard handling...");
-        
+
         // Parse test data
         var lines = TekkonTestData.DynamicLayoutTable.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         bool isTitleLine = true;
-        
+
         foreach (var line in lines) {
           if (isTitleLine) {
             isTitleLine = false;
             continue;
           }
-          
+
           var cells = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
           if (cells.Length < 2) continue;
-          
+
           string expected = cells[0];
           int idx = idxRaw + 1;
           if (idx >= cells.Length) continue;
-          
+
           string typing = cells[idx];
           var testCase = new SubTestCase(parser, typing, expected);
           cases.Add(testCase);
         }
-        
+
         var startTime = DateTime.Now;
         Console.WriteLine($" -> [Tekkon][({parser.NameTag()})] Starting dynamic keyboard handling test ...");
-        
+
         int failures = cases.Select(testCase => testCase.Verify() ? 0 : 1).Sum();
-        
-        Assert.AreEqual(0, failures, 
+
+        Assert.AreEqual(0, failures,
           $"[Failure] {parser.NameTag()} failed from being handled correctly with {failures} bad results.");
-        
+
         var elapsed = DateTime.Now - startTime;
         Console.WriteLine($" -> [Tekkon][({parser.NameTag()})] Finished within {elapsed.TotalSeconds:F4} seconds.");
       }
