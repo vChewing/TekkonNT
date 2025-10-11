@@ -131,3 +131,4 @@ The following v1.7.0 features have been verified through tests:
 ## Conclusion
 
 All changes from Swift Tekkon v1.6.0 → v1.7.0 have been successfully ported to TekkonNT (C#). The codebase is now fully synchronized with Swift v1.7.0.
+
