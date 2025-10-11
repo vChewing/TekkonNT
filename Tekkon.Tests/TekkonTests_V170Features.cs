@@ -5,6 +5,7 @@
 using System;
 using System.Linq;
 using System.Text;
+
 using NUnit.Framework;
 
 namespace Tekkon.Tests {
@@ -16,13 +17,13 @@ namespace Tekkon.Tests {
     public void TestUnicodeScalarAPI() {
       // v1.7.0 changed to use Unicode.Scalar (Rune in C#) instead of String
       var composer = new Composer();
-      
+
       // Test ReceiveKey with Rune
       composer.ReceiveKey(new Rune('1'));
       composer.ReceiveKey(new Rune('j'));
       composer.ReceiveKey(new Rune(' '));
       Assert.AreEqual("ㄅㄨ ", composer.Value);
-      
+
       // Test ReceiveKeyFromPhonabet with Rune
       composer.Clear();
       composer.ReceiveKeyFromPhonabet(new Rune('ㄉ'));
@@ -37,7 +38,7 @@ namespace Tekkon.Tests {
       // v1.7.0 made properties public internal(set) - read-only from outside
       var composer = new Composer();
       composer.ReceiveKey("1");
-      
+
       // These should be readable
       Assert.IsNotNull(composer.Consonant);
       Assert.IsNotNull(composer.Semivowel);
@@ -45,7 +46,7 @@ namespace Tekkon.Tests {
       Assert.IsNotNull(composer.Intonation);
       Assert.IsNotNull(composer.RomajiBuffer);
       Assert.AreEqual(MandarinParser.OfDachen, composer.Parser);
-      
+
       // Properties cannot be set from outside (compilation would fail)
       // composer.Consonant = new Phonabet(); // This would not compile
     }
@@ -56,13 +57,13 @@ namespace Tekkon.Tests {
       var phonabet1 = new Phonabet(new Rune('ㄉ'));
       Assert.AreEqual(PhoneType.Consonant, phonabet1.Type);
       Assert.AreEqual(new Rune('ㄉ'), phonabet1.ScalarValue);
-      
+
       var phonabet2 = new Phonabet(new Rune('ㄧ'));
       Assert.AreEqual(PhoneType.Semivowel, phonabet2.Type);
-      
+
       var phonabet3 = new Phonabet(new Rune('ㄠ'));
       Assert.AreEqual(PhoneType.Vowel, phonabet3.Type);
-      
+
       var phonabet4 = new Phonabet(new Rune('ˇ'));
       Assert.AreEqual(PhoneType.Intonation, phonabet4.Type);
     }
@@ -75,7 +76,7 @@ namespace Tekkon.Tests {
       Assert.IsNotEmpty(Phonabet.AllowedVowels);
       Assert.IsNotEmpty(Phonabet.AllowedIntonations);
       Assert.IsNotEmpty(Phonabet.AllowedPhonabets);
-      
+
       // Verify they contain Runes
       Assert.IsTrue(Phonabet.AllowedConsonants.Contains(new Rune('ㄅ')));
       Assert.IsTrue(Phonabet.AllowedSemivowels.Contains(new Rune('ㄧ')));
@@ -89,7 +90,7 @@ namespace Tekkon.Tests {
       Assert.IsNotEmpty(MandarinParserExtensions.AllStaticZhuyinCases);
       Assert.IsNotEmpty(MandarinParserExtensions.AllDynamicZhuyinCases);
       Assert.IsNotEmpty(MandarinParserExtensions.AllPinyinCases);
-      
+
       // Verify classifications
       Assert.IsTrue(MandarinParser.OfDachen26.IsDynamic());
       Assert.IsFalse(MandarinParser.OfDachen.IsDynamic());
@@ -103,11 +104,11 @@ namespace Tekkon.Tests {
       var composer = new Composer();
       Assert.IsTrue(composer.IsEmpty);
       Assert.IsFalse(composer.IsPronounceable);
-      
+
       composer.ReceiveKey("1");  // ㄅ
       Assert.IsFalse(composer.IsEmpty);
       Assert.IsTrue(composer.IsPronounceable);
-      
+
       composer.Clear();
       composer.ReceiveKey("3");  // ˇ (just tone)
       Assert.IsFalse(composer.IsEmpty);
@@ -118,11 +119,11 @@ namespace Tekkon.Tests {
     public void TestPinyinTrie() {
       // v1.7.0 added PinyinTrie for pinyin chopping
       var trie = new PinyinTrie(MandarinParser.OfHanyuPinyin);
-      
+
       var chopped = trie.Chop("women");
       Assert.Contains("wo", chopped);
       Assert.Contains("men", chopped);
-      
+
       var candidates = trie.DeductChoppedPinyinToZhuyin(chopped);
       Assert.IsNotEmpty(candidates);
     }
