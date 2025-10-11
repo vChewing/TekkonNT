@@ -3,12 +3,32 @@
 // This code is released under the SPDX-License-Identifier: `LGPL-3.0-or-later`.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 using NUnit.Framework;
 
 namespace Tekkon.Tests {
-  public class TekkonTests {
+  public class TekkonTestsBasic {
+    [Test]
+    public void TestMandarinParser() {
+      // This is only for filling the testing coverage.
+      var composer = new Composer(arrange: MandarinParser.OfDachen);
+      Assert.True(composer.IsEmpty);
+      Assert.AreEqual(0, composer.Count(withIntonation: true));
+      Assert.AreEqual(0, composer.Count(withIntonation: false));
+      var composer2 = new Composer(arrange: MandarinParser.OfETen);
+      composer2.EnsureParser(arrange: MandarinParser.OfDachen);
+      Assert.AreEqual(composer.Parser, composer2.Parser);
+      
+      foreach (var parser in MandarinParserExtensions.AllCases) {
+        Assert.AreNotEqual(parser.IsDynamic().ToString(), parser.NameTag());
+        composer.EnsureParser(arrange: parser);
+        // Translate is private, so we can't test it directly
+        composer.Clear();
+      }
+    }
+
     [Test]
     public void TestInitializingPhonabet() {
       Phonabet thePhonabetNull = new Phonabet("0");
@@ -255,6 +275,36 @@ namespace Tekkon.Tests {
 
       Assert.AreEqual("Dachen", MandarinParser.OfDachen.NameTag());
       Assert.AreEqual("HanyuPinyin", MandarinParser.OfHanyuPinyin.NameTag());
+    }
+
+    [Test]
+    public void TestChoppingRawComplex() {
+      PinyinTrie trie = new PinyinTrie(MandarinParser.OfHanyuPinyin);
+      List<string> segments = trie.Chop("shjdaz");
+      CollectionAssert.AreEqual(new[] { "sh", "j", "da", "z" }, segments);
+    }
+
+    [Test]
+    public void TestPinyinTrieConvertingPinyinChopsToZhuyin() {
+      PinyinTrie trie = new PinyinTrie(MandarinParser.OfHanyuPinyin);
+      
+      // Test search functionality
+      List<string> results = trie.Search("shi");
+      Assert.IsNotNull(results);
+      Assert.IsTrue(results.Any(item => item.Contains("ㄕ")));
+      
+      List<string> missing = trie.Search("xyz");
+      Assert.IsNotNull(missing);
+      Assert.IsEmpty(missing);
+      
+      // Test chopped pinyin to zhuyin conversion
+      List<string> chopped = new List<string> { "shi", "jie", "da", "zhan" };
+      List<string> zhuyin = trie.DeductChoppedPinyinToZhuyin(chopped, initialZhuyinOnly: false);
+      Assert.AreEqual(chopped.Count, zhuyin.Count);
+      Assert.IsTrue(zhuyin[0].Contains("ㄕ"));
+      Assert.IsTrue(zhuyin[1].Contains("ㄐㄧ"));
+      Assert.IsTrue(zhuyin[2].Contains("ㄉ"));
+      Assert.IsTrue(zhuyin[3].Contains("ㄓ"));
     }
   }
 }
