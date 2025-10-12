@@ -10,7 +10,7 @@ using NUnit.Framework;
 
 namespace Tekkon.Tests {
   /// <summary>
-  /// Helper class for data-driven test cases.
+  /// 資料驅動測試案例的輔助類別。
   /// </summary>
   public class SubTestCase {
     public MandarinParser Parser { get; }
@@ -18,7 +18,7 @@ namespace Tekkon.Tests {
     public string Expected { get; }
 
     public SubTestCase(MandarinParser parser, string typing, string expected) {
-      // Skip test cases marked with backtick
+      // 略過以反引號標記的測試案例
       if (typing.StartsWith("`")) {
         Parser = parser;
         Typing = "";
@@ -45,7 +45,7 @@ namespace Tekkon.Tests {
   }
 
   /// <summary>
-  /// Tests for static keyboard arrangements (e.g., Dachen).
+  /// 靜態鍵盤排列測試（例如：大千排列）。
   /// </summary>
   public class TekkonTestsKeyboardArrangementsStatic {
     private void CheckEq(ref int counter, ref Composer composer, string strGivenSeq, string strExpected) {
@@ -60,7 +60,7 @@ namespace Tekkon.Tests {
 
     [Test]
     public void TestQwertyDachenKeys() {
-      // Testing Dachen Traditional Mapping (QWERTY)
+      // 測試大千傳統排列（QWERTY）
       var c = new Composer(arrange: MandarinParser.OfDachen);
       int counter = 0;
       CheckEq(ref counter, ref c, " ", " ");
@@ -83,19 +83,19 @@ namespace Tekkon.Tests {
   }
 
   /// <summary>
-  /// Tests for dynamic keyboard arrangements (Dachen26, ETen26, Hsu, Starlight, AlvinLiu).
+  /// 動態鍵盤排列測試（大千26鍵、倚天26鍵、許氏鍵盤、星光鍵盤、劉氏鍵盤）。
   /// </summary>
   public class TekkonTestsKeyboardArrangementsDynamic {
     [Test]
     public void TestDynamicKeyLayouts() {
-      // Get all dynamic parsers
+      // 取得所有動態排列
       var dynamicParsers = MandarinParserExtensions.AllDynamicZhuyinCases.ToList();
 
       foreach (var (parser, idxRaw) in dynamicParsers.Select((p, i) => (p, i))) {
         var cases = new List<SubTestCase>();
-        Console.WriteLine($" -> [Tekkon] Preparing tests for dynamic keyboard handling...");
+        Console.WriteLine($" -> [Tekkon] 準備動態鍵盤處理測試...");
 
-        // Parse test data
+        // 解析測試資料
         var lines = TekkonTestData.DynamicLayoutTable.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         bool isTitleLine = true;
 
@@ -118,15 +118,15 @@ namespace Tekkon.Tests {
         }
 
         var startTime = DateTime.Now;
-        Console.WriteLine($" -> [Tekkon][({parser.NameTag()})] Starting dynamic keyboard handling test ...");
+        Console.WriteLine($" -> [Tekkon][({parser.NameTag()})] 開始動態鍵盤處理測試...");
 
         int failures = cases.Select(testCase => testCase.Verify() ? 0 : 1).Sum();
 
         Assert.AreEqual(0, failures,
-          $"[Failure] {parser.NameTag()} failed from being handled correctly with {failures} bad results.");
+          $"[失敗] {parser.NameTag()} 處理失敗，共 {failures} 個錯誤結果。");
 
         var elapsed = DateTime.Now - startTime;
-        Console.WriteLine($" -> [Tekkon][({parser.NameTag()})] Finished within {elapsed.TotalSeconds:F4} seconds.");
+        Console.WriteLine($" -> [Tekkon][({parser.NameTag()})] 測試完成，耗時 {elapsed.TotalSeconds:F4} 秒。");
       }
     }
   }

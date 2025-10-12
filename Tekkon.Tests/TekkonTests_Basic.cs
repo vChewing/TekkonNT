@@ -12,7 +12,7 @@ namespace Tekkon.Tests {
   public class TekkonTestsBasic {
     [Test]
     public void TestMandarinParser() {
-      // This is only for filling the testing coverage.
+      // 此測試僅用於填補測試覆蓋率。
       var composer = new Composer(arrange: MandarinParser.OfDachen);
       Assert.True(composer.IsEmpty);
       Assert.AreEqual(0, composer.Count(withIntonation: true));
@@ -24,7 +24,7 @@ namespace Tekkon.Tests {
       foreach (var parser in MandarinParserExtensions.AllCases) {
         Assert.AreNotEqual(parser.IsDynamic().ToString(), parser.NameTag());
         composer.EnsureParser(arrange: parser);
-        // Translate is private, so we can't test it directly
+        // Translate 為私有方法，無法直接測試
         composer.Clear();
       }
     }
