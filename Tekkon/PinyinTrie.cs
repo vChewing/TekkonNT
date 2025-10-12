@@ -31,7 +31,7 @@ namespace Tekkon {
       public int Id { get; internal set; }
       /// <summary>節點對應的注音詞條集合。</summary>
       public List<string> Entries { get; }
-      /// <summary>節點所代表的拼音字符。</summary>
+      /// <summary>節點所代表的拼音字元。</summary>
       public string Character { get; internal set; }
       /// <summary>節點對應的完整讀音鍵。</summary>
       public string ReadingKey { get; internal set; }

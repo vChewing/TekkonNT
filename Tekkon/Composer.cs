@@ -152,7 +152,7 @@ namespace Tekkon {
     /// 還可以在初期化時藉由 @arrange
     /// 參數來指定注音排列（預設為「.ofDachen」大千佈局）。
     /// </summary>
-    /// <param name="input">傳入的 String 內容，用以處理單個字符。</param>
+    /// <param name="input">傳入的 String 內容，用以處理單個字元。</param>
     /// <param name="arrange">要使用的注音排列。</param>
     /// <param
     /// name="correction">是否對錯誤的注音讀音組合做出自動糾正處理。</param>
@@ -185,24 +185,24 @@ namespace Tekkon {
     // MARK: - Public Functions
 
     /// <summary>
-    /// 用於檢測「某個輸入字符訊號的合規性」的函式。<br />
+    /// 用於檢測「某個輸入字元訊號的合規性」的函式。<br />
     /// <br />
     /// 注意：回傳結果會受到當前注音排列 parser 屬性的影響。
     /// </summary>
     /// <param name="inputCharCode">傳入的 UniChar 內容。</param>
-    /// <returns>傳入的字符是否合規。</returns>
+    /// <returns>傳入的字元是否合規。</returns>
     public bool InputValidityCheck(int inputCharCode) {
       char inputKey = (char)Math.Abs(inputCharCode);
       return (inputKey < 128) && InputValidityCheckStr(inputKey.ToString());
     }
 
     /// <summary>
-    /// 用於檢測「某個輸入字符訊號的合規性」的函式。<br />
+    /// 用於檢測「某個輸入字元訊號的合規性」的函式。<br />
     /// <br />
     /// 注意：回傳結果會受到當前注音排列 parser 屬性的影響。
     /// </summary>
     /// <param name="charStr">傳入的字元（String）。</param>
-    /// <returns>傳入的字符是否合規。</returns>
+    /// <returns>傳入的字元是否合規。</returns>
     public bool InputValidityCheckStr(string charStr) {
       if (string.IsNullOrEmpty(charStr)) return false;
       if (!Rune.TryGetRuneAt(charStr, 0, out Rune rune)) return false;
@@ -339,6 +339,10 @@ namespace Tekkon {
             if (Semivowel.Value == "ㄨ") Semivowel = new Phonabet("ㄩ");
             break;
           case "ㄛ":
+            if (Semivowel.Value == "ㄩ") Semivowel = new Phonabet("ㄨ");
+            if ("ㄅㄆㄇㄈ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
+              Semivowel = new Phonabet();
+            break;
           case "ㄥ":
             if ("ㄅㄆㄇㄈ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
               Semivowel = new Phonabet();
@@ -541,9 +545,13 @@ namespace Tekkon {
     /// <returns>可用的查詢用注音字串，或者 nil。</returns>
     public string PhonabetKeyForQuery(bool pronounceableOnly) {
       string readingKey = GetComposition();
-      bool isSelfPronouncable = IsPronounceable;
-      bool validKeyAvailable = isSelfPronouncable;
-      if (!IsPinyinMode && !isSelfPronouncable) validKeyAvailable = !string.IsNullOrEmpty(readingKey);
+      bool validKeyAvailable;
+      if (IsPinyinMode)
+        validKeyAvailable = IsPronounceable;
+      else if (pronounceableOnly)
+        validKeyAvailable = IsPronounceable;
+      else
+        validKeyAvailable = !string.IsNullOrEmpty(readingKey);
       return validKeyAvailable ? readingKey : null;
     }
 

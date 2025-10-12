@@ -248,6 +248,47 @@ namespace Tekkon.Tests {
     }
 
     [Test]
+    public void TestSemivowelNormalizationWithEncounteredVowels() {
+      // 測試自動將「ㄩ」轉寫為「ㄨ」的情境，避免輸出異常的拼法。
+      Composer composer =
+          new Composer(arrange: MandarinParser.OfDachen, correction: true);
+      composer.ReceiveKeyFromPhonabet("ㄩ");
+      composer.ReceiveKeyFromPhonabet("ㄛ");
+      Assert.AreEqual("ㄨㄛ", composer.Value);
+
+      // 測試聲母搭配後維持相同邏輯。
+      composer.Clear();
+      composer.ReceiveKeyFromPhonabet("ㄅ");
+      composer.ReceiveKeyFromPhonabet("ㄩ");
+      composer.ReceiveKeyFromPhonabet("ㄛ");
+      Assert.AreEqual("ㄅㄛ", composer.GetComposition());
+    }
+
+    [Test]
+    public void TestPronounceableQueryKeyGate() {
+      // 測試 pronounceableOnly 旗標對查詢鍵值的篩選行為。
+      Composer composer = new Composer(arrange: MandarinParser.OfDachen);
+      composer.ReceiveKeyFromPhonabet("ˊ");
+      Assert.False(composer.IsPronounceable);
+      Assert.IsNull(composer.PhonabetKeyForQuery(pronounceableOnly: true));
+      Assert.AreEqual("ˊ", composer.PhonabetKeyForQuery(pronounceableOnly: false));
+    }
+
+    [Test]
+    public void TestPinyinTrieBranchInsertKeepsExistingBranches() {
+      // 測試 PinyinTrie 在同一節點新增多個分支時，既有讀音不會被覆蓋。
+      PinyinTrie trie = new PinyinTrie(MandarinParser.OfDachen);
+      trie.Insert("li", "ㄌㄧ");
+      trie.Insert("lin", "ㄌㄧㄣ");
+      trie.Insert("liu", "ㄌㄧㄡ");
+
+      List<string> fetched = trie.Search("li");
+      CollectionAssert.Contains(fetched, "ㄌㄧ");
+      CollectionAssert.Contains(fetched, "ㄌㄧㄣ");
+      CollectionAssert.Contains(fetched, "ㄌㄧㄡ");
+    }
+
+    [Test]
     public void TestMandarinParserExtensions() {
       Assert.True(MandarinParser.OfHanyuPinyin.IsPinyin());
       Assert.False(MandarinParser.OfDachen.IsPinyin());
