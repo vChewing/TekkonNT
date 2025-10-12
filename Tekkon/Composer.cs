@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Text;
 
 namespace Tekkon {
   /// <summary>
@@ -15,18 +16,35 @@ namespace Tekkon {
   /// @arrange參數來指定注音排列（預設為「.ofDachen」大千佈局）。
   /// </summary>
   public struct Composer {
-    /// 聲介韻調。
-    public Phonabet Consonant, Semivowel, Vowel, Intonation;
+    /// <summary>
+    /// 聲母。
+    /// </summary>
+    public Phonabet Consonant { get; internal set; } = new Phonabet();
+
+    /// <summary>
+    /// 介母。
+    /// </summary>
+    public Phonabet Semivowel { get; internal set; } = new Phonabet();
+
+    /// <summary>
+    /// 韻母。
+    /// </summary>
+    public Phonabet Vowel { get; internal set; } = new Phonabet();
+
+    /// <summary>
+    /// 聲調。
+    /// </summary>
+    public Phonabet Intonation { get; internal set; } = new Phonabet();
 
     /// <summary>
     /// 拼音組音區。
     /// </summary>
-    public string RomajiBuffer;
+    public string RomajiBuffer { get; internal set; } = "";
 
     /// <summary>
     /// 注音排列種類。預設情況下是大千排列（Windows / macOS 預設注音排列）。
     /// </summary>
-    public MandarinParser Parser;
+    public MandarinParser Parser { get; internal set; } = MandarinParser.OfDachen;
 
     /// <summary>
     /// 是否對錯誤的注音讀音組合做出自動糾正處理。
@@ -134,7 +152,7 @@ namespace Tekkon {
     /// 還可以在初期化時藉由 @arrange
     /// 參數來指定注音排列（預設為「.ofDachen」大千佈局）。
     /// </summary>
-    /// <param name="input">傳入的 String 內容，用以處理單個字符。</param>
+    /// <param name="input">傳入的 String 內容，用以處理單個字元。</param>
     /// <param name="arrange">要使用的注音排列。</param>
     /// <param
     /// name="correction">是否對錯誤的注音讀音組合做出自動糾正處理。</param>
@@ -167,60 +185,59 @@ namespace Tekkon {
     // MARK: - Public Functions
 
     /// <summary>
-    /// 用於檢測「某個輸入字符訊號的合規性」的函式。<br />
+    /// 用於檢測「某個輸入字元訊號的合規性」的函式。<br />
     /// <br />
     /// 注意：回傳結果會受到當前注音排列 parser 屬性的影響。
     /// </summary>
     /// <param name="inputCharCode">傳入的 UniChar 內容。</param>
-    /// <returns>傳入的字符是否合規。</returns>
+    /// <returns>傳入的字元是否合規。</returns>
     public bool InputValidityCheck(int inputCharCode) {
       char inputKey = (char)Math.Abs(inputCharCode);
       return (inputKey < 128) && InputValidityCheckStr(inputKey.ToString());
     }
 
     /// <summary>
-    /// 用於檢測「某個輸入字符訊號的合規性」的函式。<br />
+    /// 用於檢測「某個輸入字元訊號的合規性」的函式。<br />
     /// <br />
     /// 注意：回傳結果會受到當前注音排列 parser 屬性的影響。
     /// </summary>
     /// <param name="charStr">傳入的字元（String）。</param>
-    /// <returns>傳入的字符是否合規。</returns>
+    /// <returns>傳入的字元是否合規。</returns>
     public bool InputValidityCheckStr(string charStr) {
+      if (string.IsNullOrEmpty(charStr)) return false;
+      if (!Rune.TryGetRuneAt(charStr, 0, out Rune rune)) return false;
+      string runeString = rune.ToString();
       switch (Parser) {
         case MandarinParser.OfDachen:
-          return Shared.MapQwertyDachen.ContainsKey(charStr);
+          return Shared.MapQwertyDachen.ContainsKey(runeString);
         case MandarinParser.OfDachen26:
-          return Shared.MapDachenCp26StaticKeys.ContainsKey(charStr);
+          return Shared.MapDachenCp26StaticKeys.ContainsKey(runeString);
         case MandarinParser.OfETen:
-          return Shared.MapQwertyETenTraditional.ContainsKey(charStr);
+          return Shared.MapQwertyETenTraditional.ContainsKey(runeString);
         case MandarinParser.OfHsu:
-          return Shared.MapHsuStaticKeys.ContainsKey(charStr);
+          return Shared.MapHsuStaticKeys.ContainsKey(runeString);
         case MandarinParser.OfETen26:
-          return Shared.MapETen26StaticKeys.ContainsKey(charStr);
+          return Shared.MapETen26StaticKeys.ContainsKey(runeString);
         case MandarinParser.OfIBM:
-          return Shared.MapQwertyIBM.ContainsKey(charStr);
+          return Shared.MapQwertyIBM.ContainsKey(runeString);
         case MandarinParser.OfMiTAC:
-          return Shared.MapQwertyMiTAC.ContainsKey(charStr);
+          return Shared.MapQwertyMiTAC.ContainsKey(runeString);
         case MandarinParser.OfSeigyou:
-          return Shared.MapSeigyou.ContainsKey(charStr);
+          return Shared.MapSeigyou.ContainsKey(runeString);
         case MandarinParser.OfFakeSeigyou:
-          return Shared.MapFakeSeigyou.ContainsKey(charStr);
+          return Shared.MapFakeSeigyou.ContainsKey(runeString);
         case MandarinParser.OfStarlight:
-          return Shared.MapStarlightStaticKeys.ContainsKey(charStr);
+          return Shared.MapStarlightStaticKeys.ContainsKey(runeString);
         case MandarinParser.OfAlvinLiu:
-          return Shared.MapAlvinLiuStaticKeys.ContainsKey(charStr);
+          return Shared.MapAlvinLiuStaticKeys.ContainsKey(runeString);
         case MandarinParser.OfWadeGilesPinyin:
-          return Shared.MapWadeGilesPinyinKeys.Contains(charStr);
+          return Shared.MapWadeGilesPinyinRunes.Contains(rune);
         case MandarinParser.OfHanyuPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfSecondaryPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfYalePinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfHualuoPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
         case MandarinParser.OfUniversalPinyin:
-          return Shared.MapArayuruPinyin.Contains(charStr);
+          return Shared.MapArayuruPinyinRunes.Contains(rune);
         default:
           return false;
       }
@@ -242,13 +259,13 @@ namespace Tekkon {
     private void FixValue(string strOf, string strWith) {
       if (string.IsNullOrEmpty(strOf) || string.IsNullOrEmpty(strWith)) return;
       if (Consonant.Value == strOf)
-        Consonant.Clear();
+        Consonant = new Phonabet();
       else if (Semivowel.Value == strOf)
-        Semivowel.Clear();
+        Semivowel = new Phonabet();
       else if (Vowel.Value == strOf)
-        Vowel.Clear();
+        Vowel = new Phonabet();
       else if (Intonation.Value == strOf)
-        Intonation.Clear();
+        Intonation = new Phonabet();
       else
         return;
       ReceiveKeyFromPhonabet(strWith);
@@ -262,22 +279,9 @@ namespace Tekkon {
     /// </summary>
     /// <param name="input">傳入的 String 內容。</param>
     public void ReceiveKey(string input) {
-      if (!IsPinyinMode) {
-        ReceiveKeyFromPhonabet(Translate(input));
-        return;
-      }
-      if (Shared.MapArayuruPinyinIntonation.ContainsKey(input)) {
-        string theTone = Shared.MapArayuruPinyinIntonation[input];
-        Intonation = new Phonabet(theTone);
-      } else {
-        // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
-        // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
-        int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
-        if (RomajiBuffer.Length > maxCount - 1) RomajiBuffer = RomajiBuffer.Skip(1).ToString();
-        string romajiBufferBackup = RomajiBuffer + input;
-        ReceiveSequence(romajiBufferBackup, true);
-        RomajiBuffer = romajiBufferBackup;
-      }
+      if (string.IsNullOrEmpty(input)) return;
+      if (!Rune.TryGetRuneAt(input, 0, out Rune rune)) return;
+      ReceiveKey(rune);
     }
 
     /// <summary>
@@ -289,6 +293,30 @@ namespace Tekkon {
     /// <param name="inputChar">傳入的 char 內容，格式為 int。</param>
     public void ReceiveKey(int inputChar) =>
         ReceiveKey(((char)Math.Abs(inputChar)).ToString());
+
+    /// <summary>
+    /// 接受傳入的按鍵訊號時的處理，處理對象為 Unicode Scalar。
+    /// </summary>
+    /// <param name="input">傳入的 Unicode Scalar 內容。</param>
+    public void ReceiveKey(Rune input) {
+      if (!IsPinyinMode) {
+        ReceiveKeyFromPhonabet(Translate(input.ToString()));
+        return;
+      }
+      string scalarString = input.ToString();
+      if (Shared.MapArayuruPinyinIntonation.TryGetValue(input, out Rune toneRune)) {
+        Intonation = new Phonabet(toneRune);
+      } else {
+        // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
+        // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
+        int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
+        if (RomajiBuffer.Length > maxCount - 1)
+          RomajiBuffer = new string(RomajiBuffer.Skip(1).ToArray());
+        string romajiBufferBackup = RomajiBuffer + scalarString;
+        ReceiveSequence(romajiBufferBackup, true);
+        RomajiBuffer = romajiBufferBackup;
+      }
+    }
 
     /// <summary>
     /// 接受傳入的按鍵訊號時的處理，處理對象為單個注音符號。
@@ -305,19 +333,23 @@ namespace Tekkon {
             break;
           case "ㄜ":
             if (Semivowel.Value == "ㄨ") Semivowel = new Phonabet("ㄩ");
-            if ("ㄧㄩ".Contains(Semivowel.Char)) thePhone = new Phonabet("ㄝ");
+            if ("ㄧㄩ".DoesHave(Semivowel.Value)) thePhone = new Phonabet("ㄝ");
             break;
           case "ㄝ":
             if (Semivowel.Value == "ㄨ") Semivowel = new Phonabet("ㄩ");
             break;
           case "ㄛ":
+            if (Semivowel.Value == "ㄩ") Semivowel = new Phonabet("ㄨ");
+            if ("ㄅㄆㄇㄈ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
+              Semivowel = new Phonabet();
+            break;
           case "ㄥ":
-            if ("ㄅㄆㄇㄈ".Contains(Consonant.Char) && Semivowel.Value == "ㄨ")
-              Semivowel.Clear();
+            if ("ㄅㄆㄇㄈ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
+              Semivowel = new Phonabet();
             break;
           case "ㄟ":
-            if ("ㄋㄌ".Contains(Consonant.Char) && Semivowel.Value == "ㄨ")
-              Semivowel.Clear();
+            if ("ㄋㄌ".DoesHave(Consonant.Value) && Semivowel.Value == "ㄨ")
+              Semivowel = new Phonabet();
             break;
           case "ㄨ":
             switch (Vowel.Value) {
@@ -328,7 +360,7 @@ namespace Tekkon {
                   case "ㄆ":
                   case "ㄇ":
                   case "ㄈ":
-                    Vowel.Clear();
+                    Vowel = new Phonabet();
                     break;
                 }
                 break;
@@ -336,7 +368,7 @@ namespace Tekkon {
                 switch (Consonant.Value) {
                   case "ㄋ":
                   case "ㄌ":
-                    Vowel.Clear();
+                    Vowel = new Phonabet();
                     break;
                 }
                 break;
@@ -350,15 +382,15 @@ namespace Tekkon {
           case "ㄈ":
             if (Semivowel.Value + Vowel.Value == "ㄨㄛ" ||
                 Semivowel.Value + Vowel.Value == "ㄨㄥ")
-              Semivowel.Clear();
+              Semivowel = new Phonabet();
             break;
         }
         if (new[] { PhoneType.Intonation, PhoneType.Vowel }.Contains(
                 thePhone.Type) &&
-            "ㄓㄔㄕㄗㄘㄙ".Contains(Consonant.Char)) {
+            "ㄓㄔㄕㄗㄘㄙ".DoesHave(Consonant.Value)) {
           switch (Semivowel.Value) {
             case "ㄧ":
-              Semivowel.Clear();
+              Semivowel = new Phonabet();
               break;
             case "ㄩ":
               switch (Consonant.Value) {
@@ -398,6 +430,13 @@ namespace Tekkon {
       }
       UpdateRomajiBuffer();
     }
+
+    /// <summary>
+    /// 接受傳入的按鍵訊號時的處理，處理對象為單個注音符號 Unicode Scalar。
+    /// </summary>
+    /// <param name="phonabet">傳入的單個注音符號 Unicode Scalar。</param>
+    public void ReceiveKeyFromPhonabet(Rune phonabet) =>
+        ReceiveKeyFromPhonabet(phonabet.ToString());
 
     /// <summary>
     /// 處理一連串的按鍵輸入。
@@ -506,9 +545,13 @@ namespace Tekkon {
     /// <returns>可用的查詢用注音字串，或者 nil。</returns>
     public string PhonabetKeyForQuery(bool pronounceableOnly) {
       string readingKey = GetComposition();
-      bool isSelfPronouncable = IsPronounceable;
-      bool validKeyAvailable = isSelfPronouncable;
-      if (!IsPinyinMode && !isSelfPronouncable) validKeyAvailable = !string.IsNullOrEmpty(readingKey);
+      bool validKeyAvailable;
+      if (IsPinyinMode)
+        validKeyAvailable = IsPronounceable;
+      else if (pronounceableOnly)
+        validKeyAvailable = IsPronounceable;
+      else
+        validKeyAvailable = !string.IsNullOrEmpty(readingKey);
       return validKeyAvailable ? readingKey : null;
     }
 
@@ -834,7 +877,7 @@ namespace Tekkon {
           break;
         case "n":
           if (!Consonant.IsEmpty || !Semivowel.IsEmpty) {
-            if (Value == "ㄙ") Consonant.Clear();
+            if (Value == "ㄙ") Consonant = new Phonabet();
             strReturn = "ㄥ";
           }
           break;
@@ -855,10 +898,10 @@ namespace Tekkon {
           break;
         case "m":
           if (Semivowel.Value == "ㄩ" && Vowel.Value != "ㄡ") {
-            Semivowel.Clear();
+            Semivowel = new Phonabet();
             strReturn = "ㄡ";
           } else if (Semivowel.Value != "ㄩ" && Vowel.Value == "ㄡ") {
-            Vowel.Clear();
+            Vowel = new Phonabet();
             strReturn = "ㄩ";
           } else if (!Semivowel.IsEmpty || !"ㄐㄑㄒ".DoesHave(Consonant.Value))
             strReturn = "ㄡ";
@@ -867,13 +910,13 @@ namespace Tekkon {
           break;
         case "u":
           if (Semivowel.Value == "ㄧ" && Vowel.Value != "ㄚ") {
-            Semivowel.Clear();
+            Semivowel = new Phonabet();
             strReturn = "ㄚ";
           } else if (Semivowel.Value != "ㄧ" && Vowel.Value == "ㄚ")
             strReturn = "ㄧ";
           else if (Semivowel.Value == "ㄧ" && Vowel.Value == "ㄚ") {
-            Semivowel.Clear();
-            Vowel.Clear();
+            Semivowel = new Phonabet();
+            Vowel = new Phonabet();
           } else if (!Semivowel.IsEmpty)
             strReturn = "ㄚ";
           else

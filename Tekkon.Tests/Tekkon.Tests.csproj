@@ -3,9 +3,9 @@
   <PropertyGroup>
     <Nullable>disable</Nullable>
     <IsPackable>false</IsPackable>
-    <ReleaseVersion>1.6.0</ReleaseVersion>
-    <LangVersion>6</LangVersion>
-    <TargetFrameworks>net46;net6.0</TargetFrameworks>
+    <ReleaseVersion>1.7.0</ReleaseVersion>
+    <LangVersion>10</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,26 +2,26 @@
 
   <PropertyGroup>
     <CodePage>65001</CodePage>
-    <ReleaseVersion>1.6.0</ReleaseVersion>
+    <ReleaseVersion>1.7.0</ReleaseVersion>
     <PackageId>vChewing.Tekkon</PackageId>
     <Authors>Shiki Suen</Authors>
     <Company>Atelier Inmu</Company>
-    <Copyright>(c) 2022 and onwards The vChewing Project (MIT-NTL License).</Copyright>
+    <Copyright>(c) 2022 and onwards The vChewing Project (LGPL v3.0 License or later).</Copyright>
     <RepositoryUrl>https://github.com/ShikiSuen/TekkonNT</RepositoryUrl>
     <NeutralLanguage>zh-TW</NeutralLanguage>
-    <AssemblyVersion>1.6.0</AssemblyVersion>
-    <FileVersion>1.6.0</FileVersion>
-    <Version>1.6.0</Version>
+    <AssemblyVersion>1.7.0</AssemblyVersion>
+    <FileVersion>1.7.0</FileVersion>
+    <Version>1.7.0</Version>
     <Product>Tekkon</Product>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <Description>Tekkon Engine is a module made for processing combo-composition of stroke-based Mandarin Chinese phonetics (i.e. Zhuyin / Bopomofo).</Description>
     <PackageProjectUrl>https://github.com/ShikiSuen/TekkonNT</PackageProjectUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>6</LangVersion>
-    <TargetFrameworks>net46;net6.0</TargetFrameworks>
+    <LangVersion>10</LangVersion>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -33,6 +33,10 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

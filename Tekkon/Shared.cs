@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Tekkon {
@@ -80,12 +81,13 @@ namespace Tekkon {
         if (targetJoined.Contains(key))
           targetJoined = targetJoined.Replace(key, MapHanyuPinyin[key]);
       }
-      foreach (string key in MapArayuruPinyinIntonation.Keys
-                   .OrderBy(x => x.Length)
-                   .Reverse()) {
-        if (targetJoined.Contains(key))
-          targetJoined = targetJoined.Replace(
-              key, key == "1" ? newToneOne : MapArayuruPinyinIntonation[key]);
+      foreach (Rune key in MapArayuruPinyinIntonation.Keys) {
+        string keyStr = key.ToString();
+        if (!targetJoined.Contains(keyStr)) continue;
+        string replacement = key.Equals(new Rune('1'))
+                                 ? newToneOne
+                                 : MapArayuruPinyinIntonation[key].ToString();
+        targetJoined = targetJoined.Replace(keyStr, replacement);
       }
       return targetJoined;
     }
@@ -413,6 +415,9 @@ namespace Tekkon {
     /// </summary>
     public const string MapArayuruPinyin = "abcdefghijklmnopqrstuvwxyz1234567 ";
 
+    /// <summary>以 <see cref="Rune"/> 表示的拼音按鍵集合，方便進行 Unicode 符號比對。</summary>
+    public static readonly HashSet<Rune> MapArayuruPinyinRunes = BuildRuneSet(MapArayuruPinyin);
+
     /// <summary>
     /// 任何形式的拼音排列都會用到的陣列（韋氏拼音與趙元任國語羅馬字除外），
     /// 用 Strings 反而省事一些。<br />
@@ -420,14 +425,22 @@ namespace Tekkon {
     /// </summary>
     public const string MapWadeGilesPinyinKeys = MapArayuruPinyin + "'";
 
+    /// <summary>韋氏拼音專用的按鍵集合，採用 <see cref="Rune"/> 形式。</summary>
+    public static readonly HashSet<Rune> MapWadeGilesPinyinRunes = BuildRuneSet(MapWadeGilesPinyinKeys);
+
     /// <summary>
     /// 任何拼音都會用到的聲調鍵陣列
     /// </summary>
-    public static readonly Dictionary<string, string> MapArayuruPinyinIntonation =
-        new Dictionary<string, string> {
-          ["1"] = " ", ["2"] = "ˊ", ["3"] = "ˇ",
-          ["4"] = "ˋ", ["5"] = "˙", ["6"] = "ˊ",
-          ["7"] = "˙", [" "] = " "
+    public static readonly Dictionary<Rune, Rune> MapArayuruPinyinIntonation =
+        new Dictionary<Rune, Rune> {
+          [new Rune('1')] = new Rune(' '),
+          [new Rune('2')] = new Rune('ˊ'),
+          [new Rune('3')] = new Rune('ˇ'),
+          [new Rune('4')] = new Rune('ˋ'),
+          [new Rune('5')] = new Rune('˙'),
+          [new Rune('6')] = new Rune('ˊ'),
+          [new Rune('7')] = new Rune('˙'),
+          [new Rune(' ')] = new Rune(' ')
         };
 
     /// <summary>
@@ -1566,6 +1579,12 @@ namespace Tekkon {
     MandarinParser.OfYalePinyin,      MandarinParser.OfHualuoPinyin,
     MandarinParser.OfUniversalPinyin, MandarinParser.OfWadeGilesPinyin
   };
+
+    private static HashSet<Rune> BuildRuneSet(string source) {
+      HashSet<Rune> result = new HashSet<Rune>();
+      foreach (Rune rune in source.EnumerateRunes()) result.Add(rune);
+      return result;
+    }
   }
   internal static class StringExtensions {
     /// <summary>
