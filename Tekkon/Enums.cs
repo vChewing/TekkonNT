@@ -107,7 +107,7 @@ namespace Tekkon {
         AllCases.Where(self => !self.IsDynamic() && !self.IsPinyin());
 
     /// <summary>取得與拼音排列對應的注音查表。</summary>
-    public static IReadOnlyDictionary<string, string> MapZhuyinPinyin(this MandarinParser parser) =>
+    public static IReadOnlyDictionary<string, string>? MapZhuyinPinyin(this MandarinParser parser) =>
         parser switch {
           MandarinParser.OfHanyuPinyin => Shared.MapHanyuPinyin,
           MandarinParser.OfSecondaryPinyin => Shared.MapSecondaryPinyin,

@@ -543,7 +543,7 @@ namespace Tekkon {
     /// </summary>
     /// <param name="pronounceableOnly">是否可以唸出。</param>
     /// <returns>可用的查詢用注音字串，或者 nil。</returns>
-    public string PhonabetKeyForQuery(bool pronounceableOnly) {
+    public string? PhonabetKeyForQuery(bool pronounceableOnly) {
       string readingKey = GetComposition();
       bool validKeyAvailable;
       if (IsPinyinMode)

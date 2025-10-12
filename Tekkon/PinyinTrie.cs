@@ -39,7 +39,7 @@ namespace Tekkon {
       public Dictionary<string, int> Children { get; }
 
       /// <inheritdoc />
-      public bool Equals(TNode other) {
+      public bool Equals(TNode? other) {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
         return Id == other.Id && Character == other.Character && ReadingKey == other.ReadingKey &&
@@ -47,7 +47,7 @@ namespace Tekkon {
       }
 
       /// <inheritdoc />
-      public override bool Equals(object obj) => Equals(obj as TNode);
+      public override bool Equals(object? obj) => Equals(obj as TNode);
 
       /// <inheritdoc />
       public override int GetHashCode() {
@@ -73,7 +73,7 @@ namespace Tekkon {
       Root = new TNode(id: 0, character: string.Empty, readingKey: string.Empty);
       Nodes = new Dictionary<int, TNode> { [0] = Root };
       AllPossibleReadings = BuildPossibleReadings();
-      IReadOnlyDictionary<string, string> table = parser.MapZhuyinPinyin();
+      IReadOnlyDictionary<string, string>? table = parser.MapZhuyinPinyin();
       if (table == null) return;
       foreach (KeyValuePair<string, string> kvp in table) {
         Insert(kvp.Key, kvp.Value);
@@ -100,10 +100,11 @@ namespace Tekkon {
 
       foreach (char ch in key) {
         string symbol = ch.ToString();
-        if (currentNode.Children.TryGetValue(symbol, out int childNodeId) &&
-            Nodes.TryGetValue(childNodeId, out TNode matchedNode)) {
-          currentNode = matchedNode;
-          continue;
+        if (currentNode.Children.TryGetValue(symbol, out int childNodeId)) {
+          if (Nodes.TryGetValue(childNodeId, out TNode? matchedNode)) {
+            currentNode = matchedNode;
+            continue;
+          }
         }
 
         int newNodeId = Nodes.Count;
@@ -128,7 +129,7 @@ namespace Tekkon {
       foreach (char ch in key) {
         string symbol = ch.ToString();
         if (!currentNode.Children.TryGetValue(symbol, out int childNodeId)) return new List<string>();
-        if (!Nodes.TryGetValue(childNodeId, out TNode childNode)) return new List<string>();
+        if (!Nodes.TryGetValue(childNodeId, out TNode? childNode)) return new List<string>();
         currentNode = childNode;
       }
       return CollectAllDescendantEntries(currentNode);
@@ -220,7 +221,7 @@ namespace Tekkon {
     private List<string> CollectAllDescendantEntries(TNode node) {
       List<string> result = new List<string>(node.Entries);
       foreach (int childNodeId in node.Children.Values) {
-        if (!Nodes.TryGetValue(childNodeId, out TNode childNode)) continue;
+        if (!Nodes.TryGetValue(childNodeId, out TNode? childNode)) continue;
         result.AddRange(CollectAllDescendantEntries(childNode));
       }
       return result;
@@ -228,7 +229,6 @@ namespace Tekkon {
 
     private List<string> BuildPossibleReadings() {
       IEnumerable<string> readings = Parser.AllPossibleReadings();
-      if (readings == null) return new List<string>();
       return readings.OrderByDescending(s => s.Length).ThenBy(s => s, StringComparer.Ordinal).ToList();
     }
   }
