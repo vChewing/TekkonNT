@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <CodePage>65001</CodePage>
+    <Nullable>enable</Nullable>
     <ReleaseVersion>1.7.0</ReleaseVersion>
     <PackageId>vChewing.Tekkon</PackageId>
     <Authors>Shiki Suen</Authors>
@@ -16,27 +16,24 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <Description>Tekkon Engine is a module made for processing combo-composition of stroke-based Mandarin Chinese phonetics (i.e. Zhuyin / Bopomofo).</Description>
+    <PackageLicenseExpression>LGPL-3.0-or-later</PackageLicenseExpression>
+    <Description>Tekkon Engine is a module made for processing lingual data of an input method.</Description>
     <PackageProjectUrl>https://github.com/ShikiSuen/TekkonNT</PackageProjectUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>10</LangVersion>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net46;net6.0</TargetFrameworks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <LangVersion>10.0</LangVersion>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType></DebugType>
+    <LangVersion>10.0</LangVersion>
+    <DebugType>none</DebugType>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\README.md">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-    <None Include="..\LICENSE">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
