@@ -37,10 +37,10 @@ namespace Tekkon.Tests {
       Phonabet thePhonabetC = new Phonabet("ㄠ");
       Phonabet thePhonabetD = new Phonabet("ˇ");
       Assert.True(thePhonabetNull.Type == PhoneType.Null &&
-            thePhonabetA.Type == PhoneType.Consonant &&
-            thePhonabetB.Type == PhoneType.Semivowel &&
-            thePhonabetC.Type == PhoneType.Vowel &&
-            thePhonabetD.Type == PhoneType.Intonation);
+                  thePhonabetA.Type == PhoneType.Consonant &&
+                  thePhonabetB.Type == PhoneType.Semivowel &&
+                  thePhonabetC.Type == PhoneType.Vowel &&
+                  thePhonabetD.Type == PhoneType.Intonation);
       Assert.AreEqual(new Rune('~'), thePhonabetNull.ScalarValue);
       Assert.AreEqual(new Rune('ㄉ'), thePhonabetA.ScalarValue);
       Assert.AreEqual(new Rune('ㄧ'), thePhonabetB.ScalarValue);
@@ -84,27 +84,27 @@ namespace Tekkon.Tests {
       bool toneMarkerIndicator;
 
       // Test Key Receiving;
-      composer.ReceiveKey(0x0032);  // 2, ㄉ
-      composer.ReceiveKey("j");     // ㄨ
-      composer.ReceiveKey("u");     // ㄧ
-      composer.ReceiveKey("l");     // ㄠ
+      composer.ReceiveKey(0x0032); // 2, ㄉ
+      composer.ReceiveKey("j"); // ㄨ
+      composer.ReceiveKey("u"); // ㄧ
+      composer.ReceiveKey("l"); // ㄠ
 
       // Testing missing tone markers;
       toneMarkerIndicator = composer.HasIntonation();
       Assert.True(!toneMarkerIndicator);
 
-      composer.ReceiveKey("3");  // 上聲
+      composer.ReceiveKey("3"); // 上聲
       Assert.AreEqual(actual: composer.Value, expected: "ㄉㄧㄠˇ");
       composer.DoBackSpace();
-      composer.ReceiveKey(" ");  // 陰平
+      composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄉㄧㄠ ");  // 這裡回傳的結果的陰平是空格
+                      expected: "ㄉㄧㄠ "); // 這裡回傳的結果的陰平是空格
 
       // Test Getting Displayed Composition
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ");
 
       // Test Tone 5
-      composer.ReceiveKey("7");  // 輕聲
+      composer.ReceiveKey("7"); // 輕聲
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ˙");
 
       // Testing having tone markers
@@ -117,7 +117,7 @@ namespace Tekkon.Tests {
 
       // Testing having only tone markers
       composer.Clear();
-      composer.ReceiveKey("3");  // 上聲
+      composer.ReceiveKey("3"); // 上聲
       toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
       Assert.True(toneMarkerIndicator);
 
@@ -208,7 +208,7 @@ namespace Tekkon.Tests {
     [Test]
     public void TestPhonabetCombinationCorrection() {
       Composer composer =
-          new Composer(arrange: MandarinParser.OfDachen, correction: true);
+        new Composer(arrange: MandarinParser.OfDachen, correction: true);
       composer.ReceiveKeyFromPhonabet(new Rune('ㄓ'));
       composer.ReceiveKeyFromPhonabet(new Rune('ㄧ'));
       composer.ReceiveKeyFromPhonabet(new Rune('ˋ'));
@@ -251,7 +251,7 @@ namespace Tekkon.Tests {
     public void TestSemivowelNormalizationWithEncounteredVowels() {
       // 測試自動將「ㄩ」轉寫為「ㄨ」的情境，避免輸出異常的拼法。
       Composer composer =
-          new Composer(arrange: MandarinParser.OfDachen, correction: true);
+        new Composer(arrange: MandarinParser.OfDachen, correction: true);
       composer.ReceiveKeyFromPhonabet("ㄩ");
       composer.ReceiveKeyFromPhonabet("ㄛ");
       Assert.AreEqual("ㄨㄛ", composer.Value);
@@ -296,21 +296,22 @@ namespace Tekkon.Tests {
       Assert.True(MandarinParser.OfHsu.IsDynamic());
       Assert.False(MandarinParser.OfIBM.IsDynamic());
 
-      IReadOnlyDictionary<string, string> pinyinMap =
-          MandarinParser.OfHanyuPinyin.MapZhuyinPinyin();
-      Assert.NotNull(pinyinMap);
+      IReadOnlyDictionary<string, string>? pinyinMapMaybe =
+        MandarinParser.OfHanyuPinyin.MapZhuyinPinyin();
+      Assert.NotNull(pinyinMapMaybe);
+      IReadOnlyDictionary<string, string> pinyinMap = pinyinMapMaybe!;
       Assert.True(pinyinMap.ContainsKey("zhe"));
       Assert.AreEqual("ㄓㄜ", pinyinMap["zhe"]);
 
       Assert.IsNull(MandarinParser.OfDachen.MapZhuyinPinyin());
 
       HashSet<string> hanyuReadings =
-          MandarinParser.OfHanyuPinyin.AllPossibleReadings();
+        MandarinParser.OfHanyuPinyin.AllPossibleReadings();
       Assert.True(hanyuReadings.Contains("shi"));
       Assert.True(hanyuReadings.Contains("shi4"));
 
       HashSet<string> zhuyinReadings =
-          MandarinParser.OfDachen.AllPossibleReadings();
+        MandarinParser.OfDachen.AllPossibleReadings();
       Assert.True(zhuyinReadings.Contains("ㄅㄚ"));
       Assert.True(zhuyinReadings.Contains("ㄅㄚˋ"));
 

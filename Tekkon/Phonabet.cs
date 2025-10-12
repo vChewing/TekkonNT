@@ -21,9 +21,10 @@ namespace Tekkon {
     private static readonly Rune[] AllowedSemivowelRunes = BuildRunes("ㄧㄨㄩ");
     private static readonly Rune[] AllowedVowelRunes = BuildRunes("ㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ");
     private static readonly Rune[] AllowedIntonationRunes = BuildRunes(" ˊˇˋ˙");
+
     private static readonly Rune[] AllowedPhonabetRunes =
-        AllowedConsonantRunes.Concat(AllowedSemivowelRunes)
-            .Concat(AllowedVowelRunes).Concat(AllowedIntonationRunes).ToArray();
+      AllowedConsonantRunes.Concat(AllowedSemivowelRunes)
+                           .Concat(AllowedVowelRunes).Concat(AllowedIntonationRunes).ToArray();
 
     /// <summary>
     /// 引擎僅接受這些記號作為聲母。
@@ -87,6 +88,7 @@ namespace Tekkon {
         foreach (Rune current in input.EnumerateRunes()) lastRune = current;
         if (lastRune.HasValue && IsAllowedPhonabet(lastRune.Value)) ScalarValue = lastRune.Value;
       }
+
       EnsureType();
     }
 
@@ -119,6 +121,7 @@ namespace Tekkon {
       if (ScalarValue.Equals(strOf)) {
         ScalarValue = strWith ?? NullRune;
       }
+
       EnsureType();
     }
 
@@ -180,6 +183,7 @@ namespace Tekkon {
       foreach (Rune current in source) {
         if (current.Equals(value)) return true;
       }
+
       return false;
     }
 

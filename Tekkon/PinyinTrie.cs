@@ -29,12 +29,16 @@ namespace Tekkon {
 
       /// <summary>節點識別碼。</summary>
       public int Id { get; internal set; }
+
       /// <summary>節點對應的注音詞條集合。</summary>
       public List<string> Entries { get; }
+
       /// <summary>節點所代表的拼音字元。</summary>
       public string Character { get; internal set; }
+
       /// <summary>節點對應的完整讀音鍵。</summary>
       public string ReadingKey { get; internal set; }
+
       /// <summary>子節點索引表。</summary>
       public Dictionary<string, int> Children { get; }
 
@@ -43,7 +47,8 @@ namespace Tekkon {
         if (other is null) return false;
         if (ReferenceEquals(this, other)) return true;
         return Id == other.Id && Character == other.Character && ReadingKey == other.ReadingKey &&
-               Entries.SequenceEqual(other.Entries) && Children.OrderBy(kv => kv.Key).SequenceEqual(other.Children.OrderBy(kv => kv.Key));
+               Entries.SequenceEqual(other.Entries) &&
+               Children.OrderBy(kv => kv.Key).SequenceEqual(other.Children.OrderBy(kv => kv.Key));
       }
 
       /// <inheritdoc />
@@ -60,6 +65,7 @@ namespace Tekkon {
           hash.Add(child.Key);
           hash.Add(child.Value);
         }
+
         return hash.ToHashCode();
       }
     }
@@ -82,10 +88,13 @@ namespace Tekkon {
 
     /// <summary>當前所使用的拼音排列。</summary>
     public MandarinParser Parser { get; }
+
     /// <summary>字首樹根節點。</summary>
     public TNode Root { get; }
+
     /// <summary>依節點識別碼存取節點的索引表。</summary>
     public Dictionary<int, TNode> Nodes { get; }
+
     /// <summary>已排序的可能讀音集合。</summary>
     public List<string> AllPossibleReadings { get; private set; }
 
@@ -132,6 +141,7 @@ namespace Tekkon {
         if (!Nodes.TryGetValue(childNodeId, out TNode? childNode)) return new List<string>();
         currentNode = childNode;
       }
+
       return CollectAllDescendantEntries(currentNode);
     }
 
@@ -172,7 +182,8 @@ namespace Tekkon {
           }
         }
 
-        result.Add(string.Join(chopCaseSeparator, uniqueFetched));
+        string separator = chopCaseSeparator.ToString();
+        result.Add(string.Join(separator, uniqueFetched));
       }
 
       return result;
@@ -224,6 +235,7 @@ namespace Tekkon {
         if (!Nodes.TryGetValue(childNodeId, out TNode? childNode)) continue;
         result.AddRange(CollectAllDescendantEntries(childNode));
       }
+
       return result;
     }
 

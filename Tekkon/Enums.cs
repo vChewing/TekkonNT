@@ -15,18 +15,22 @@ namespace Tekkon {
     /// 假。
     /// </summary>
     Null = 0,
+
     /// <summary>
     /// 聲母。
     /// </summary>
     Consonant = 1,
+
     /// <summary>
     /// 介母。
     /// </summary>
     Semivowel = 2,
+
     /// <summary>
     /// 韻母。
     /// </summary>
     Vowel = 3,
+
     /// <summary>
     /// 聲調。
     /// </summary>
@@ -39,36 +43,52 @@ namespace Tekkon {
   public enum MandarinParser {
     /// <summary>注音：大千傳統排列。</summary>
     OfDachen = 0,
+
     /// <summary>注音：酷音大千二十六鍵動態排列。</summary>
     OfDachen26 = 1,
+
     /// <summary>注音：倚天傳統排列。</summary>
     OfETen = 2,
+
     /// <summary>注音：倚天二十六鍵動態排列。</summary>
     OfETen26 = 3,
+
     /// <summary>注音：許氏動態排列。</summary>
     OfHsu = 4,
+
     /// <summary>注音：IBM 排列。</summary>
     OfIBM = 5,
+
     /// <summary>注音：神通排列。</summary>
     OfMiTAC = 6,
+
     /// <summary>注音：精業排列。</summary>
     OfSeigyou = 7,
+
     /// <summary>注音：偽精業排列。</summary>
     OfFakeSeigyou = 8,
+
     /// <summary>注音：星光動態排列。</summary>
     OfStarlight = 9,
+
     /// <summary>注音：劉氏動態排列。</summary>
     OfAlvinLiu = 10,
+
     /// <summary>拼音：漢語拼音排列。</summary>
     OfHanyuPinyin = 100,
+
     /// <summary>拼音：國音二式排列。</summary>
     OfSecondaryPinyin = 101,
+
     /// <summary>拼音：耶魯拼音排列。</summary>
     OfYalePinyin = 102,
+
     /// <summary>拼音：華羅拼音排列。</summary>
     OfHualuoPinyin = 103,
+
     /// <summary>拼音：通用拼音排列。</summary>
     OfUniversalPinyin = 104,
+
     /// <summary>拼音：韋氏拼音排列。</summary>
     OfWadeGilesPinyin = 105
     // C# 似乎不支援在這裡直接給一個動態 var。
@@ -93,30 +113,31 @@ namespace Tekkon {
     };
 
     /// <summary>列出所有可用的鍵盤排列。</summary>
-    public static IEnumerable<MandarinParser> AllCases => Enum.GetValues<MandarinParser>();
+    public static IEnumerable<MandarinParser> AllCases =>
+      Enum.GetValues(typeof(MandarinParser)).Cast<MandarinParser>();
 
     /// <summary>列出所有拼音排列。</summary>
     public static IEnumerable<MandarinParser> AllPinyinCases => AllCases.Where(self => self.IsPinyin());
 
     /// <summary>列出所有動態注音排列。</summary>
     public static IEnumerable<MandarinParser> AllDynamicZhuyinCases =>
-        AllCases.Where(self => self.IsDynamic());
+      AllCases.Where(self => self.IsDynamic());
 
     /// <summary>列出所有靜態注音排列。</summary>
     public static IEnumerable<MandarinParser> AllStaticZhuyinCases =>
-        AllCases.Where(self => !self.IsDynamic() && !self.IsPinyin());
+      AllCases.Where(self => !self.IsDynamic() && !self.IsPinyin());
 
     /// <summary>取得與拼音排列對應的注音查表。</summary>
     public static IReadOnlyDictionary<string, string>? MapZhuyinPinyin(this MandarinParser parser) =>
-        parser switch {
-          MandarinParser.OfHanyuPinyin => Shared.MapHanyuPinyin,
-          MandarinParser.OfSecondaryPinyin => Shared.MapSecondaryPinyin,
-          MandarinParser.OfYalePinyin => Shared.MapYalePinyin,
-          MandarinParser.OfHualuoPinyin => Shared.MapHualuoPinyin,
-          MandarinParser.OfUniversalPinyin => Shared.MapUniversalPinyin,
-          MandarinParser.OfWadeGilesPinyin => Shared.MapWadeGilesPinyin,
-          _ => null
-        };
+      parser switch {
+        MandarinParser.OfHanyuPinyin => Shared.MapHanyuPinyin,
+        MandarinParser.OfSecondaryPinyin => Shared.MapSecondaryPinyin,
+        MandarinParser.OfYalePinyin => Shared.MapYalePinyin,
+        MandarinParser.OfHualuoPinyin => Shared.MapHualuoPinyin,
+        MandarinParser.OfUniversalPinyin => Shared.MapUniversalPinyin,
+        MandarinParser.OfWadeGilesPinyin => Shared.MapWadeGilesPinyin,
+        _ => null
+      };
 
     /// <summary>提供排列的識別名稱，方便序列化或記錄。</summary>
     public static string NameTag(this MandarinParser parser) => parser switch {
@@ -159,6 +180,7 @@ namespace Tekkon {
           result.Add(stem + currentIntonation);
         }
       }
+
       return result;
     }
   }

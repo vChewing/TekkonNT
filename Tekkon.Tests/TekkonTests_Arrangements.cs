@@ -25,6 +25,7 @@ namespace Tekkon.Tests {
         Expected = "";
         return;
       }
+
       Parser = parser;
       Typing = typing.Replace("_", " ");
       Expected = expected.Replace("_", " ");
@@ -123,7 +124,7 @@ namespace Tekkon.Tests {
         int failures = cases.Select(testCase => testCase.Verify() ? 0 : 1).Sum();
 
         Assert.AreEqual(0, failures,
-          $"[失敗] {parser.NameTag()} 處理失敗，共 {failures} 個錯誤結果。");
+                        $"[失敗] {parser.NameTag()} 處理失敗，共 {failures} 個錯誤結果。");
 
         var elapsed = DateTime.Now - startTime;
         Console.WriteLine($" -> [Tekkon][({parser.NameTag()})] 測試完成，耗時 {elapsed.TotalSeconds:F4} 秒。");
