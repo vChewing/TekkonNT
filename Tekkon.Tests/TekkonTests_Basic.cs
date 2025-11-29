@@ -198,6 +198,7 @@ namespace Tekkon.Tests {
       Assert.AreEqual(Shared.CnvPhonaToHanyuPinyin("ㄍㄢˋ"), "gan4");
       Assert.AreEqual(Shared.CnvHanyuPinyinToTextbookStyle("起(qi3)居(ju1)"),
                       "起(qǐ)居(jū)");
+      Assert.AreEqual(Shared.CnvHanyuPinyinToPhona("bian4"), "ㄅㄧㄢˋ");
       Assert.AreEqual(Shared.CnvHanyuPinyinToPhona("bian4-le5-tian1"),
                       "ㄅㄧㄢˋ-ㄌㄜ˙-ㄊㄧㄢ");
       // 測試這種情形：「如果傳入的字串不包含任何半形英數內容的話，那麼應該直接將傳入的字串原樣返回」。

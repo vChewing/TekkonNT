@@ -73,8 +73,10 @@ namespace Tekkon {
     /// <returns>轉換結果。</returns>
     public static string CnvHanyuPinyinToPhona(string targetJoined,
                                                string newToneOne = "") {
-      if (targetJoined.Contains('_') ||
-          !Regex.IsMatch(targetJoined, @".*[^A-Za-z0-9].*"))
+        // 允許的字元：英數 (A-Za-z0-9)、空白、Tab、連字號(-)。
+        // 如果含底線或包含任何不在允許列表中的字元，則放棄轉換。
+        if (targetJoined.Contains('_') ||
+          Regex.IsMatch(targetJoined, @".*[^A-Za-z0-9 \t-].*"))
         return targetJoined;
       foreach (string key in MapHanyuPinyin.Keys.OrderBy(x => x.Length)
                                            .Reverse()) {
