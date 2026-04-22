@@ -333,5 +333,26 @@ namespace Tekkon.Tests {
       toneMarkerIndicator = composer.HasIntonation(withNothingElse: true);
       Assert.True(toneMarkerIndicator);
     }
+
+    [Test]
+    public void TestPinyinAutoChopResult() {
+      Composer composer = new Composer(arrange: MandarinParser.OfHanyuPinyin);
+
+      composer.ReceiveKey("s");
+      composer.ReceiveKey("h");
+      composer.ReceiveKey("i");
+
+      var autoChop = composer.GetPinyinAutoChopResult("j");
+      if (!autoChop.HasValue) {
+        Assert.Fail("GetPinyinAutoChopResult returned null.");
+      }
+      var result = autoChop!.Value;
+      Assert.AreEqual(new[] { "ㄕ" }, result.CommittedReadings);
+      Assert.AreEqual("j", result.RemainingRomaji);
+
+      composer.ReplacePinyinBuffer(result.RemainingRomaji);
+      Assert.AreEqual("j", composer.GetInlineCompositionForDisplay(isHanyuPinyin: true));
+      Assert.False(composer.IsPronounceable);
+    }
   }
 }

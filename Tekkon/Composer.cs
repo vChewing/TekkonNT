@@ -148,6 +148,31 @@ namespace Tekkon {
     public bool IsPronounceable =>
       !Vowel.IsEmpty || !Semivowel.IsEmpty || !Consonant.IsEmpty;
 
+    /// <summary>
+    /// 描述連續拼音輸入在當前拍次應如何自動 chop 的結果。
+    /// </summary>
+    public struct PinyinAutoChopResult {
+      /// <summary>
+      /// 已確認可先行送交組字器的前段注音讀音鍵。
+      /// </summary>
+      public string[] CommittedReadings { get; }
+
+      /// <summary>
+      /// 保留在拼音組音區內、等待後續輸入的尾段羅馬字串。
+      /// </summary>
+      public string RemainingRomaji { get; }
+
+      /// <summary>
+      /// 初始化一個新的 PinyinAutoChopResult。
+      /// </summary>
+      /// <param name="committedReadings">已經提交的注音讀音鍵。</param>
+      /// <param name="remainingRomaji">保留的尾段羅馬字串。</param>
+      public PinyinAutoChopResult(string[] committedReadings, string remainingRomaji) {
+        CommittedReadings = committedReadings;
+        RemainingRomaji = remainingRomaji;
+      }
+    }
+
     // MARK: 注拼槽對外處理函式.
 
     /// <summary>
@@ -507,6 +532,64 @@ namespace Tekkon {
     public string CnvSequence(string givenSequence = "") {
       ReceiveSequence(givenSequence);
       return Value;
+    }
+
+    /// <summary>
+    /// 在拼音模式下試算「當前 buffer 加上新字元」是否應自動 chop 前段有效讀音。
+    ///
+    /// 僅當整體延伸後已不再是單一可唸讀音、但 chop 後除最後一段以外都能對應成完整拼音時，
+    /// 才會回傳可提交的前段注音讀音與應保留的尾段拼音 buffer。
+    /// </summary>
+    /// <param name="input">本拍欲追加的單一拼音字元。</param>
+    /// <returns>自動 chop 的結果；若本拍不應觸發自動 chop 則回傳 null。</returns>
+    public PinyinAutoChopResult? GetPinyinAutoChopResult(string input) {
+      if (!IsPinyinMode || !Intonation.IsEmpty) return null;
+      if (string.IsNullOrEmpty(input)) return null;
+      if (!Rune.TryGetRuneAt(input, 0, out Rune scalar)) return null;
+      if (!InputValidityCheckStr(input)) return null;
+      if (Shared.MapArayuruPinyinIntonation.ContainsKey(scalar)) return null;
+      var readingMap = Parser.MapZhuyinPinyin();
+      if (readingMap == null) return null;
+
+      string appended = RomajiBuffer + scalar.ToString();
+      var validationComposer = this;
+      validationComposer.Clear();
+      validationComposer.ReceiveSequence(appended, isRomaji: true);
+      if (validationComposer.IsPronounceable) return null;
+
+      var trie = new PinyinTrie(Parser);
+      var chopped = trie.Chop(appended);
+      if (chopped.Count < 2) return null;
+
+      string remainingRomaji = chopped[chopped.Count - 1];
+      var leadingSlices = chopped.GetRange(0, chopped.Count - 1);
+      if (leadingSlices.Count == 0) return null;
+
+      var committedReadings = new System.Collections.Generic.List<string>();
+      foreach (string slice in leadingSlices) {
+        if (readingMap.TryGetValue(slice, out string? reading)) {
+          committedReadings.Add(reading);
+        } else {
+          return null;
+        }
+      }
+
+      return new PinyinAutoChopResult(
+        committedReadings: committedReadings.ToArray(),
+        remainingRomaji: remainingRomaji
+      );
+    }
+
+    /// <summary>
+    /// 以指定的拼音字串重建拼音組音區內容。
+    /// </summary>
+    /// <param name="romaji">欲保留在拼音組音區內的羅馬字串。</param>
+    public void ReplacePinyinBuffer(string romaji) {
+      if (!IsPinyinMode) return;
+      Clear();
+      if (string.IsNullOrEmpty(romaji)) return;
+      ReceiveSequence(romaji, isRomaji: true);
+      RomajiBuffer = romaji;
     }
 
     /// <summary>
