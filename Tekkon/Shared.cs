@@ -2,6 +2,7 @@
 // ====================
 // This code is released under the SPDX-License-Identifier: `LGPL-3.0-or-later`.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,14 +15,52 @@ namespace Tekkon {
   public struct Shared {
     // MARK: - Phonabet to Hanyu-Pinyin Conversion Processing
 
+    // MARK: - Pre-built lookup for O(N) single-pass conversion.
+
+    /// <summary>
+    /// 從 ArrPhonaToHanyuPinyin 預建的字串→拼音對照表。
+    /// 因為原陣列已按長度降冪排列（多字元在前），建表後 longest-match-first 的語意由查表順序保證。
+    /// </summary>
+    private static readonly Lazy<Dictionary<string, string>> PhonaToPinyinLUT =
+      new(() => ArrPhonaToHanyuPinyin!.ToDictionary(pair => pair[0], pair => pair[1]));
+
+    /// <summary>
+    /// 已知最長的注音符號組合的字元長度（以 Unicode scalar 計）。
+    /// </summary>
+    private static readonly Lazy<int> MaxPhonaPatternLength =
+      new(() => ArrPhonaToHanyuPinyin!.Select(pair => pair[0].EnumerateRunes().Count())
+        .DefaultIfEmpty(3).Max());
+
     /// <summary>
     /// 注音轉拼音，要求陰平必須是空格。
     /// </summary>
     /// <param name="targetJoined">傳入的 String 對象物件。</param>
     /// <returns>漢語拼音字串。</returns>
     public static string CnvPhonaToHanyuPinyin(string targetJoined) {
-      return ArrPhonaToHanyuPinyin.Aggregate(
-        targetJoined, (current, key) => current.Replace(key[0], key[1]));
+      if (string.IsNullOrEmpty(targetJoined)) return targetJoined;
+      var result = new StringBuilder(targetJoined.Length * 2); // pinyin output typically longer than zhuyin
+      int i = 0;
+      int len = targetJoined.Length;
+      int maxLen = MaxPhonaPatternLength.Value;
+      while (i < len) {
+        bool matched = false;
+        int remaining = len - i;
+        // Greedy longest-match first: try from max possible length down to 1.
+        for (int scanLen = Math.Min(maxLen, remaining); scanLen >= 1; scanLen--) {
+          string key = targetJoined.Substring(i, scanLen);
+          if (PhonaToPinyinLUT.Value.TryGetValue(key, out string? replacement)) {
+            result.Append(replacement);
+            i += scanLen;
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) {
+          result.Append(targetJoined[i]);
+          i++;
+        }
+      }
+      return result.ToString();
     }
 
     /// <summary>

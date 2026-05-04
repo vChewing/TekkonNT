@@ -51,6 +51,14 @@ namespace Tekkon {
     /// </summary>
     public bool PhonabetCombinationCorrectionEnabled { get; set; }
 
+    // MARK: Private
+
+    /// <summary>
+    /// 追蹤 RomajiBuffer 是否需要從聲介韻重建。
+    /// 當 phonabet 槽位變更時設為 true，讀取 RomajiBuffer 前若為 true 則先重建。
+    /// </summary>
+    private bool _needsRomajiUpdate = true;
+
     /// <summary>
     /// 內容值，會直接按照正確的順序拼裝自己的聲介韻調內容、再回傳。
     /// 注意：直接取這個參數的內容的話，陰平聲調會成為一個空格。
@@ -105,6 +113,7 @@ namespace Tekkon {
     /// <param name="isHanyuPinyin">是否將輸出結果轉成漢語拼音。</param>
     /// <returns>拼音/注音讀音字串，依照適合在輸入法組字區內顯示出來的格式。</returns>
     public string GetInlineCompositionForDisplay(bool isHanyuPinyin = false) {
+      _RefreshRomajiBufferIfNeeded();
       if (!IsPinyinMode) return GetComposition(isHanyuPinyin);
       string toneReturned;
       switch (Intonation.Value) {
@@ -208,6 +217,7 @@ namespace Tekkon {
       Vowel = new Phonabet();
       Intonation = new Phonabet();
       RomajiBuffer = "";
+      _needsRomajiUpdate = false;
     }
 
     // MARK: - Public Functions
@@ -272,11 +282,10 @@ namespace Tekkon {
     }
 
     /// <summary>
-    /// 按需更新拼音組音區的內容顯示。
+    /// 按需更新拼音組音區的內容顯示（延遲計算）。
     /// </summary>
     public void UpdateRomajiBuffer() {
-      RomajiBuffer = Shared.CnvPhonaToHanyuPinyin(targetJoined: Consonant.Value +
-                                                                Semivowel.Value + Vowel.Value);
+      _needsRomajiUpdate = true;
     }
 
     /// <summary>
@@ -338,12 +347,14 @@ namespace Tekkon {
       } else {
         // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
         // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
+        _RefreshRomajiBufferIfNeeded();
         int maxCount = (Parser == MandarinParser.OfWadeGilesPinyin) ? 7 : 6;
         if (RomajiBuffer.Length > maxCount - 1)
           RomajiBuffer = new string(RomajiBuffer.Skip(1).ToArray());
         string romajiBufferBackup = RomajiBuffer + scalarString;
         ReceiveSequence(romajiBufferBackup, true);
         RomajiBuffer = romajiBufferBackup;
+        _needsRomajiUpdate = false;
       }
     }
 
@@ -589,6 +600,7 @@ namespace Tekkon {
       if (string.IsNullOrEmpty(romaji)) return;
       ReceiveSequence(romaji, isRomaji: true);
       RomajiBuffer = romaji;
+      _needsRomajiUpdate = false;
     }
 
     /// <summary>
@@ -598,11 +610,14 @@ namespace Tekkon {
     /// 基本上就是按順序從游標前方開始往後刪。
     /// </summary>
     public void DoBackSpace() {
+      _RefreshRomajiBufferIfNeeded();
       if (IsPinyinMode && RomajiBuffer.Length != 0) {
         if (!Intonation.IsEmpty)
           Intonation = new Phonabet();
-        else
+        else {
           RomajiBuffer = RomajiBuffer.Remove(RomajiBuffer.Length - 1);
+          _needsRomajiUpdate = false;
+        }
       } else if (!Intonation.IsEmpty)
         Intonation = new Phonabet();
       else if (!Vowel.IsEmpty)
@@ -628,6 +643,19 @@ namespace Tekkon {
     /// </summary>
     /// <param name="arrange">給該注拼槽指定注音排列。</param>
     public void EnsureParser(MandarinParser arrange = 0) { Parser = arrange; }
+
+    // MARK: Private
+
+    /// <summary>
+    /// 若 RomajiBuffer 需要重建（phonabet 槽位已變更但尚未反映到 RomajiBuffer），
+    /// 則從當前的聲介韻重新計算並寫入 RomajiBuffer。
+    /// </summary>
+    private void _RefreshRomajiBufferIfNeeded() {
+      if (!_needsRomajiUpdate) return;
+      RomajiBuffer = Shared.CnvPhonaToHanyuPinyin(
+        targetJoined: Consonant.Value + Semivowel.Value + Vowel.Value);
+      _needsRomajiUpdate = false;
+    }
 
     /// <summary>
     /// 拿取用來進行索引檢索用的注音字串。
