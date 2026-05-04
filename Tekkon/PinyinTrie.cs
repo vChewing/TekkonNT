@@ -98,6 +98,34 @@ namespace Tekkon {
     /// <summary>已排序的可能讀音集合。</summary>
     public List<string> AllPossibleReadings { get; private set; }
 
+    // MARK: Shared Cache
+
+    private static readonly object SharedCacheLock = new();
+    private static readonly Dictionary<int, PinyinTrie> SharedCache = new();
+
+    /// <summary>
+    /// 取得指定 parser 對應的快取 PinyinTrie 實例。
+    /// 若尚未存在則新建並快取。
+    /// </summary>
+    /// <param name="parser">要使用的拼音排列。</param>
+    /// <returns>快取或新建的 PinyinTrie。</returns>
+    public static PinyinTrie Shared(MandarinParser parser) {
+      int cacheKey = (int)parser;
+      lock (SharedCacheLock) {
+        if (SharedCache.TryGetValue(cacheKey, out PinyinTrie? cached)) return cached;
+        PinyinTrie created = new PinyinTrie(parser);
+        SharedCache[cacheKey] = created;
+        return created;
+      }
+    }
+
+    /// <summary>
+    /// 清除所有已快取的 PinyinTrie 實例。
+    /// </summary>
+    public static void ClearSharedCache() {
+      lock (SharedCacheLock) { SharedCache.Clear(); }
+    }
+
     /// <summary>
     /// 向字首樹插入新的拼音與注音對應紀錄。
     /// </summary>

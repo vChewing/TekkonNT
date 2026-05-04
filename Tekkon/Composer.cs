@@ -557,8 +557,7 @@ namespace Tekkon {
       validationComposer.ReceiveSequence(appended, isRomaji: true);
       if (validationComposer.IsPronounceable) return null;
 
-      var trie = new PinyinTrie(Parser);
-      var chopped = trie.Chop(appended);
+      var chopped = PinyinTrie.Shared(Parser).Chop(appended);
       if (chopped.Count < 2) return null;
 
       string remainingRomaji = chopped[chopped.Count - 1];
