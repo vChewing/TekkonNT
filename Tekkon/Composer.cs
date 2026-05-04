@@ -51,6 +51,14 @@ namespace Tekkon {
     /// </summary>
     public bool PhonabetCombinationCorrectionEnabled { get; set; }
 
+    /// <summary>
+    /// 是否嚴格要求按照聲介韻調（consonant→semivowel→vowel→intonation）順序輸入。<br />
+    /// 啟用後，若 phonabet 要填入的 slot 比目前已填的最大 slot 更早（例如 vowel 已填而 semivowel 後到），<br />
+    /// 則該 phonabet 會被拒絕。聲調（intonation）永遠允許。<br />
+    /// 此特性僅供部分特殊場合使用，等同於停用並擊特性。
+    /// </summary>
+    public bool EnforceCSVTOrdering { get; set; }
+
     // MARK: Private
 
     /// <summary>
@@ -202,6 +210,7 @@ namespace Tekkon {
       RomajiBuffer = "";
       Parser = MandarinParser.OfDachen;
       PhonabetCombinationCorrectionEnabled = correction;
+      EnforceCSVTOrdering = false;
       EnsureParser(arrange);
       ReceiveKey(input);
     }
@@ -315,10 +324,11 @@ namespace Tekkon {
     /// 如果是諸如複合型注音排列的話，翻譯結果有可能為空，但翻譯過程已經處理好聲介韻調分配了。
     /// </summary>
     /// <param name="input">傳入的 String 內容。</param>
-    public void ReceiveKey(string input) {
-      if (string.IsNullOrEmpty(input)) return;
-      if (!Rune.TryGetRuneAt(input, 0, out Rune rune)) return;
-      ReceiveKey(rune);
+    /// <returns>若按鍵被接受則為 true，被拒絕則為 false。</returns>
+    public bool ReceiveKey(string input) {
+      if (string.IsNullOrEmpty(input)) return false;
+      if (!Rune.TryGetRuneAt(input, 0, out Rune rune)) return false;
+      return ReceiveKey(rune);
     }
 
     /// <summary>
@@ -328,17 +338,18 @@ namespace Tekkon {
     /// 如果是諸如複合型注音排列的話，翻譯結果有可能為空，但翻譯過程已經處理好聲介韻調分配了。
     /// </summary>
     /// <param name="inputChar">傳入的 char 內容，格式為 int。</param>
-    public void ReceiveKey(int inputChar) =>
+    /// <returns>若按鍵被接受則為 true，被拒絕則為 false。</returns>
+    public bool ReceiveKey(int inputChar) =>
       ReceiveKey(((char)Math.Abs(inputChar)).ToString());
 
     /// <summary>
     /// 接受傳入的按鍵訊號時的處理，處理對象為 Unicode Scalar。
     /// </summary>
     /// <param name="input">傳入的 Unicode Scalar 內容。</param>
-    public void ReceiveKey(Rune input) {
+    /// <returns>若按鍵被接受則為 true，被拒絕則為 false。</returns>
+    public bool ReceiveKey(Rune input) {
       if (!IsPinyinMode) {
-        ReceiveKeyFromPhonabet(Translate(input.ToString()));
-        return;
+        return ReceiveKeyFromPhonabet(Translate(input.ToString()));
       }
 
       string scalarString = input.ToString();
@@ -356,6 +367,7 @@ namespace Tekkon {
         RomajiBuffer = romajiBufferBackup;
         _needsRomajiUpdate = false;
       }
+      return true;
     }
 
     /// <summary>
@@ -363,7 +375,8 @@ namespace Tekkon {
     /// 主要就是將注音符號拆分辨識且分配到正確的貯存位置而已。
     /// </summary>
     /// <param name="phonabet">傳入的單個注音符號字串。</param>
-    public void ReceiveKeyFromPhonabet(string phonabet = "") {
+    /// <returns>若按鍵被接受則為 true，被拒絕則為 false。</returns>
+    public bool ReceiveKeyFromPhonabet(string phonabet = "") {
       Phonabet thePhone = new Phonabet(phonabet);
       if (PhonabetCombinationCorrectionEnabled) {
         switch (phonabet) {
@@ -457,6 +470,18 @@ namespace Tekkon {
         }
       }
 
+      // 個別情形需強制聲介韻調的輸入順序。
+      if (EnforceCSVTOrdering) {
+        int newSlot = (int)thePhone.Type; // 1=consonant, 2=semivowel, 3=vowel, 4=intonation
+        int maxFilledSlot = new[] {
+          Intonation.IsEmpty ? 0 : (int)PhoneType.Intonation,
+          Vowel.IsEmpty ? 0 : (int)PhoneType.Vowel,
+          Semivowel.IsEmpty ? 0 : (int)PhoneType.Semivowel,
+          Consonant.IsEmpty ? 0 : (int)PhoneType.Consonant,
+        }.Max();
+        if (newSlot != (int)PhoneType.Intonation && newSlot < maxFilledSlot) return false;
+      }
+
       switch (thePhone.Type) {
         case PhoneType.Consonant:
           Consonant = thePhone;
@@ -476,13 +501,15 @@ namespace Tekkon {
       }
 
       UpdateRomajiBuffer();
+      return true;
     }
 
     /// <summary>
     /// 接受傳入的按鍵訊號時的處理，處理對象為單個注音符號 Unicode Scalar。
     /// </summary>
     /// <param name="phonabet">傳入的單個注音符號 Unicode Scalar。</param>
-    public void ReceiveKeyFromPhonabet(Rune phonabet) =>
+    /// <returns>若按鍵被接受則為 true，被拒絕則為 false。</returns>
+    public bool ReceiveKeyFromPhonabet(Rune phonabet) =>
       ReceiveKeyFromPhonabet(phonabet.ToString());
 
     /// <summary>
@@ -497,7 +524,10 @@ namespace Tekkon {
                                   bool isRomaji = false) {
       Clear();
       if (!isRomaji) {
-        foreach (char key in givenSequence) ReceiveKey(key);
+        // 使用 for 迴圈而非 foreach，以利 EnforceCSVTOrdering 拒絕時提前終止。
+        foreach (char key in givenSequence) {
+          if (!ReceiveKey(key)) break;
+        }
         return Value;
       }
 
