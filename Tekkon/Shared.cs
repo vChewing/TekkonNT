@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Tekkon {
   /// <summary>
@@ -18,18 +17,25 @@ namespace Tekkon {
     // MARK: - Pre-built lookup for O(N) single-pass conversion.
 
     /// <summary>
-    /// 從 ArrPhonaToHanyuPinyin 預建的字串→拼音對照表。
-    /// 因為原陣列已按長度降冪排列（多字元在前），建表後 longest-match-first 的語意由查表順序保證。
+    /// 從 ArrPhonaToHanyuPinyin 預建的對照桶：以注音組合的首個字元為鍵，
+    /// 值為該首碼下的所有對照條目（按長度降冪排列）。
+    /// 供零配置滑窗比對，免去逐長度配置一次性 Substring 查表鍵。
+    /// 最長比對優先的語意由桶內長度降冪排序保證（同長度條目內容唯一，順序無影響）。
     /// </summary>
-    private static readonly Lazy<Dictionary<string, string>> PhonaToPinyinLUT =
-      new(() => ArrPhonaToHanyuPinyin!.ToDictionary(pair => pair[0], pair => pair[1]));
-
-    /// <summary>
-    /// 已知最長的注音符號組合的字元長度（以 Unicode scalar 計）。
-    /// </summary>
-    private static readonly Lazy<int> MaxPhonaPatternLength =
-      new(() => ArrPhonaToHanyuPinyin!.Select(pair => pair[0].EnumerateRunes().Count())
-        .DefaultIfEmpty(3).Max());
+    private static readonly Lazy<Dictionary<char, List<KeyValuePair<string, string>>>>
+      PhonaToPinyinBuckets = new(() => {
+        var buckets = new Dictionary<char, List<KeyValuePair<string, string>>>();
+        foreach (string[] pair in ArrPhonaToHanyuPinyin!) {
+          string phona = pair[0];
+          if (phona.Length == 0) continue;
+          if (!buckets.TryGetValue(phona[0], out List<KeyValuePair<string, string>>? list))
+            buckets[phona[0]] = list = new List<KeyValuePair<string, string>>();
+          list.Add(new KeyValuePair<string, string>(phona, pair[1]));
+        }
+        foreach (List<KeyValuePair<string, string>> list in buckets.Values)
+          list.Sort((a, b) => b.Key.Length.CompareTo(a.Key.Length));
+        return buckets;
+      });
 
     /// <summary>
     /// 注音轉拼音，要求陰平必須是空格。
@@ -41,16 +47,24 @@ namespace Tekkon {
       var result = new StringBuilder(targetJoined.Length * 2); // pinyin output typically longer than zhuyin
       int i = 0;
       int len = targetJoined.Length;
-      int maxLen = MaxPhonaPatternLength.Value;
+      Dictionary<char, List<KeyValuePair<string, string>>> buckets = PhonaToPinyinBuckets.Value;
       while (i < len) {
         bool matched = false;
-        int remaining = len - i;
-        // Greedy longest-match first: try from max possible length down to 1.
-        for (int scanLen = Math.Min(maxLen, remaining); scanLen >= 1; scanLen--) {
-          string key = targetJoined.Substring(i, scanLen);
-          if (PhonaToPinyinLUT.Value.TryGetValue(key, out string? replacement)) {
-            result.Append(replacement);
-            i += scanLen;
+        // Greedy longest-match first: 桶內條目已按長度降冪排列，比對全程逐字元、零配置。
+        if (buckets.TryGetValue(targetJoined[i], out List<KeyValuePair<string, string>>? candidates)) {
+          foreach (KeyValuePair<string, string> candidate in candidates) {
+            string pattern = candidate.Key;
+            int patternLen = pattern.Length;
+            if (i + patternLen > len) continue;
+            bool equal = true;
+            for (int k = 0; k < patternLen; k++) {
+              if (targetJoined[i + k] == pattern[k]) continue;
+              equal = false;
+              break;
+            }
+            if (!equal) continue;
+            result.Append(candidate.Value);
+            i += patternLen;
             matched = true;
             break;
           }
@@ -103,6 +117,33 @@ namespace Tekkon {
     }
 
     /// <summary>
+    /// 預先排序的漢語拼音對照鍵（長度降冪），避免每次轉換都對辭典鍵重新排序。
+    /// 排序方式與先前的逐次呼叫排序完全一致（先依長度遞增、再整體反轉）。
+    /// </summary>
+    private static readonly Lazy<string[]> SortedHanyuPinyinKeys = new(
+      () => MapHanyuPinyin!.Keys.OrderBy(x => x.Length).Reverse().ToArray());
+
+    /// <summary>
+    /// 預先具體化的阿剌嚕拼音聲調對照（字串形式），避免每次轉換都重新走訪辭典並配置 Rune 字串。
+    /// </summary>
+    private static readonly Lazy<KeyValuePair<string, string>[]> ArayuruIntonationPairs =
+      new(() => MapArayuruPinyinIntonation!.Select(
+        pair => new KeyValuePair<string, string>(pair.Key.ToString(), pair.Value.ToString())
+      ).ToArray());
+
+    /// <summary>
+    /// 是否為拼音鏈當中不允許出現的字元（英數、空白、Tab、連字號以外者）。
+    /// </summary>
+    private static bool IsDisallowedPinyinChainChar(char c) {
+      // allowed: 0-9, A-Z, a-z, space(32), tab(9), dash(45)
+      if (c >= '0' && c <= '9') return false;
+      if (c >= 'A' && c <= 'Z') return false;
+      if (c >= 'a' && c <= 'z') return false;
+      if (c == ' ' || c == '\t' || c == '-') return false;
+      return true;
+    }
+
+    /// <summary>
     /// 該函式用來將漢語拼音轉為注音。
     /// </summary>
     /// <param name="targetJoined">要轉換的漢語拼音內容，要求必須帶有 12345
@@ -114,22 +155,19 @@ namespace Tekkon {
                                                string newToneOne = "") {
       // 允許的字元：英數 (A-Za-z0-9)、空白、Tab、連字號(-)。
       // 如果含底線或包含任何不在允許列表中的字元，則放棄轉換。
-      if (targetJoined.Contains('_') ||
-        Regex.IsMatch(targetJoined, @".*[^A-Za-z0-9 \t-].*"))
+      if (targetJoined.Contains('_') || targetJoined.Any(IsDisallowedPinyinChainChar))
         return targetJoined;
-      foreach (string key in MapHanyuPinyin.Keys.OrderBy(x => x.Length)
-                                           .Reverse()) {
+      foreach (string key in SortedHanyuPinyinKeys.Value) {
         if (targetJoined.Contains(key))
           targetJoined = targetJoined.Replace(key, MapHanyuPinyin[key]);
       }
 
-      foreach (Rune key in MapArayuruPinyinIntonation.Keys) {
-        string keyStr = key.ToString();
-        if (!targetJoined.Contains(keyStr)) continue;
-        string replacement = key.Equals(new Rune('1'))
+      foreach (KeyValuePair<string, string> pair in ArayuruIntonationPairs.Value) {
+        if (!targetJoined.Contains(pair.Key)) continue;
+        string replacement = pair.Key == "1"
           ? newToneOne
-          : MapArayuruPinyinIntonation[key].ToString();
-        targetJoined = targetJoined.Replace(keyStr, replacement);
+          : pair.Value;
+        targetJoined = targetJoined.Replace(pair.Key, replacement);
       }
 
       return targetJoined;
