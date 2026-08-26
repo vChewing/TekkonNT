@@ -407,5 +407,30 @@ namespace Tekkon.Tests {
       // 不可能的前綴：無任何音節以之開頭。
       Assert.IsEmpty(trie.ZhuyinReadings("xw"));
     }
+
+    [Test]
+    public void TestBackSpaceResyncsPhonabetSlotsInPinyinMode() {
+      Composer composer = new Composer(arrange: MandarinParser.OfHanyuPinyin);
+
+      // 輸入完整音節「ma」。
+      composer.ReceiveKey("m");
+      composer.ReceiveKey("a");
+      Assert.AreEqual("ma", composer.RomajiBuffer);
+      Assert.True(composer.IsPronounceable);
+
+      // 兩次 BackSpace 清空緩衝：聲介韻槽位須同步清空。
+      composer.DoBackSpace();
+      Assert.AreEqual("m", composer.RomajiBuffer);
+      composer.DoBackSpace();
+      Assert.IsEmpty(composer.RomajiBuffer);
+      Assert.True(composer.IsEmpty);
+      Assert.False(composer.IsPronounceable);
+
+      // 清空後收下陰平空格鍵：不應把已刪除的「ma」重新組回。
+      composer.ReceiveKey(" "); // 陰平
+      Assert.AreEqual(" ", composer.Intonation.Value);
+      Assert.AreEqual("", composer.GetComposition());
+      Assert.False(composer.IsPronounceable);
+    }
   }
 }

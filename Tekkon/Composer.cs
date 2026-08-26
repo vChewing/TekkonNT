@@ -645,8 +645,13 @@ namespace Tekkon {
         if (!Intonation.IsEmpty)
           Intonation = new Phonabet();
         else {
-          RomajiBuffer = RomajiBuffer.Remove(RomajiBuffer.Length - 1);
-          _needsRomajiUpdate = false;
+          // 刪除拼音字元後，必須以縮短後的緩衝重新推導聲介韻槽位；否則 phonabet
+          // 欄位殘留已刪除的讀音（IsPronounceable 誤判為真），後續的聲調鍵／空格鍵
+          // 會把已刪除的讀音重新組回（ReceiveSequence 會清空 RomajiBuffer，故
+          // 事後須復原）。
+          string shortened = RomajiBuffer.Remove(RomajiBuffer.Length - 1);
+          _ = ReceiveSequence(shortened, isRomaji: true);
+          RomajiBuffer = shortened;
         }
       } else if (!Intonation.IsEmpty)
         Intonation = new Phonabet();
