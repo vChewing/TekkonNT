@@ -257,6 +257,31 @@ namespace Tekkon {
       return result;
     }
 
+    /// <summary>
+    /// 將（可能不完整的）拼音片段展開為對應的注音讀音清單（不含聲調）。
+    /// </summary>
+    /// <remarks>
+    /// 當輸入恰好是完整音節時，僅回傳該音節對應的注音；否則回傳所有以該輸入為前綴的
+    /// 音節所對應的注音（去重且排序，以保證輸出內容穩定）。
+    /// 這個函式是「狂拼模式」前方讀音預覽的基礎：讓尚未打完的拼音也能即時組句試算。
+    /// </remarks>
+    /// <param name="romaji">拼音組音區的暫存內容。</param>
+    /// <returns>對應的注音讀音清單；無法解析時回傳空陣列。</returns>
+    public List<string> ZhuyinReadings(string romaji) {
+      if (string.IsNullOrEmpty(romaji) || !Parser.IsPinyin()) return new List<string>();
+
+      // 完整音節：僅回傳該音節對應的注音。
+      IReadOnlyDictionary<string, string>? exactTable = Parser.MapZhuyinPinyin();
+      if (exactTable != null && exactTable.TryGetValue(romaji, out string? exact)) {
+        return new List<string> { exact };
+      }
+
+      // 不完整前綴：回傳所有以該輸入為前綴的音節所對應的注音。
+      List<string> expanded = Search(romaji);
+      if (expanded.Count == 0) return new List<string>();
+      return expanded.Distinct().OrderBy(s => s, StringComparer.Ordinal).ToList();
+    }
+
     private List<string> CollectAllDescendantEntries(TNode node) {
       List<string> result = new List<string>(node.Entries);
       foreach (int childNodeId in node.Children.Values) {

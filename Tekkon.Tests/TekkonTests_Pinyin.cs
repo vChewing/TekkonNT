@@ -2,6 +2,10 @@
 // ====================
 // This code is released under the SPDX-License-Identifier: `LGPL-3.0-or-later`.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using NUnit.Framework;
 
 namespace Tekkon.Tests {
@@ -353,6 +357,55 @@ namespace Tekkon.Tests {
       composer.ReplacePinyinBuffer(result.RemainingRomaji);
       Assert.AreEqual("j", composer.GetInlineCompositionForDisplay(isHanyuPinyin: true));
       Assert.False(composer.IsPronounceable);
+    }
+
+    [Test]
+    public void TestPinyinTrieZhuyinReadingsExactCompleteSyllable() {
+      // 漢語拼音：
+      PinyinTrie trie = new PinyinTrie(MandarinParser.OfHanyuPinyin);
+      Assert.AreEqual(new[] { "ㄕ" }, trie.ZhuyinReadings("shi"));
+      Assert.AreEqual(new[] { "ㄋㄧ" }, trie.ZhuyinReadings("ni"));
+      // "nan" 同時是 "nang" 的字串前綴；精確匹配時不展開後者。
+      Assert.AreEqual(new[] { "ㄋㄢ" }, trie.ZhuyinReadings("nan"));
+
+      // 國音二式：
+      PinyinTrie trieSecondary = new PinyinTrie(MandarinParser.OfSecondaryPinyin);
+      Assert.AreEqual(new[] { "ㄑㄩㄥ" }, trieSecondary.ZhuyinReadings("chiung"));
+    }
+
+    [Test]
+    public void TestPinyinTrieZhuyinReadingsIncompletePrefixExpansion() {
+      PinyinTrie trie = new PinyinTrie(MandarinParser.OfHanyuPinyin);
+
+      // "z" 同時是 z- 與 zh- 兩系音節的字串前綴：兩種聲母的注音都應涵蓋。
+      List<string> zReadings = trie.ZhuyinReadings("z");
+      Assert.True(zReadings.Count > 0);
+      Assert.AreEqual(zReadings.Distinct().Count(), zReadings.Count); // 去重。
+      // 排序穩定（Unicode 字典序）。
+      Assert.AreEqual(zReadings.OrderBy(s => s, StringComparer.Ordinal), zReadings);
+      CollectionAssert.Contains(zReadings, "ㄗ");
+      CollectionAssert.Contains(zReadings, "ㄓ");
+
+      // "zh" 前綴只涵蓋 zh- 系。
+      List<string> zhReadings = trie.ZhuyinReadings("zh");
+      Assert.True(zhReadings.Count > 0);
+      Assert.AreEqual(zhReadings.OrderBy(s => s, StringComparer.Ordinal), zhReadings);
+      CollectionAssert.Contains(zhReadings, "ㄓ");
+      Assert.False(zhReadings.Contains("ㄗ"));
+      // 確定性：重複呼叫輸出一致。
+      Assert.AreEqual(zhReadings, trie.ZhuyinReadings("zh"));
+    }
+
+    [Test]
+    public void TestPinyinTrieZhuyinReadingsEdgeCases() {
+      // 空字串：回傳空陣列。
+      PinyinTrie trie = new PinyinTrie(MandarinParser.OfHanyuPinyin);
+      Assert.IsEmpty(trie.ZhuyinReadings(""));
+      // 非拼音排列（大千注音）：直接回傳空陣列。
+      PinyinTrie trieDachen = new PinyinTrie(MandarinParser.OfDachen);
+      Assert.IsEmpty(trieDachen.ZhuyinReadings("z"));
+      // 不可能的前綴：無任何音節以之開頭。
+      Assert.IsEmpty(trie.ZhuyinReadings("xw"));
     }
   }
 }
