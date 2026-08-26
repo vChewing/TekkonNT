@@ -12,6 +12,25 @@ namespace Tekkon {
   /// 該結構用來存放鐵恨引擎的一些公用資料。
   /// </summary>
   public struct Shared {
+    /// <summary>
+    /// 將無調讀音展開為同音節的聲調候選桶（含聲調變體）。
+    /// </summary>
+    /// <remarks>
+    /// 陰平（無聲調）以空字串表示；依 <see cref="Phonabet.AllowedIntonations"/> 的順序逐個附加聲調記號。
+    /// 以去重守衛防禦「多個聲調記號展開出相同候選」的極端情況，確保回傳內容無重複。
+    /// </remarks>
+    /// <param name="reading">不帶顯式聲調的讀音索引鍵（注音或拼音皆可）。</param>
+    /// <returns>該讀音的所有聲調變體陣列（含陰平原形）。</returns>
+    public static List<string> MakeToneInsensitiveVariants(string reading) {
+      List<string> variants = new List<string>();
+      foreach (Rune tone in Phonabet.AllowedIntonations) {
+        string intonationNow = (tone.Value != ' ') ? tone.ToString() : "";
+        string candidate = reading + intonationNow;
+        if (!variants.Contains(candidate)) variants.Add(candidate);
+      }
+      return variants;
+    }
+
     // MARK: - Phonabet to Hanyu-Pinyin Conversion Processing
 
     // MARK: - Pre-built lookup for O(N) single-pass conversion.

@@ -2,6 +2,10 @@
 // ====================
 // This code is released under the SPDX-License-Identifier: `LGPL-3.0-or-later`.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using NUnit.Framework;
 
 namespace Tekkon.Tests {
@@ -38,6 +42,24 @@ namespace Tekkon.Tests {
       Assert.AreEqual(actual: Shared.CnvHanyuPinyinToPhona("zhang1", " "), expected: "ㄓㄤ ");
       // 含不允許字元（非半形英數）時放棄轉換、原樣回傳。
       Assert.AreEqual(actual: Shared.CnvHanyuPinyinToPhona("nǐ"), expected: "nǐ");
+    }
+
+    [Test]
+    public void TestMakeToneInsensitiveVariantsBasic() {
+      // 無調讀音展開為同音節聲調候選桶：陰平以空字串表示，
+      // 順序依 Phonabet.AllowedIntonations（" ", "ˊ", "ˇ", "ˋ", "˙"）。
+      List<string> result = Shared.MakeToneInsensitiveVariants("ㄕ");
+      Assert.AreEqual(actual: result,
+                      expected: new[] { "ㄕ", "ㄕˊ", "ㄕˇ", "ㄕˋ", "ㄕ˙" });
+      // 去重守衛：回傳內容不得重複。
+      Assert.AreEqual(actual: result.Count, expected: Phonabet.AllowedIntonations.Count);
+      Assert.AreEqual(actual: result.Distinct().Count(), expected: result.Count);
+    }
+
+    [Test]
+    public void TestMakeToneInsensitiveVariantsEmptyReading() {
+      Assert.AreEqual(actual: Shared.MakeToneInsensitiveVariants(""),
+                      expected: new[] { "", "ˊ", "ˇ", "ˋ", "˙" });
     }
   }
 }
