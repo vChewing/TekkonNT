@@ -228,27 +228,47 @@ namespace Tekkon {
 
       char[] buffer = readingComplex.ToCharArray();
       int complexLength = buffer.Length;
-      if (AllPossibleReadings.Count == 0) return readingComplex.Select(c => c.ToString()).ToList();
-      int longestReadingLength = AllPossibleReadings[0].Length;
-      int maxScopeSize = Math.Min(complexLength, longestReadingLength);
+
+      // Pinyin parser 走 trie 走訪：沿輸入字元貪婪下探，最長可達路徑
+      // 即為「是某讀音前綴」的最長 blob——狂拼／auto-chop 的輸入皆為無調詞幹（聲調走
+      // intonation），與既有 AllPossibleReadings（含聲調後綴）語義在實際輸入下等價；
+      // trie 由全部讀音詞幹建立，故「blob 存在於 trie」＝「blob 是某讀音前綴」。
+      // 非 Pinyin parser（注音排列等）的 trie 為空（MapZhuyinPinyin 為 null）、既有語義以
+      // AllPossibleReadings（zhuyin 值）比對，保留原線性掃描。
       int currentPosition = 0;
 
       while (currentPosition < complexLength) {
-        bool foundMatch = false;
-        int remaining = complexLength - currentPosition;
-        int longPossibleScopeSize = Math.Min(maxScopeSize, remaining);
-
-        for (int scopeSize = longPossibleScopeSize; scopeSize >= 1; scopeSize--) {
-          string currentBlob = new string(buffer, currentPosition, scopeSize);
-          if (AllPossibleReadings.Any(reading => reading.StartsWith(currentBlob, StringComparison.Ordinal))) {
-            result.Add(currentBlob);
-            currentPosition += scopeSize;
-            foundMatch = true;
-            break;
+        int endPosition = currentPosition;
+        if (Parser.IsPinyin()) {
+          // Pinyin：trie 走訪。
+          TNode node = Root;
+          while (endPosition < complexLength) {
+            string charStr = buffer[endPosition].ToString();
+            if (!node.Children.TryGetValue(charStr, out int childId)) break;
+            if (!Nodes.TryGetValue(childId, out TNode? childNode)) break;
+            node = childNode;
+            endPosition++;
+          }
+        } else {
+          // 非 Pinyin：最長前綴線性掃描（讀音數少、非熱路徑）。
+          int longestReadingLength =
+              AllPossibleReadings.Count == 0 ? 1 : AllPossibleReadings[0].Length;
+          int maxScopeSize = Math.Min(complexLength - currentPosition, longestReadingLength);
+          for (int scopeSize = maxScopeSize; scopeSize >= 1; scopeSize--) {
+            string currentBlob = new string(buffer, currentPosition, scopeSize);
+            if (AllPossibleReadings.Any(reading =>
+                reading.StartsWith(currentBlob, StringComparison.Ordinal))) {
+              endPosition = currentPosition + scopeSize;
+              break;
+            }
           }
         }
 
-        if (!foundMatch) {
+        if (endPosition > currentPosition) {
+          result.Add(new string(buffer, currentPosition, endPosition - currentPosition));
+          currentPosition = endPosition;
+        } else {
+          // 如果沒找到相符的條目，將當前字元作為單獨的一項。
           result.Add(new string(buffer, currentPosition, 1));
           currentPosition += 1;
         }
