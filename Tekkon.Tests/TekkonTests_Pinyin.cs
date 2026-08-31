@@ -432,5 +432,20 @@ namespace Tekkon.Tests {
       Assert.AreEqual("", composer.GetComposition());
       Assert.False(composer.IsPronounceable);
     }
+
+    [Test]
+    public void TestExtendedRomajiBufferPreservesLongAbbreviationStream() {
+      // 預設（false）：超過 6 碼即丟棄最早音頭——「slliang」第 7 碼「g」觸發、
+      // buffer 變「lliang」。
+      Composer capped = new Composer(arrange: MandarinParser.OfHanyuPinyin);
+      foreach (char ch in "slliang") capped.ReceiveKey(ch.ToString());
+      Assert.AreEqual("lliang", capped.RomajiBuffer);
+
+      // 啟用（true）：完整保留多音節簡拼字母流。
+      Composer extended = new Composer(arrange: MandarinParser.OfHanyuPinyin);
+      extended.AllowsExtendedRomajiBuffer = true;
+      foreach (char ch in "slliang") extended.ReceiveKey(ch.ToString());
+      Assert.AreEqual("slliang", extended.RomajiBuffer);
+    }
   }
 }
