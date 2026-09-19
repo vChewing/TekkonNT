@@ -692,6 +692,95 @@ namespace Tekkon {
         : !Intonation.IsEmpty;
 
     /// <summary>
+    /// 檢證：傳入的按鍵序列是否為「按正確順序鍵入之合理讀音」。<br />
+    /// <br />
+    /// 以本注拼槽當前之注音排列解讀輸入，逐鍵重播進一份影子注拼槽，並觀察聲、介、韻、調
+    /// 四槽的填值歷程。合格條件共四項：<br />
+    /// 一、每個字元皆為當前排列之合法按鍵、且於重播時被接受；<br />
+    /// 二、重播結束後組成之讀音可唸（<see cref="IsPronounceable" />）；<br />
+    /// 三、最終仍填著之各槽，其「最終值」首度出現之鍵序，須隨聲→介→韻→調之槽序單調不減；<br />
+    /// 四、重播期間若曾鍵入聲調，該聲調不得於最終狀態失落；<br />
+    /// 五、於靜態注音排列、且非 suffixOnly 時，不得以另一鍵改寫既有之槽值（即不接受「按錯再按對」之覆寫修正）。<br />
+    /// <br />
+    /// 條件三以「各槽最終值之首度出現鍵序」為準、不強求每一次寫入皆單調：動態注音排列
+    /// （大千26 等）之合法編碼本即會對同一槽先後寫入不同值（例如「qquu」＝ㄅㄚ：首擊為ㄆ、
+    /// 次擊覆寫為ㄅ），逐寫單調會誤殺此類合法輸入。同理，同值之重複寫入不留下可觀測之變化，
+    /// 亦不影響判定。<br />
+    /// <br />
+    /// 本函式僅為引擎層之結構檢定；讀音是否真實存在於辭典，屬 Lexicon 之權責、不在檢定範圍。
+    /// </summary>
+    /// <param name="input">傳入的按鍵序列（如大千排列之「cl」、漢語拼音之「suan3」）。</param>
+    /// <param name="suffixOnly">傳入 true 時放寬條件五（容忍覆寫修正），供「只檢定尾段（後綴）」之呼叫端使用。條件五本就僅適用於靜態注音排列。</param>
+    /// <returns>是否符合上述四項條件。</returns>
+    public bool IsSequentiallyTypedRawKeyOrder(string input, bool suffixOnly = false) {
+      // C# 版特有的防呆：Swift 版之 StringProtocol 不可能為空指標。
+      if (input == null) return false;
+      // Composer 是 Struct，故這份影子副本的內容更迭不會影響到自身。
+      Composer shadow = this;
+      shadow.Clear();
+      // 槽序由本函式自行觀測，故不啟用引擎自帶之 CSVT 順序強制。
+      shadow.EnforceCSVTOrdering = false;
+      // 各槽之「值 → 該值首度出現之鍵序」。
+      var firstSeenBySlot = new System.Collections.Generic.Dictionary<string, int>[4];
+      var previousValues = new[] { "", "", "", "" };
+      var lastWritingKeyBySlot = new[] { "", "", "", "" };
+      for (int slotIndex = 0; slotIndex < firstSeenBySlot.Length; slotIndex++) {
+        firstSeenBySlot[slotIndex] = new System.Collections.Generic.Dictionary<string, int>();
+      }
+
+      // 條件五僅於靜態注音排列、且非 suffixOnly 模式下生效：動態排列之合法編碼本即由引擎
+      // 跨鍵改寫槽值（如倚天26 之「ge」＝ㄐㄧ：鍵「g」先寫ㄓ、鍵「e」再觸發糾正為ㄐ），
+      // 拼音排列之組音區亦本就逐鍵清除重建——該二類情形下「以另一鍵覆寫修正」無以定義。
+      bool enforcesNoOverwriteCorrection = !suffixOnly && !Parser.IsDynamic() && !IsPinyinMode;
+      bool toneEverTyped = false;
+      int keyOrder = 0;
+      foreach (Rune scalar in input.EnumerateRunes()) {
+        string theKey = scalar.ToString();
+        if (!shadow.InputValidityCheckStr(theKey)) return false;
+        if (!shadow.ReceiveKey(scalar)) return false;
+        string[] currentValues = {
+          shadow.Consonant.Value, shadow.Semivowel.Value, shadow.Vowel.Value,
+          shadow.Intonation.Value,
+        };
+        for (int slotIndex = 0; slotIndex < currentValues.Length; slotIndex++) {
+          string value = currentValues[slotIndex];
+          if (value == previousValues[slotIndex]) continue;
+          if (enforcesNoOverwriteCorrection && !string.IsNullOrEmpty(value) &&
+              !string.IsNullOrEmpty(previousValues[slotIndex]) &&
+              lastWritingKeyBySlot[slotIndex] != theKey) {
+            return false;
+          }
+          lastWritingKeyBySlot[slotIndex] = string.IsNullOrEmpty(value) ? "" : theKey;
+          if (string.IsNullOrEmpty(value)) continue;
+          if (!firstSeenBySlot[slotIndex].ContainsKey(value)) {
+            firstSeenBySlot[slotIndex][value] = keyOrder;
+          }
+        }
+
+        previousValues = currentValues;
+        toneEverTyped = toneEverTyped || !shadow.Intonation.IsEmpty;
+        keyOrder += 1;
+      }
+
+      if (!shadow.IsPronounceable) return false;
+      if (toneEverTyped && shadow.Intonation.IsEmpty) return false;
+      int latestFirstSeen = -1;
+      string[] finalValues = {
+        shadow.Consonant.Value, shadow.Semivowel.Value, shadow.Vowel.Value,
+        shadow.Intonation.Value,
+      };
+      for (int slotIndex = 0; slotIndex < finalValues.Length; slotIndex++) {
+        string value = finalValues[slotIndex];
+        if (string.IsNullOrEmpty(value)) continue;
+        if (!firstSeenBySlot[slotIndex].TryGetValue(value, out int firstSeen)) return false;
+        if (firstSeen < latestFirstSeen) return false;
+        latestFirstSeen = firstSeen;
+      }
+
+      return true;
+    }
+
+    /// <summary>
     /// 設定該 Composer 處於何種鍵盤排列分析模式。
     /// </summary>
     /// <param name="arrange">給該注拼槽指定注音排列。</param>
