@@ -821,6 +821,120 @@ namespace Tekkon {
       return validKeyAvailable ? readingKey : null;
     }
 
+    // MARK: - Phonabet Auto-Chop Predicate
+
+    /// <summary>
+    /// 本鍵是否應先自動切音節（<b>規格 v7，六條</b>；實作即該規格之逐條移植）。
+    /// <para>
+    /// 本判準是<b>注拼槽狀態之純函式</b>——不讀 handler、不讀 session、不讀偏好，
+    /// 故得零成本驅動數十萬次（其回歸靶住在
+    /// <c>Tekkon.Tests/TekkonTests_PhonabetAutoChopPredicate.cs</c>）。
+    /// 生產側之呼叫者僅一處：判準在此、只回裁決；執行（寫入組字器／清注拼槽／補回本鍵）在彼。
+    /// </para>
+    /// <para>
+    /// <b>權威規格</b>（逐條理由、四則對照實例、三條已知界線）住在 vChewing 開發倉之
+    /// <c>Research/Phase250-ResearchAndNextSurgeryPlan.md</c> §3.2（v7）——該檔<b>不在本倉內</b>，
+    /// 故本檔以摘要自持：任何修訂都不得只動此處之實作而不動該正本，亦不得只動正本而不動此處。
+    /// 摘要：
+    /// </para>
+    /// <list type="bullet">
+    /// <item><b>①</b> 注拼槽非空。</item>
+    /// <item><b>②</b> 本鍵非聲調鍵（以「本鍵施於空槽時是否寫入聲調」判之）。</item>
+    /// <item><b>④a</b> 本鍵未造成任何槽位變動 ⇒ <b>切</b>（冗餘鍵＝新音節之始）。</item>
+    /// <item>
+    /// <b>③</b> 固有目標槽 <c>S_new ≦ S_max</c>——<c>S_new</c>
+    /// <b>取自「本鍵施於空槽時所寫入之首個非空槽」</b>，不得取「本次實際變動之最低槽」：
+    /// 後者會被動態排列之糾錯副作用（倚天26 <c>be</c>＝ㄐㄧ：鍵 <c>e</c>
+    /// 寫介母 ㄧ之餘另把 ㄓ 糾正為 ㄐ）誤導而使條件失效。
+    /// </item>
+    /// <item><b>④b′</b> 結果為合法前綴且比原內容更長 ⇒ <b>不切</b>（真實延伸）。</item>
+    /// <item><b>④d</b> 本鍵所摧毀之各槽值恰為本鍵空槽試跑之產物 ⇒ <b>不切</b>（動態排列之逐槽覆寫）。</item>
+    /// <item>
+    /// <b>④c</b> 否則以接續探針定之：<c>當前讀音字串 ＋ emptyPost[S_new]</c>
+    /// 非任何讀音之前綴 ⇒ <b>切</b>。
+    /// </item>
+    /// </list>
+    /// </summary>
+    /// <param name="key">本拍之按鍵（單一 Unicode 純量）。</param>
+    /// <returns>是否應先切音節。</returns>
+    public bool ShouldAutoChopPhonabets(Rune key) {
+      if (IsEmpty) return false; // ①
+      string[] pre = PhonabetAutoChopSlots();
+      int sMax = PhonabetAutoChopHighestFilledSlot(pre);
+
+      // 雙探針：本鍵施於當前槽者為 probe，施於空槽者為 empty（本判準之參照系）。
+      Composer probe = this;
+      probe.ReceiveKey(key);
+      string[] post = probe.PhonabetAutoChopSlots();
+      Composer empty = new Composer(arrange: Parser);
+      empty.ReceiveKey(key);
+      string[] emptyPost = empty.PhonabetAutoChopSlots();
+
+      var changed = new System.Collections.Generic.List<int>();
+      for (int slot = 0; slot < 4; ++slot) {
+        if (pre[slot] != post[slot]) changed.Add(slot);
+      }
+
+      // `S_new` 取自空槽試跑之首個非空槽（理由見 ③）。
+      int primarySlot = 0;
+      bool primarySlotFound = false;
+      for (int slot = 0; slot < 4; ++slot) {
+        if (emptyPost[slot].Length == 0) continue;
+        primarySlot = slot;
+        primarySlotFound = true;
+        break;
+      }
+      if (!primarySlotFound) {
+        foreach (int slot in changed) {
+          if (slot >= 3) continue;
+          primarySlot = slot;
+          primarySlotFound = true;
+          break;
+        }
+      }
+      int sNew = primarySlot + 1;
+      string emptyPhonabet = emptyPost[primarySlot];
+
+      if (emptyPost[3].Length != 0 || changed.Contains(3)) return false; // ②
+      if (changed.Count == 0) return true; // ④a
+      if (sNew > sMax) return false; // ③
+
+      SyllableIndex index = SyllableIndex.Shared(Parser);
+      string probedContent = probe.GetComposition();
+      // ④b′：C# 之 String 以 UTF-16 計長，而組字區內容概為 BMP 字元
+      // （注音符號與聲調皆在 BMP 內），故 Length 即碼點數，與 Swift 側 `.count` 同義。
+      if (probedContent.Length > GetComposition().Length &&
+          index.IsPrefix(probedContent))
+        return false;
+
+      // ④d：本鍵所摧毀之各槽值，恰為本鍵自身於空槽試跑時之產物。
+      bool hasDestroyedSlot = false;
+      bool destroyedAllSelfWritten = true;
+      foreach (int slot in changed) {
+        if (pre[slot].Length == 0) continue;
+        hasDestroyedSlot = true;
+        if (pre[slot] != emptyPost[slot]) destroyedAllSelfWritten = false;
+      }
+      if (hasDestroyedSlot && destroyedAllSelfWritten) return false;
+
+      // ④c：接續探針。
+      return !index.IsPrefix(GetComposition() + emptyPhonabet);
+    }
+
+    /// <summary>四槽內容（聲／介／韻／調）。</summary>
+    private string[] PhonabetAutoChopSlots() =>
+      new[] { Consonant.Value, Semivowel.Value, Vowel.Value, Intonation.Value };
+
+    /// <summary>「最高已填之聲介韻槽位」＋1（全空為 0）。槽序：聲 1 ＜ 介 2 ＜ 韻 3。</summary>
+    private static int PhonabetAutoChopHighestFilledSlot(string[] slots) {
+      int result = 0;
+      for (int slot = 0; slot < 3; ++slot) {
+        if (slots[slot].Length == 0) continue;
+        if (slot + 1 > result) result = slot + 1;
+      }
+      return result;
+    }
+
     // MARK: - Parser Processing
 
     // 注拼槽對內處理用函式都在這一小節。
