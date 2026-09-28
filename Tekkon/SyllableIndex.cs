@@ -98,7 +98,7 @@ namespace Tekkon {
     /// <param name="prefix">待列舉之前綴。</param>
     /// <returns>以該字串為前綴之全部完整讀音。</returns>
     /// <remarks>
-    /// <b>已升為公開</b>（Swift 側自 P267 起為 <c>public</c>）——生產端消費者為狂打模式之前方
+    /// <b>已升為公開</b>（Swift 側為 <c>public</c>）——生產端消費者為狂打模式之前方
     /// 讀音桶（<c>furiousFrontContext</c>）：注音側遇「未完成之合法前綴」（單聲母等）時，以此列舉
     /// 可補全之完整讀音，與拼音側「由字母流反推可能音節」同構。<b>不得</b>以本函式之結果當
     /// 「可否提交」之依據（見 <see cref="IsComplete"/> 之警告）。
