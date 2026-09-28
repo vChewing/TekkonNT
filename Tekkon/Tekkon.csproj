@@ -32,6 +32,13 @@
     <DebugType>none</DebugType>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <!--
+    等同於 Swift 的「@testable import Tekkon」：讓 Tekkon.Tests 得以觸及 internal 成員
+    （例如 StringExtensions.DoesHave）。此設定不會改變任何公開 API 或執行期行為。
+  -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tekkon.Tests" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md">
       <Pack>True</Pack>

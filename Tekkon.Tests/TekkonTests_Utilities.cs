@@ -11,6 +11,18 @@ using NUnit.Framework;
 namespace Tekkon.Tests {
   public class TekkonTestsUtilities {
     [Test]
+    public void TestHasStringEdgeCases() {
+      Assert.True("ㄅㄧㄢˋ".DoesHave("ㄧㄢ"));
+      Assert.True(!"ㄅㄧㄢˋ".DoesHave("ㄧㄥ"));
+      Assert.True("aaa".DoesHave("aa"));
+      Assert.True(!"x".DoesHave("xyz"));
+      // 空目標的既有語義：僅當自身為空時為 true。
+      Assert.True("".DoesHave(""));
+      Assert.True(!"a".DoesHave(""));
+      Assert.True(!"".DoesHave("a"));
+    }
+
+    [Test]
     public void TestRestoreToneOneEdgeCases() {
       // 空字串防呆。
       Assert.AreEqual(actual: Shared.RestoreToneOneInPhona(""), expected: "");
