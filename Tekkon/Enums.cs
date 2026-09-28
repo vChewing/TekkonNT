@@ -96,7 +96,7 @@ namespace Tekkon {
   }
 
   /// <summary>
-  /// 提供與 <see cref="MandarinParser"/> 相關的輔助工具，協助維持與 Swift 版本的行為一致。
+  /// 提供與 <see cref="MandarinParser"/> 相關的輔助工具。
   /// </summary>
   public static class MandarinParserExtensions {
     /// <summary>判定指定排列是否為拼音模式。</summary>

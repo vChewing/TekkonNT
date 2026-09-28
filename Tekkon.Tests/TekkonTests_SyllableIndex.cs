@@ -13,10 +13,6 @@ namespace Tekkon.Tests {
   /// <summary>
   /// <see cref="SyllableIndex" /> 之行為測試，暨漢語拼音單字母條目之解碼契約。
   /// <para>
-  /// 對應 Swift 版 Tests/TekkonTests/TekkonTests_SyllableIndex.swift 之九支測項，
-  /// 暨 TekkonTests_Pinyin.swift 之 &lt;PinyinSingleLetterEntries_AreRealSyllablesOnly&gt;。
-  /// </para>
-  /// <para>
   /// 斷言分三類：① 資料規模（426／442／16／37 四項可稽核數字）；② 成員資格之正反例；
   /// ③ 與引擎既有表（<see cref="Phonabet.AllowedConsonants" /> 等）及測試素材之交叉比對。
   /// </para>
@@ -280,7 +276,7 @@ namespace Tekkon.Tests {
         Assert.AreEqual(actual: composer.GetComposition(), expected: pair.Expected);
       }
 
-      // 狂拼之自動切音節：`q`＋`f` 與 `b`／`z`＋`f` 皆不提交。
+      // 自動切音節：`q`＋`f` 與 `b`／`z`＋`f` 皆不提交。
       foreach (string first in new[] { "q", "b", "z" }) {
         Composer composer = new(arrange: MandarinParser.OfHanyuPinyin) {
           AllowsExtendedRomajiBuffer = true,

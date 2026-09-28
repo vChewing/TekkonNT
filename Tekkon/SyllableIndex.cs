@@ -98,10 +98,8 @@ namespace Tekkon {
     /// <param name="prefix">待列舉之前綴。</param>
     /// <returns>以該字串為前綴之全部完整讀音。</returns>
     /// <remarks>
-    /// <b>已升為公開</b>（Swift 側為 <c>public</c>）——生產端消費者為狂打模式之前方
-    /// 讀音桶（<c>furiousFrontContext</c>）：注音側遇「未完成之合法前綴」（單聲母等）時，以此列舉
-    /// 可補全之完整讀音，與拼音側「由字母流反推可能音節」同構。<b>不得</b>以本函式之結果當
-    /// 「可否提交」之依據（見 <see cref="IsComplete"/> 之警告）。
+    /// 遇「未完成之合法前綴」（如單聲母）時，可以此列舉可補全之完整讀音。
+    /// <b>不得</b>以本函式之結果當「可否提交」之依據（見 <see cref="IsComplete"/> 之警告）。
     /// </remarks>
     public List<string> Completions(string prefix) =>
       Readings.Where(reading => reading.StartsWith(prefix, StringComparison.Ordinal))
@@ -127,8 +125,8 @@ namespace Tekkon {
       // 全名限定：本類別自身之 Shared(MandarinParser) 會遮蔽 Tekkon.Shared 結構。
       foreach (string stem in Tekkon.Shared.MapHanyuPinyin.Values) stems.Add(stem);
       List<string> sorted = stems.ToList();
-      // Swift 之 `.sorted()` 為序數排序；C# 之 List.Sort() 預設為文化相關排序，
-      // 故必須顯式指定 StringComparer.Ordinal，否則兩語言版本之「升冪」會不一致。
+      // List.Sort() 預設為文化相關排序，故此處顯式指定 StringComparer.Ordinal，
+      // 令「升冪」為序數排序。
       sorted.Sort(StringComparer.Ordinal);
       return sorted;
     });

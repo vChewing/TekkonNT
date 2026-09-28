@@ -185,7 +185,7 @@ namespace Tekkon.Tests {
     }
 
     /// <summary>
-    /// 依 Swift 版測項之形式逐筆檢證，並於失敗時給出可讀訊息。
+    /// 逐筆檢證，並於失敗時給出可讀訊息。
     /// </summary>
     /// <param name="cases">各筆測例：注音排列、按鍵序列、期望值。</param>
     private static void CheckSequentialReadings(

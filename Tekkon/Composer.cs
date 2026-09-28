@@ -60,12 +60,12 @@ namespace Tekkon {
     public bool EnforceCSVTOrdering { get; set; }
 
     /// <summary>
-    /// 是否允許 RomajiBuffer 超過單音節長度上限（狂拼等多音節簡拼字母流需要）。
+    /// 是否允許 RomajiBuffer 超過單音節長度上限（多音節簡拼字母流需要）。
     /// </summary>
     /// <remarks>
     /// 預設 false：維持既有 FIFO 音頭丟棄防呆——正常拼音單音節最長 6 碼
     /// （Wade-Giles 7 碼），超出時自動丟棄最早輸入的音頭、防止 buffer 無限增長。
-    /// 設為 true 時不做音頭丟棄：呼叫端（狂拼模式）負責在固化／提交／auto-chop 時
+    /// 設為 true 時不做音頭丟棄：呼叫端負責在固化／提交／auto-chop 時
     /// 清空或重建注拼槽，使多音節簡拼字母流（如「slliang」）完整保留、
     /// 不會被截斷成「lliang」而丟失前導字母。
     /// </remarks>
@@ -371,7 +371,7 @@ namespace Tekkon {
       } else {
         // 為了防止 RomajiBuffer 越敲越長帶來算力負擔，
         // 這裡讓它在要溢出時自動丟掉最早輸入的音頭。
-        // 狂拼等多音節簡拼字母流可超過單音節長度上限，此時由 AllowsExtendedRomajiBuffer
+        // 多音節簡拼字母流可超過單音節長度上限，此時由 AllowsExtendedRomajiBuffer
         // 關閉音頭丟棄、改由呼叫端負責在固化／提交時清空注拼槽——否則「slliang」類
         // 輸入會被截斷成「lliang」、丟失前導字母。
         _RefreshRomajiBufferIfNeeded();
@@ -713,7 +713,7 @@ namespace Tekkon {
     /// <param name="suffixOnly">傳入 true 時放寬條件五（容忍覆寫修正），供「只檢定尾段（後綴）」之呼叫端使用。條件五本就僅適用於靜態注音排列。</param>
     /// <returns>是否符合上述四項條件。</returns>
     public bool IsSequentiallyTypedRawKeyOrder(string input, bool suffixOnly = false) {
-      // C# 版特有的防呆：Swift 版之 StringProtocol 不可能為空指標。
+      // 空指標防呆。
       if (input == null) return false;
       // Composer 是 Struct，故這份影子副本的內容更迭不會影響到自身。
       Composer shadow = this;
@@ -824,17 +824,10 @@ namespace Tekkon {
     // MARK: - Phonabet Auto-Chop Predicate
 
     /// <summary>
-    /// 本鍵是否應先自動切音節（<b>規格 v7，六條</b>；實作即該規格之逐條移植）。
+    /// 本鍵是否應先自動切音節。
     /// <para>
-    /// 本判準是<b>注拼槽狀態之純函式</b>——不讀 handler、不讀 session、不讀偏好，
-    /// 故得零成本驅動數十萬次（其回歸靶住在
-    /// <c>Tekkon.Tests/TekkonTests_PhonabetAutoChopPredicate.cs</c>）。
-    /// 生產側之呼叫者僅一處：判準在此、只回裁決；執行（寫入組字器／清注拼槽／補回本鍵）在彼。
-    /// </para>
-    /// <para>
-    /// <b>權威規格</b>（逐條理由、四則對照實例、三條已知界線）住在 vChewing 輸入法專案之研究文件（v7）——該檔<b>不在本倉內</b>，
-    /// 故本檔以摘要自持：任何修訂都不得只動此處之實作而不動該正本，亦不得只動正本而不動此處。
-    /// 摘要：
+    /// 本判準是<b>注拼槽狀態之純函式</b>：只讀注拼槽、不做任何提交，故可零成本反覆試探。
+    /// 判準依序如下：
     /// </para>
     /// <list type="bullet">
     /// <item><b>①</b> 注拼槽非空。</item>
@@ -901,7 +894,7 @@ namespace Tekkon {
       SyllableIndex index = SyllableIndex.Shared(Parser);
       string probedContent = probe.GetComposition();
       // ④b′：C# 之 String 以 UTF-16 計長，而組字區內容概為 BMP 字元
-      // （注音符號與聲調皆在 BMP 內），故 Length 即碼點數，與 Swift 側 `.count` 同義。
+      // （注音符號與聲調皆在 BMP 內），故 Length 即碼點數。
       if (probedContent.Length > GetComposition().Length &&
           index.IsPrefix(probedContent))
         return false;

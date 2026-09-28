@@ -230,7 +230,7 @@ namespace Tekkon {
       int complexLength = buffer.Length;
 
       // Pinyin parser 走 trie 走訪：沿輸入字元貪婪下探，最長可達路徑
-      // 即為「是某讀音前綴」的最長 blob——狂拼／auto-chop 的輸入皆為無調詞幹（聲調走
+      // 即為「是某讀音前綴」的最長 blob——簡拼／auto-chop 的輸入皆為無調詞幹（聲調走
       // intonation），與既有 AllPossibleReadings（含聲調後綴）語義在實際輸入下等價；
       // trie 由全部讀音詞幹建立，故「blob 存在於 trie」＝「blob 是某讀音前綴」。
       // 非 Pinyin parser（注音排列等）的 trie 為空（MapZhuyinPinyin 為 null）、既有語義以
@@ -283,7 +283,7 @@ namespace Tekkon {
     /// <remarks>
     /// 當輸入恰好是完整音節時，僅回傳該音節對應的注音；否則回傳所有以該輸入為前綴的
     /// 音節所對應的注音（去重且排序，以保證輸出內容穩定）。
-    /// 這個函式是「狂拼模式」前方讀音預覽的基礎：讓尚未打完的拼音也能即時組句試算。
+    /// 讓尚未打完的拼音也能即時組句試算。
     /// </remarks>
     /// <param name="romaji">拼音組音區的暫存內容。</param>
     /// <returns>對應的注音讀音清單；無法解析時回傳空陣列。</returns>

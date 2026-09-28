@@ -11,17 +11,14 @@ using NUnit.Framework;
 
 namespace Tekkon.Tests {
   /// <summary>
-  /// 注音狂打自動切音節判準：<b>生產實作</b>之回歸靶。
-  /// <para>
-  /// 對應 Swift 版 Tests/TekkonTests/TekkonTests_PhonabetAutoChopPredicate.swift 之四支測項。
-  /// </para>
+  /// 注音自動切音節判準之回歸測試。
   /// <para>
   /// 本檔<b>不</b>自帶任何「測試端參考實作」——判準之正本只有一處
   /// （<see cref="Composer.ShouldAutoChopPhonabets" />），本檔直接驅動它，
   /// 杜絕「兩份各自演化之判準」。
   /// </para>
   /// <para>
-  /// 四項地面真相（與術前驗證之結論逐項對應）：<br />
+  /// 四項地面真相：<br />
   /// ① 合法單音節編碼之<b>每一個中途前綴</b>皆不得觸發切音節；<br />
   /// ② 音節交界處<b>必須</b>切（殘餘漏切率 &lt; 5%）；<br />
   /// ③ 單聲母縮寫（<c>ess</c>＝ㄍㄋㄋ）須得三顆鍵；<br />
@@ -32,18 +29,17 @@ namespace Tekkon.Tests {
   /// <see cref="TekkonTestData.DynamicLayoutTable" /> 就地解析——故語料仍為單一正本。
   /// </para>
   /// <para>
-  /// 靶之<b>輸入域</b>（CI 跟進）：候選鍵與語料單元格皆須落在鍵面字元域內
+  /// 輸入域：候選鍵與語料單元格皆須落在鍵面字元域內
   /// （僅 ASCII 字母與數字）。素材檔內之反引號（<c>`NULL</c>）與尾端空格（源自 <c>__</c>）
   /// 皆為「本排列無此鍵」之標記，<b>非按鍵</b>；先前之版本把兩者一併當成候選鍵，
   /// 遂使反推鍵表把反引號登記成某注音符號之按鍵、由合法讀音之前綴生成出<b>不可鍵入</b>
-  /// 之鍵序——而判準對非注音按鍵之反應隨平台而異（CI 實錄：Linux 誤切 7366 次、
-  /// Windows 語料整批讀不到）。<b>此為靶之缺陷，非判準之缺陷</b>；判準本身未動。
+  /// 之鍵序——而判準對非注音按鍵之反應隨平台而異。
+  /// <b>此為測試之缺陷，非判準之缺陷</b>；判準本身未動。
   /// </para>
   /// <para>
-  /// 語料之<b>載入</b>（CI 跟進 2）：本倉之語料是編譯期常數
-  /// （<see cref="TekkonTestData.DynamicLayoutTable" />），故 Swift 側該次所加之「候選路徑清單」
-  /// 與「讀不到時附上嘗試紀錄」在本倉<b>結構上無對位</b>——檔案根本不會開不成。本倉取該次
-  /// 之兩項可移植者：行尾正規化（Windows checkout 之 CRLF），以及把「原始列數／過濾後列數」
+  /// 語料之<b>載入</b>：本模組之語料是編譯期常數
+  /// （<see cref="TekkonTestData.DynamicLayoutTable" />），故「檔案開不成」在此結構上不可能。
+  /// 仍取兩項：行尾正規化（Windows checkout 之 CRLF），以及把「原始列數／過濾後列數」
   /// 之診斷附於一切依賴語料之斷言（<see cref="AutoChopCorpus.Diagnostic" />）。
   /// </para>
   /// </summary>
@@ -63,9 +59,8 @@ namespace Tekkon.Tests {
 
       /// <summary>診斷訊息（附於一切依賴語料之斷言）。</summary>
       /// <remarks>
-      /// Swift 側之同項尚須列出嘗試過的檔案路徑；本倉之語料是<b>編譯期常數</b>，讀不到係
-      /// 結構上不可能，故本項只報來源與兩個列數——「沒讀到」與「讀到了但濾掉幾列」在本倉
-      /// 只能是後者，而兩者之數值仍須一眼可辨。
+      /// 本模組之語料是<b>編譯期常數</b>，讀不到係結構上不可能，故本項只報來源與兩個列數
+      /// ——「沒讀到」與「讀到了但濾掉幾列」兩者之數值仍須一眼可辨。
       /// </remarks>
       public string Diagnostic =>
         "語料來源：TekkonTestData.DynamicLayoutTable（編譯期常數，讀不到係結構上不可能）。" +
@@ -138,8 +133,8 @@ namespace Tekkon.Tests {
         }
       }
 
-      // 前綴集由 `Readings` 就地推導——索引本身刻意不暴露 `allPrefixes`（只答
-      // 「是否為前綴」一問），故本靶自行展開、再逐條以 `IsPrefix` 交叉驗證。
+      // 前綴集由 `Readings` 就地推導——索引只答「是否為前綴」，不暴露 `allPrefixes`，
+      // 故此處自行展開、再逐條以 `IsPrefix` 交叉驗證。
       SyllableIndex index = SyllableIndex.Shared(MandarinParser.OfDachen);
       var allPrefixes = new SortedSet<string>(StringComparer.Ordinal);
       foreach (string reading in index.Readings) {
@@ -149,9 +144,9 @@ namespace Tekkon.Tests {
       }
       foreach ((string name, MandarinParser parser) in StaticLayouts) {
         Dictionary<string, Rune> keyMap = StaticKeyMap(parser);
-        // 靶之輸入域不變式：反推所得之按鍵一律須為鍵面字元。**此行即迴歸釘**——先前之
+        // 輸入域不變式：反推所得之按鍵一律須為鍵面字元。**此行即迴歸釘**——先前之
         // 候選鍵含反引號與空格，反推遂把它們登記成某注音符號之按鍵，而由合法讀音之前綴
-        // 生成出**不可鍵入**之鍵序（CI 實錄：Linux 誤切 7366 次，全數為該等鍵）。
+        // 生成出**不可鍵入**之鍵序。
         foreach (KeyValuePair<string, Rune> pair in keyMap) {
           Assert.True(IsKeyCharacter(pair.Value),
                       $"{name} 之反推鍵表含非鍵面字元：{ShownKey(pair.Value)}");
@@ -228,10 +223,9 @@ namespace Tekkon.Tests {
             Composer probe = state;
             probe.ReceiveKey(key);
             string postContent = probe.GetComposition();
-            // 於<b>當前狀態</b>下寫入聲調槽者（聲調鍵／空格）由既有管線固化，
-            // 不屬本案（照原靶之守衛）。
+            // 於<b>當前狀態</b>下寫入聲調槽者（聲調鍵／空格）由既有管線固化，不屬本案。
             if (probe.Intonation.Value != state.Intonation.Value) continue;
-            // 注音內容概為 BMP 字元，故 String.Length 即碼點數（與 Swift 側 `.count` 同義）。
+            // 注音內容概為 BMP 字元，故 String.Length 即碼點數。
             bool greedy = index.IsPrefix(postContent) &&
                           postContent.Length > preContent.Length;
             if (greedy) continue;
@@ -247,7 +241,7 @@ namespace Tekkon.Tests {
       // 同上：交界數之下界為結構量（0 即語料未載入）；「不得漏切」由 `missed` 承擔。
       Assert.That(checkedCount, Is.GreaterThan(0L),
                   $"受檢交界僅 {checkedCount}：\n{Corpus.Diagnostic}");
-      // 術前驗證之實測為 2.19%；此處以 5% 為上限——殘餘之成因（與 `qquu`
+      // 實測漏切率為 2.19%；此處以 5% 為上限——殘餘之成因（與 `qquu`
       // 之逐槽覆寫在局部可觀測量上同構）已證不可由局部判準分離，屬<b>已知界線</b>。
       double rate = missed * 100.0 / Math.Max(checkedCount, 1);
       Assert.That(rate, Is.LessThan(5.0),
@@ -294,7 +288,7 @@ namespace Tekkon.Tests {
     /// <remarks>
     /// 實查自素材檔之 1485 列 × 5 動態排列：其鍵面字元僅 <c>0-9</c> 與 <c>a-z</c>。
     /// 反引號與空格<b>不在其列</b>——兩者在素材檔內只作「無此鍵」之標記。
-    /// 此函式即靶之輸入域不變式。
+    /// 此函式即輸入域不變式。
     /// </remarks>
     private static bool IsKeyCharacter(Rune rune) {
       int value = rune.Value;
@@ -318,8 +312,8 @@ namespace Tekkon.Tests {
 
     /// <summary>行尾正規化：CRLF／CR 一律化為 LF。</summary>
     /// <remarks>
-    /// 本倉之素材是原始字串常數（<see cref="TekkonTestData.DynamicLayoutTable" />）：版控內為
-    /// LF，但 Windows 之 checkout 可能改寫為 CRLF。此處顯式正規化，免日後之解析器倚賴隱性性質
+    /// 本模組之素材是原始字串常數（<see cref="TekkonTestData.DynamicLayoutTable" />）：版控內為
+    /// LF，但 Windows 之 checkout 可能改寫為 CRLF。此處顯式正規化，免日後之解析器倚賴隱性性質。
     /// </remarks>
     private static string NormalizeLineEndings(string text) =>
       text.Replace("\r\n", "\n").Replace('\r', '\n');
@@ -327,8 +321,8 @@ namespace Tekkon.Tests {
     /// <summary>
     /// 自素材檔就地解析 <see cref="TekkonTestData.DynamicLayoutTable" /> 之內容。
     /// <para>
-    /// 僅解析一次，<c>Rows</c> 與 <c>RawRowCount</c> 共用——<b>語料讀不到時必須大聲失敗</b>
-    /// （CI 實錄：Windows 之語料整批讀不到，而當時之靶只在兩處下界斷言上失手）。
+    /// 僅解析一次，<c>Rows</c> 與 <c>RawRowCount</c> 共用——<b>語料讀不到時必須大聲失敗</b>：
+    /// 兩個列數都報出來，「沒讀到」與「讀到了但濾掉幾列」才分得開。
     /// </para>
     /// </summary>
     private static AutoChopCorpus ParseCorpus() {
