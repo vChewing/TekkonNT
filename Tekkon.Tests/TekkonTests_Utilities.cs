@@ -23,12 +23,12 @@ namespace Tekkon.Tests {
     }
 
     [Test]
-    public void TestRestoreToneOneEdgeCases() {
+    public void TestRestoreFirstToneEdgeCases() {
       // 空字串防呆。
-      Assert.AreEqual(actual: Shared.RestoreToneOneInPhona(""), expected: "");
-      Assert.AreEqual(actual: Shared.RestoreToneOneInPhona("ㄉㄧㄠ"), expected: "ㄉㄧㄠ1");
-      Assert.AreEqual(actual: Shared.RestoreToneOneInPhona("ㄉㄧㄠˋ"), expected: "ㄉㄧㄠˋ");
-      Assert.AreEqual(actual: Shared.RestoreToneOneInPhona("ㄉㄧㄠ˙"), expected: "ㄉㄧㄠ˙");
+      Assert.AreEqual(actual: Shared.RestoreFirstToneInPhona(""), expected: "");
+      Assert.AreEqual(actual: Shared.RestoreFirstToneInPhona("ㄉㄧㄠ"), expected: "ㄉㄧㄠ1");
+      Assert.AreEqual(actual: Shared.RestoreFirstToneInPhona("ㄉㄧㄠˋ"), expected: "ㄉㄧㄠˋ");
+      Assert.AreEqual(actual: Shared.RestoreFirstToneInPhona("ㄉㄧㄠ˙"), expected: "ㄉㄧㄠ˙");
     }
 
     [Test]

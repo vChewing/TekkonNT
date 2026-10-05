@@ -193,7 +193,7 @@ namespace Tekkon.Tests {
       Assert.AreEqual(composer.GetComposition(), "ㄩㄝ");
 
       // Testing tool functions
-      Assert.AreEqual(Shared.RestoreToneOneInPhona("ㄉㄧㄠ"), "ㄉㄧㄠ1");
+      Assert.AreEqual(Shared.RestoreFirstToneInPhona("ㄉㄧㄠ"), "ㄉㄧㄠ1");
       Assert.AreEqual(Shared.CnvPhonaToTextbookStyle("ㄓㄜ˙"), "˙ㄓㄜ");
       Assert.AreEqual(Shared.CnvPhonaToHanyuPinyin("ㄍㄢˋ"), "gan4");
       Assert.AreEqual(Shared.CnvHanyuPinyinToTextbookStyle("起(qi3)居(ju1)"),

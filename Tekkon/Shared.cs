@@ -126,7 +126,7 @@ namespace Tekkon {
     /// <param
     /// name="target">要拿來做轉換處理的讀音。</param>
     /// <returns>經過轉換處理的讀音。</returns>
-    public static string RestoreToneOneInPhona(string target) {
+    public static string RestoreFirstToneInPhona(string target) {
       if (target.Length == 0) return target;
       string newString = target;
       if (!newString.Contains('ˊ') && !newString.Contains('ˇ') &&
@@ -168,10 +168,10 @@ namespace Tekkon {
     /// <param name="targetJoined">要轉換的漢語拼音內容，要求必須帶有 12345
     /// 數字標調。</param>
     /// <param
-    /// name="newToneOne">對陰平指定新的標記。預設情況下該標記為空字串。</param>
+    /// name="newFirstTone">對陰平指定新的標記。預設情況下該標記為空字串。</param>
     /// <returns>轉換結果。</returns>
     public static string CnvHanyuPinyinToPhona(string targetJoined,
-                                               string newToneOne = "") {
+                                               string newFirstTone = "") {
       // 允許的字元：英數 (A-Za-z0-9)、空白、Tab、連字號(-)。
       // 如果含底線或包含任何不在允許列表中的字元，則放棄轉換。
       if (targetJoined.Contains('_') || targetJoined.Any(IsDisallowedPinyinChainChar))
@@ -184,7 +184,7 @@ namespace Tekkon {
       foreach (KeyValuePair<string, string> pair in ArayuruIntonationPairs.Value) {
         if (!targetJoined.Contains(pair.Key)) continue;
         string replacement = pair.Key == "1"
-          ? newToneOne
+          ? newFirstTone
           : pair.Value;
         targetJoined = targetJoined.Replace(pair.Key, replacement);
       }
