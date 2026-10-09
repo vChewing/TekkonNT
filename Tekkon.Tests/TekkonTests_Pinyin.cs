@@ -29,7 +29,7 @@ namespace Tekkon.Tests {
       composer.DoBackSpace();
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄉㄧㄠ "); // 這裡回傳的結果的陰平是空格
+                      expected: "ㄉㄧㄠ "); // 這裡回傳的結果的陰平是空白字元
 
       // 測試取得顯示用組字
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ");
@@ -84,7 +84,7 @@ namespace Tekkon.Tests {
       composer.DoBackSpace();
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空格
+                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空白字元
 
       // 測試取得顯示用組字;
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
@@ -139,7 +139,7 @@ namespace Tekkon.Tests {
       composer.DoBackSpace();
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空格
+                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空白字元
 
       // 測試取得顯示用組字;
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
@@ -194,7 +194,7 @@ namespace Tekkon.Tests {
       composer.DoBackSpace();
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空格
+                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空白字元
 
       // 測試取得顯示用組字
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
@@ -248,7 +248,7 @@ namespace Tekkon.Tests {
       composer.DoBackSpace();
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空格
+                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空白字元
 
       // 測試取得顯示用組字
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
@@ -304,7 +304,7 @@ namespace Tekkon.Tests {
       composer.DoBackSpace();
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空格
+                      expected: "ㄑㄩㄥ "); // 這裡回傳的結果的陰平是空白字元
 
       // 測試取得顯示用組字
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄑㄩㄥ");
@@ -426,7 +426,7 @@ namespace Tekkon.Tests {
       Assert.True(composer.IsEmpty);
       Assert.False(composer.IsPronounceable);
 
-      // 清空後收下陰平空格鍵：不應把已刪除的「ma」重新組回。
+      // 清空後收下陰平空白鍵：不應把已刪除的「ma」重新組回。
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(" ", composer.Intonation.Value);
       Assert.AreEqual("", composer.GetComposition());

@@ -98,7 +98,7 @@ namespace Tekkon.Tests {
       composer.DoBackSpace();
       composer.ReceiveKey(" "); // 陰平
       Assert.AreEqual(actual: composer.Value,
-                      expected: "ㄉㄧㄠ "); // 這裡回傳的結果的陰平是空格
+                      expected: "ㄉㄧㄠ "); // 這裡回傳的結果的陰平是空白字元
 
       // Test Getting Displayed Composition
       Assert.AreEqual(actual: composer.GetComposition(), expected: "ㄉㄧㄠ");

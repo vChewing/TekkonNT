@@ -33,7 +33,7 @@ namespace Tekkon.Tests {
     private static string FirstChar(string reading) =>
       reading.Length == 0 ? "" : reading.Substring(0, 1);
 
-    /// <summary>語料表之全部無調詞幹（底線＝空格＝陰平，須先還原再剝調）。</summary>
+    /// <summary>語料表之全部無調詞幹（底線＝空白字元＝陰平，須先還原再剝調）。</summary>
     private static HashSet<string> TestTableStems() {
       HashSet<string> stems = new(StringComparer.Ordinal);
       string[] lines = TekkonTestData.DynamicLayoutTable.Split('\n');
@@ -44,7 +44,7 @@ namespace Tekkon.Tests {
         string first = tokens[0].Replace('_', ' ');
         // 表頭（`$READING Dachen26 …`）非測資。
         if (first.StartsWith("$", StringComparison.Ordinal)) continue;
-        // 剝去尾端聲調（含以空格表記之陰平）。
+        // 剝去尾端聲調（含以空白字元表記之陰平）。
         if (first.Length > 0 && " ˊˇˋ˙".IndexOf(first[first.Length - 1]) >= 0) {
           first = first.Substring(0, first.Length - 1);
         }

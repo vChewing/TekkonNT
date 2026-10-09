@@ -81,8 +81,8 @@ namespace Tekkon {
 
     /// <summary>
     /// 內容值，會直接按照正確的順序拼裝自己的聲介韻調內容、再回傳。
-    /// 注意：直接取這個參數的內容的話，陰平聲調會成為一個空格。
-    /// 如果是要取不帶空格的注音的話，請使用「.getComposition()」而非「.Value」。
+    /// 注意：直接取這個參數的內容的話，陰平聲調會成為一個空白字元。
+    /// 如果是要取不帶空白字元的注音的話，請使用「.getComposition()」而非「.Value」。
     /// </summary>
     public string Value => $"{Consonant}{Semivowel}{Vowel}{Intonation}";
 
@@ -583,7 +583,7 @@ namespace Tekkon {
     }
 
     /// <summary>
-    /// 處理一連串的按鍵輸入、且返回被處理之後的注音（陰平為空格）。
+    /// 處理一連串的按鍵輸入、且返回被處理之後的注音（陰平為空白字元）。
     /// </summary>
     /// <param name="givenSequence">傳入的 String
     /// 內容，用以處理一整串擊鍵輸入。</param>
@@ -664,7 +664,7 @@ namespace Tekkon {
           Intonation = new Phonabet();
         else {
           // 刪除拼音字元後，必須以縮短後的緩衝重新推導聲介韻槽位；否則 phonabet
-          // 欄位殘留已刪除的讀音（IsPronounceable 誤判為真），後續的聲調鍵／空格鍵
+          // 欄位殘留已刪除的讀音（IsPronounceable 誤判為真），後續的聲調鍵／空白鍵
           // 會把已刪除的讀音重新組回（ReceiveSequence 會清空 RomajiBuffer，故
           // 事後須復原）。
           string shortened = RomajiBuffer.Remove(RomajiBuffer.Length - 1);

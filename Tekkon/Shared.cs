@@ -57,7 +57,7 @@ namespace Tekkon {
       });
 
     /// <summary>
-    /// 注音轉拼音，要求陰平必須是空格。
+    /// 注音轉拼音，要求陰平必須是空白字元。
     /// </summary>
     /// <param name="targetJoined">傳入的 String 對象物件。</param>
     /// <returns>漢語拼音字串。</returns>

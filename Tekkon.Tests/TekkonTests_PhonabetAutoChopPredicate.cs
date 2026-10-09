@@ -30,7 +30,7 @@ namespace Tekkon.Tests {
   /// </para>
   /// <para>
   /// 輸入域：候選鍵與語料單元格皆須落在鍵面字元域內
-  /// （僅 ASCII 字母與數字）。素材檔內之反引號（<c>`NULL</c>）與尾端空格（源自 <c>__</c>）
+  /// （僅 ASCII 字母與數字）。素材檔內之反引號（<c>`NULL</c>）與尾端空白字元（源自 <c>__</c>）
   /// 皆為「本排列無此鍵」之標記，<b>非按鍵</b>；先前之版本把兩者一併當成候選鍵，
   /// 遂使反推鍵表把反引號登記成某注音符號之按鍵、由合法讀音之前綴生成出<b>不可鍵入</b>
   /// 之鍵序——而判準對非注音按鍵之反應隨平台而異。
@@ -89,7 +89,7 @@ namespace Tekkon.Tests {
     /// <summary>
     /// 單一按鍵之候選集（靜態注音排列之鍵面字元：數字 ＋ 小寫字母）。
     /// <para>
-    /// <b>不得</b>再收反引號與空格：兩者非任何出貨排列之按鍵，見型別說明。
+    /// <b>不得</b>再收反引號與空白字元：兩者非任何出貨排列之按鍵，見型別說明。
     /// </para>
     /// </summary>
     private static readonly List<Rune> CandidateKeys =
@@ -145,7 +145,7 @@ namespace Tekkon.Tests {
       foreach ((string name, MandarinParser parser) in StaticLayouts) {
         Dictionary<string, Rune> keyMap = StaticKeyMap(parser);
         // 輸入域不變式：反推所得之按鍵一律須為鍵面字元。**此行即迴歸釘**——先前之
-        // 候選鍵含反引號與空格，反推遂把它們登記成某注音符號之按鍵，而由合法讀音之前綴
+        // 候選鍵含反引號與空白字元，反推遂把它們登記成某注音符號之按鍵，而由合法讀音之前綴
         // 生成出**不可鍵入**之鍵序。
         foreach (KeyValuePair<string, Rune> pair in keyMap) {
           Assert.True(IsKeyCharacter(pair.Value),
@@ -223,7 +223,7 @@ namespace Tekkon.Tests {
             Composer probe = state;
             probe.ReceiveKey(key);
             string postContent = probe.GetComposition();
-            // 於<b>當前狀態</b>下寫入聲調槽者（聲調鍵／空格）由既有管線固化，不屬本案。
+            // 於<b>當前狀態</b>下寫入聲調槽者（聲調鍵／空白鍵）由既有管線固化，不屬本案。
             if (probe.Intonation.Value != state.Intonation.Value) continue;
             // 注音內容概為 BMP 字元，故 String.Length 即碼點數。
             bool greedy = index.IsPrefix(postContent) &&
@@ -287,7 +287,7 @@ namespace Tekkon.Tests {
     /// <summary>鍵面字元之地面真值（靜態注音排列之按鍵域）：僅 ASCII 字母與數字。</summary>
     /// <remarks>
     /// 實查自素材檔之 1485 列 × 5 動態排列：其鍵面字元僅 <c>0-9</c> 與 <c>a-z</c>。
-    /// 反引號與空格<b>不在其列</b>——兩者在素材檔內只作「無此鍵」之標記。
+    /// 反引號與空白字元<b>不在其列</b>——兩者在素材檔內只作「無此鍵」之標記。
     /// 此函式即輸入域不變式。
     /// </remarks>
     private static bool IsKeyCharacter(Rune rune) {
@@ -307,7 +307,7 @@ namespace Tekkon.Tests {
     private static string ShownKey(Rune rune) =>
       IsKeyCharacter(rune) ? rune.ToString() : $"U+{rune.Value:X4}";
 
-    /// <summary>將底線還原為空格（語料表以底線代表空白＝陰平鍵）。</summary>
+    /// <summary>將底線還原為空白字元（語料表以底線代表空白＝陰平鍵）。</summary>
     private static string ReplaceUnderscores(string str) => str.Replace('_', ' ');
 
     /// <summary>行尾正規化：CRLF／CR 一律化為 LF。</summary>
@@ -339,7 +339,7 @@ namespace Tekkon.Tests {
         ++corpus.RawRowCount;
         if (tokens.Length != 6) continue;
         // 校驗閘：任何單元格若含鍵面字元以外之字元即整列剔除。實查素材檔之此類單元格只有
-        // 兩種：① 以反引號起始者（`NULL、`vezf…，標記「本排列無此鍵」）；② 尾端帶一空格者
+        // 兩種：① 以反引號起始者（`NULL、`vezf…，標記「本排列無此鍵」）；② 尾端帶一空白字元者
         // （m 、too …，源自素材檔之 `__` ⇒ 空 cell）。**兩者皆為「不適用」之標記，非按鍵。**
         if (!tokens.Skip(1).All(IsAllKeyCharacters)) continue;
         corpus.Rows.Add(new CorpusRow {
